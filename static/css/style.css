@@ -1396,3 +1396,47 @@ body, p, input, textarea, select, button, a, label, span, li {
   transition: opacity .2s;
 }
 .stat-bar__col:hover { opacity: .7; }
+
+/* ── Footer Pro Let's GoWeb ───────────────────────────────────── */
+.footer-pro {
+  background: #111827;
+  color: #fff;
+  margin-top: 64px;
+  padding: 48px 24px 32px;
+  text-align: center;
+}
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.logo-footer {
+  height: 56px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  opacity: .9;
+}
+.footer-credits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,.5);
+  line-height: 1.6;
+}
+.footer-credits p { margin: 0; }
+.letsgo-link {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color .3s ease, transform .3s ease;
+  display: inline-block;
+}
+.letsgo-link:hover {
+  border-bottom-color: #fff;
+  transform: translateY(-1px);
+}
