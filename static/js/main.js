@@ -42,20 +42,8 @@ function initLazyImages() {
 
 // ── Auto-dismiss Django messages ───────────────────────────────
 function initAutoDismissMessages() {
-  const container = document.querySelector('#django-messages, [id^="django"]');
-  if (!container) {
-    const msgs = document.querySelectorAll('.bg-green-50, .bg-red-50, .bg-blue-50, .bg-yellow-50');
-    msgs.forEach(el => {
-      if (el.closest('nav') || el.closest('footer')) return;
-      setTimeout(() => {
-        el.style.transition = 'opacity .5s, transform .5s';
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(-8px)';
-        setTimeout(() => el.remove(), 500);
-      }, 5000);
-    });
-    return;
-  }
+  const container = document.querySelector('#django-messages');
+  if (!container) return; // Pas de messages, rien à faire
   setTimeout(() => {
     container.style.transition = 'opacity .5s';
     container.style.opacity = '0';
