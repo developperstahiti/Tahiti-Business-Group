@@ -388,14 +388,59 @@
 <main>{% block content %}{% endblock %}</main>
 
 <!-- FOOTER -->
-<footer class="footer-pro">
-  <div class="footer-content">
-    <a href="{% url 'index' %}">
-      <img src="{% static 'img/logo-tbg.webp' %}" alt="Tahiti Business Group" class="logo-footer">
-    </a>
-    <div class="footer-credits">
-      <p>© 2026 Tahiti Business Group. Tous droits réservés.</p>
-      <p>Créé avec 💙 par <a href="https://letsgo.web" target="_blank" rel="noopener" class="letsgo-link">Let's GoWeb</a> – Créateurs de sites Internet à Tahiti</p>
+<footer class="bg-white border-t border-gray-200 mt-16" style="position:relative;z-index:2;">
+  <div class="max-w-7xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-3">
+          <a href="{% url 'index' %}">
+            <img src="{% static 'img/logo-tbg.webp' %}" alt="Tahiti Business Group" class="h-10 w-auto">
+          </a>
+        </div>
+        <p class="text-gray-500 text-sm leading-relaxed max-w-sm">
+          La plateforme d'annonces gratuites #1 en Polynésie française. Achetez, vendez, échangez en toute confiance.
+        </p>
+        <div class="mt-5 space-y-2">
+          <a href="tel:0689610613" class="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition font-medium w-fit">
+            📞 89 61 06 13
+          </a>
+          <a href="mailto:cocogamestahiti@gmail.com" class="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition w-fit">
+            ✉️ cocogamestahiti@gmail.com
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider mb-3 text-gray-900">Catégories</h4>
+        <ul class="space-y-1.5 text-sm text-gray-500">
+          <li><a href="{% url 'liste_annonces' %}?categorie=vehicules" class="hover:text-blue-600 transition">🚗 Véhicules</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=immobilier" class="hover:text-blue-600 transition">🏠 Immobilier</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=electronique" class="hover:text-blue-600 transition">📱 Électronique</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=emploi" class="hover:text-blue-600 transition">💼 Emploi</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=services" class="hover:text-blue-600 transition">🔧 Services</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=autres" class="hover:text-blue-600 transition">📦 Autres</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider mb-3 text-gray-900">Publicité</h4>
+        <ul class="space-y-1.5 text-sm text-gray-500">
+          <li><a href="{% url 'tarifs_pubs' %}" class="hover:text-blue-600 transition">Tarifs &amp; emplacements</a></li>
+          <li><a href="{% url 'demande_pub' %}" class="hover:text-blue-600 transition">Réserver un emplacement</a></li>
+          <li class="pt-2 border-t border-gray-100 space-y-1">
+            <div class="text-xs">Billboard — <strong class="text-gray-800">25 000 XPF/mois</strong></div>
+            <div class="text-xs">Sidebar Haut — <strong class="text-gray-800">15 000 XPF/mois</strong></div>
+            <div class="text-xs">Sidebar Milieu — <strong class="text-gray-800">10 000 XPF/mois</strong></div>
+            <div class="text-xs">Sidebar Bas — <strong class="text-gray-800">5 000 XPF/mois</strong></div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p class="text-gray-400 text-xs">© 2026 Tahiti Business Group • 89 61 06 13 • cocogamestahiti@gmail.com</p>
+      <p class="text-gray-400 text-xs">By <a href="https://letsgo.web" target="_blank" rel="noopener" class="letsgo-link-footer">Let's GoWeb</a> 🌺</p>
     </div>
   </div>
 </footer>
