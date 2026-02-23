@@ -352,7 +352,7 @@
 
 <!-- MESSAGES -->
 {% if messages %}
-<div class="max-w-7xl mx-auto px-4 pt-3 space-y-2" style="position:relative;z-index:3;">
+<div id="django-messages" class="max-w-7xl mx-auto px-4 pt-3 space-y-2" style="position:relative;z-index:3;">
   {% for message in messages %}
   <div class="flex items-center gap-3 p-3.5 rounded-xl border text-sm font-medium
     {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800
@@ -367,7 +367,7 @@
 
 <!-- ═══ PUB ARRIÈRE-PLAN FIXE PLEINE PAGE (index + liste uniquement) ═══ -->
 {% with url=request.resolver_match.url_name %}
-{% if url != 'deposer_annonce' and url != 'mes_favoris' and url != 'mes_messages' and url != 'mon_compte' and url != 'edit_annonce' and url != 'login' and url != 'register' and url != 'page_info' and url != 'page_business' and url != 'rubriques_index' %}
+{% if url != 'deposer_annonce' and url != 'mes_favoris' and url != 'mes_messages' and url != 'mon_compte' and url != 'edit_annonce' and url != 'login' and url != 'register' and url != 'page_info' and url != 'page_business' and url != 'rubriques_index' and url != 'mes_annonces' %}
 <div class="pub-bg-fixed">
   {% if pub_billboard %}
   <a href="{{ pub_billboard.lien }}" target="_blank" rel="noopener sponsored" class="pub-bg-fixed-link">
