@@ -11,38 +11,13 @@
     <!-- CONTENU PRINCIPAL -->
     <div class="layout-main">
 
-      <!-- ── RUBRIQUES (Promo / Info / Nouveauté) ── -->
-      {% if promos_home or infos_home or nouveautes_home %}
+      <!-- ── RUBRIQUES (Info / Nouveauté) ── -->
+      {% if infos_home or nouveautes_home %}
       <div class="mb-10">
-        <div class="flex items-center justify-between mb-5 pb-3 border-b-2 border-gray-900">
+        <div class="over-img flex items-center justify-between mb-5 pb-3 border-b-2 border-gray-900">
           <h2 class="text-xl font-bold text-gray-900" style="font-family:'Libre Baskerville',Georgia,serif">Rubriques TBG</h2>
           <a href="{% url 'rubriques_index' %}" class="text-xs font-bold text-gray-900 underline underline-offset-2">Voir tout →</a>
         </div>
-
-        {% if promos_home %}
-        <div class="mb-6">
-          <div class="flex items-center gap-3 mb-3">
-            <span class="text-xs font-bold text-gray-900 border border-gray-900 px-2 py-0.5" style="letter-spacing:.06em;text-transform:uppercase">Promo</span>
-            <span class="text-xs text-gray-400 font-medium">💰 Réductions pros</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {% for p in promos_home %}
-            <a href="{{ p.lien_promo|default:'#' }}"
-               {% if p.lien_promo %}target="_blank" rel="noopener"{% endif %}
-               class="article-card">
-              <div class="article-card__body">
-                <div class="article-card__title">{{ p.titre }}</div>
-                <div class="article-card__desc">{{ p.contenu }}</div>
-                <div class="article-card__meta">
-                  <span>{{ p.pro_user.nom|default:p.pro_user.email }}</span>
-                  {% if p.lien_promo %}<span class="article-card__cta">Voir →</span>{% endif %}
-                </div>
-              </div>
-            </a>
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
 
         {% if infos_home %}
         <div class="mb-6">
@@ -98,23 +73,92 @@
       {% endif %}
       <!-- ── /RUBRIQUES ── -->
 
+      <!-- ── CAROUSEL PROMOS ── -->
+      {% if promos_home %}
+      <div class="promo-carousel mb-10">
+        <div class="over-img flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-gray-900">💰 Promos &amp; Bons plans</h2>
+          <a href="{% url 'rubriques_index' %}" class="text-sm text-amber-600 hover:text-amber-800 font-medium transition">Voir tout →</a>
+        </div>
+        <div class="cat-section-row">
+          <a href="{% url 'rubriques_index' %}" class="cat-label-card">
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-promotion.png' %}" alt="Promos" class="cat-label-card__img"></div>
+            <div class="cat-label-card__title">Promos &amp; Bons plans</div>
+          </a>
+          <div class="cat-carousel-wrapper cat-section-row__carousel">
+            <div class="cat-carousel">
+              <div class="cat-carousel__track">
+                {% for p in promos_home %}
+                <div class="cat-carousel__item">
+                  <div class="promo-card" onclick="this.classList.toggle('open')">
+                    <span class="promo-card__badge">💰 Promo</span>
+                    <div class="promo-card__title">{{ p.titre }}</div>
+                    <div class="promo-card__preview">{{ p.contenu }}</div>
+                    <div class="promo-card__expand">
+                      <p>{{ p.contenu }}</p>
+                      {% if p.lien_promo %}
+                      <a href="{{ p.lien_promo }}" target="_blank" rel="noopener sponsored"
+                         class="promo-card__cta" onclick="event.stopPropagation()">
+                        Voir l'offre →
+                      </a>
+                      {% endif %}
+                      <div class="promo-card__source">{{ p.pro_user.nom|default:p.pro_user.email }}</div>
+                    </div>
+                    <div class="promo-card__hint">Cliquer pour lire →</div>
+                  </div>
+                </div>
+                {% endfor %}
+                <div class="cat-carousel__item">
+                  <a href="{% url 'rubriques_index' %}" class="cat-voir-tout">
+                    <div class="cat-voir-tout__inner">
+                      <span class="cat-voir-tout__arrow">→</span>
+                      <span class="cat-voir-tout__label">Voir tout</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <button class="cat-carousel__btn cat-carousel__btn--prev" aria-label="Précédent">‹</button>
+            <button class="cat-carousel__btn cat-carousel__btn--next" aria-label="Suivant">›</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <!-- ── /CAROUSEL PROMOS ── -->
+
       <!-- Annonces récentes -->
-      <div class="flex items-center justify-between mb-5">
+      <div class="over-img flex items-center justify-between mb-4">
         <h2 class="text-xl font-bold text-gray-900">Annonces récentes</h2>
+        {% if total_count %}<span class="text-sm text-gray-400 font-normal">{{ total_count }} annonce{{ total_count|pluralize }}</span>{% endif %}
       </div>
 
       {% if annonces_recentes %}
-      <div id="annonces-grid" class="ads-grid mb-6">
-        {% for annonce in annonces_recentes %}
-        {% include 'partials/_annonce_card.html' %}
-        {% endfor %}
-      </div>
-      <!-- VOIR TOUT button -->
-      <div class="text-center mb-10">
-        <a href="{% url 'liste_annonces' %}"
-          class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl transition shadow-sm text-sm">
-          Voir toutes les annonces{% if total_count %}&nbsp;({{ total_count }}){% endif %} &rarr;
+      <div class="cat-section-row mb-10">
+        <a href="{% url 'liste_annonces' %}" class="cat-label-card">
+          <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-recentes.png' %}" alt="Annonces récentes" class="cat-label-card__img"></div>
+          <div class="cat-label-card__title">Annonces récentes</div>
         </a>
+        <div class="cat-carousel-wrapper cat-section-row__carousel">
+          <div class="cat-carousel">
+            <div class="cat-carousel__track">
+              {% for annonce in annonces_recentes %}
+              <div class="cat-carousel__item">
+                {% include 'partials/_annonce_card.html' %}
+              </div>
+              {% endfor %}
+              <div class="cat-carousel__item">
+                <a href="{% url 'liste_annonces' %}" class="cat-voir-tout">
+                  <div class="cat-voir-tout__inner">
+                    <span class="cat-voir-tout__arrow">→</span>
+                    <span class="cat-voir-tout__label">Voir tout</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+          <button class="cat-carousel__btn cat-carousel__btn--prev" aria-label="Précédent">‹</button>
+          <button class="cat-carousel__btn cat-carousel__btn--next" aria-label="Suivant">›</button>
+        </div>
       </div>
       {% else %}
       <div class="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm mb-10">
@@ -126,48 +170,69 @@
       </div>
       {% endif %}
 
+      <!-- PUB STRIP après annonces récentes (slot strip_1) -->
+      {% with current_strip=pub_strip_1 %}{% include 'partials/_pub_strip.html' %}{% endwith %}
+
       <!-- Par catégorie -->
       {% for code, cat_data in annonces_par_cat.items %}
       {% if cat_data.annonces %}
       <div class="mb-10">
-        <div class="flex items-center justify-between mb-4">
+        <div class="over-img flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
             {% if code == 'vehicules' %}🚗{% elif code == 'immobilier' %}🏠{% elif code == 'electronique' %}📱{% elif code == 'emploi' %}💼{% elif code == 'services' %}🔧{% else %}📦{% endif %}
             {{ cat_data.label }}
           </h2>
           <a href="{% url 'liste_annonces' %}?categorie={{ code }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition">Voir tout →</a>
         </div>
-        <div class="ads-grid">
-          {% for annonce in cat_data.annonces %}
-          {% include 'partials/_annonce_card.html' %}
-          {% endfor %}
+
+        <!-- Carousel avec carte label -->
+        <div class="cat-section-row">
+          <a href="{% url 'liste_annonces' %}?categorie={{ code }}" class="cat-label-card">
+            {% if code == 'vehicules' %}
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-vehicule.png' %}" alt="{{ cat_data.label }}" class="cat-label-card__img"></div>
+            {% elif code == 'immobilier' %}
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-immobilier.png' %}" alt="{{ cat_data.label }}" class="cat-label-card__img"></div>
+            {% elif code == 'electronique' %}
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-electronique.png' %}" alt="{{ cat_data.label }}" class="cat-label-card__img"></div>
+            {% elif code == 'emploi' %}
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-emploi.png' %}" alt="{{ cat_data.label }}" class="cat-label-card__img"></div>
+            {% elif code == 'services' %}
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-service.png' %}" alt="{{ cat_data.label }}" class="cat-label-card__img"></div>
+            {% else %}
+            <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-autre.png' %}" alt="{{ cat_data.label }}" class="cat-label-card__img"></div>
+            {% endif %}
+            <div class="cat-label-card__title">{{ cat_data.label }}</div>
+          </a>
+          <div class="cat-carousel-wrapper cat-section-row__carousel">
+            <div class="cat-carousel">
+              <div class="cat-carousel__track">
+                {% for annonce in cat_data.annonces %}
+                <div class="cat-carousel__item">
+                  {% include 'partials/_annonce_card.html' %}
+                </div>
+                {% endfor %}
+                <div class="cat-carousel__item">
+                  <a href="{% url 'liste_annonces' %}?categorie={{ code }}" class="cat-voir-tout">
+                    <div class="cat-voir-tout__inner">
+                      <span class="cat-voir-tout__arrow">→</span>
+                      <span class="cat-voir-tout__label">Voir tout</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <button class="cat-carousel__btn cat-carousel__btn--prev" aria-label="Précédent">‹</button>
+            <button class="cat-carousel__btn cat-carousel__btn--next" aria-label="Suivant">›</button>
+          </div>
         </div>
       </div>
       {% endif %}
 
       {% if forloop.counter == 2 %}
-      <!-- BILLBOARD MILIEU (15 000 XPF/mois) -->
-      <div class="mb-10">
-        {% if pub_billboard_milieu %}
-        <a href="{{ pub_billboard_milieu.lien }}" target="_blank" rel="noopener sponsored"
-          class="billboard-wrap block">
-          <img src="{{ pub_billboard_milieu.get_image }}"
-            alt="{{ pub_billboard_milieu.titre }}"
-            class="billboard-img">
-        </a>
-        {% else %}
-        <a href="{% url 'tarifs_pubs' %}" class="billboard-milieu-empty">
-          <div class="billboard-milieu-empty__inner">
-            <div class="billboard-milieu-empty__badge">PUBLICITE</div>
-            <div class="billboard-milieu-empty__title">VOTRE MARQUE ICI</div>
-            <div class="billboard-milieu-empty__price">15 000 XPF / mois</div>
-            <div class="billboard-milieu-empty__cta">
-              Réserver → 89 61 06 13
-            </div>
-          </div>
-        </a>
-        {% endif %}
-      </div>
+      {% with current_strip=pub_strip_2 %}{% include 'partials/_pub_strip.html' %}{% endwith %}
+      {% endif %}
+      {% if forloop.counter == 4 %}
+      {% with current_strip=pub_strip_3 %}{% include 'partials/_pub_strip.html' %}{% endwith %}
       {% endif %}
 
       {% endfor %}
@@ -182,4 +247,51 @@
   </div>
 </div>
 
+<script>
+(function () {
+  document.querySelectorAll('.cat-carousel-wrapper').forEach(function (wrapper) {
+    var carousel = wrapper.querySelector('.cat-carousel');
+    var track    = wrapper.querySelector('.cat-carousel__track');
+    var items    = wrapper.querySelectorAll('.cat-carousel__item');
+    var btnPrev  = wrapper.querySelector('.cat-carousel__btn--prev');
+    var btnNext  = wrapper.querySelector('.cat-carousel__btn--next');
+    var total    = items.length;
+    var current  = 0;
+
+    function itemWidth() {
+      return items[0] ? items[0].offsetWidth : 0;
+    }
+    function visibleCount() {
+      var iw = itemWidth() + 12;
+      return iw ? Math.round((carousel.offsetWidth + 12) / iw) : 4;
+    }
+    function maxIndex() {
+      return Math.max(0, total - visibleCount());
+    }
+    function update() {
+      var mx = maxIndex();
+      if (current > mx) current = mx;
+      var offset = current * (itemWidth() + 12);
+      track.style.transform = 'translateX(-' + offset + 'px)';
+      if (btnPrev) btnPrev.disabled = current === 0;
+      if (btnNext) btnNext.disabled = current >= mx;
+    }
+
+    if (total <= 1) {
+      if (btnPrev) btnPrev.style.display = 'none';
+      if (btnNext) btnNext.style.display = 'none';
+    } else {
+      if (btnPrev) btnPrev.addEventListener('click', function () {
+        if (current > 0) { current--; update(); }
+      });
+      if (btnNext) btnNext.addEventListener('click', function () {
+        if (current < maxIndex()) { current++; update(); }
+      });
+    }
+
+    update();
+    window.addEventListener('resize', update);
+  });
+})();
+</script>
 {% endblock %}

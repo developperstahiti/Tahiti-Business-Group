@@ -134,28 +134,41 @@
   <div id="cat-zone-2" class="border-b border-gray-200">
     <nav class="max-w-7xl mx-auto px-4 cat-nav" aria-label="Catégories">
 
-      <a href="{% url 'liste_annonces' %}" class="cat-nav-link cat-nav-link--all">Tout</a>
-
-      <!-- Véhicules -->
+      <!-- 1. Promo (PRO uniquement pour déposer) -->
       <div class="cat-nav-item">
-        <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="cat-nav-link">
-          🚗 Véhicules
+        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
+          💰 Promo
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </a>
         <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Véhicules</div>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-4x4">Voitures / 4 roues</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-2roues">2 roues (scooters/motos)</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux">Bateaux &amp; jet-skis</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires">Utilitaires &amp; camions</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces">Pièces auto &amp; accessoires</a>
+          <div class="cat-dropdown__header">Promos professionnels</div>
+          <a href="{% url 'rubriques_index' %}">Voir les promos</a>
+          {% if user.is_pro %}
+          <a href="{% url 'deposer_promo' %}">➕ Déposer une promo</a>
+          {% endif %}
         </div>
       </div>
 
-      <!-- Immobilier -->
+      <!-- 2. Info -->
+      <div class="cat-nav-item">
+        <a href="{% url 'page_info' %}" class="cat-nav-link">
+          📰 Info
+          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </a>
+        <div class="cat-dropdown">
+          <div class="cat-dropdown__header">Informations</div>
+          <a href="{% url 'page_info' %}">Comment utiliser</a>
+          <a href="{% url 'page_info' %}#tarifs">Tarifs publicités</a>
+          <a href="{% url 'page_info' %}#contact">Nous contacter</a>
+          <a href="{% url 'page_info' %}#faq">FAQ</a>
+        </div>
+      </div>
+
+      <!-- 3. Immobilier -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="cat-nav-link">
           🏠 Immobilier
@@ -175,26 +188,43 @@
         </div>
       </div>
 
-      <!-- Électronique -->
+      <!-- 4. Véhicule -->
       <div class="cat-nav-item">
-        <a href="{% url 'liste_annonces' %}?categorie=electronique" class="cat-nav-link">
-          📱 Électronique
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="cat-nav-link">
+          🚗 Véhicule
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </a>
         <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Électronique</div>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-telephones">Téléphones &amp; accessoires</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-ordinateurs">Ordinateurs &amp; tablettes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-tv">TV &amp; Audio</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-jeux">Jeux vidéo</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-electromenager">Électroménager</a>
+          <div class="cat-dropdown__header">Véhicules</div>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules">Toutes</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-4x4">Voitures / 4 roues</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-2roues">2 roues (scooters/motos)</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux">Bateaux &amp; jet-skis</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires">Utilitaires &amp; camions</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces">Pièces auto &amp; accessoires</a>
         </div>
       </div>
 
-      <!-- Emploi -->
+      <!-- 5. Nouveauté (PRO uniquement pour publier) -->
+      <div class="cat-nav-item">
+        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
+          🚀 Nouveauté
+          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </a>
+        <div class="cat-dropdown">
+          <div class="cat-dropdown__header">Nouveautés business</div>
+          <a href="{% url 'rubriques_index' %}">Voir les nouveautés</a>
+          {% if user.is_pro %}
+          <a href="{% url 'deposer_nouveaute' %}">➕ Publier une nouveauté</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 6. Emploi -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=emploi" class="cat-nav-link">
           💼 Emploi
@@ -213,7 +243,27 @@
         </div>
       </div>
 
-      <!-- Services -->
+      <!-- 7. Électronique -->
+      <div class="cat-nav-item">
+        <a href="{% url 'liste_annonces' %}?categorie=electronique" class="cat-nav-link">
+          📱 Électronique
+          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </a>
+        <div class="cat-dropdown">
+          <div class="cat-dropdown__header">Électronique</div>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique">Toutes</a>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-telephones">Téléphones &amp; accessoires</a>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-ordinateurs">Ordinateurs &amp; tablettes</a>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-pc">PC &amp; Informatique</a>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-tv">TV &amp; Audio</a>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-jeux">Jeux vidéo</a>
+          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-electromenager">Électroménager</a>
+        </div>
+      </div>
+
+      <!-- 8. Services -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=services" class="cat-nav-link">
           🔧 Services
@@ -232,7 +282,7 @@
         </div>
       </div>
 
-      <!-- Autres -->
+      <!-- 9. Autres -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=autres" class="cat-nav-link">
           📦 Autres
@@ -240,10 +290,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </a>
-        <div class="cat-dropdown">
+        <div class="cat-dropdown cat-dropdown--right">
           <div class="cat-dropdown__header">Vente privée &amp; Autres</div>
           <a href="{% url 'liste_annonces' %}?categorie=autres">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-electronique">Électronique &amp; PC</a>
           <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-meubles">Meubles &amp; Déco</a>
           <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-vetements">Vêtements &amp; Mode</a>
           <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-sport">Sport &amp; Loisirs</a>
@@ -251,54 +300,13 @@
         </div>
       </div>
 
+      {% if user.is_staff %}
       <div class="cat-nav-item">
-        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
-          📰 Rubriques
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
+        <a href="{% url 'moderation_dashboard' %}" class="cat-nav-link" style="color:#dc2626;font-weight:700">
+          🛡️ Modération
         </a>
-        <div class="cat-dropdown cat-dropdown--right">
-          <div class="cat-dropdown__header">Rubriques TBG</div>
-          <a href="{% url 'rubriques_index' %}">💰 Promos pro</a>
-          <a href="{% url 'rubriques_index' %}">📰 Actualités</a>
-          <a href="{% url 'rubriques_index' %}">🚀 Nouveautés business</a>
-          {% if user.is_pro %}<a href="{% url 'deposer_promo' %}">➕ Déposer une promo</a>{% endif %}
-          {% if user.is_staff %}<a href="{% url 'moderation_dashboard' %}">🛡️ Modération</a>{% endif %}
-        </div>
       </div>
-
-      <div class="cat-nav-item">
-        <a href="{% url 'page_info' %}" class="cat-nav-link">
-          📢 Info
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </a>
-        <div class="cat-dropdown cat-dropdown--right">
-          <div class="cat-dropdown__header">Informations</div>
-          <a href="{% url 'page_info' %}">Comment utiliser</a>
-          <a href="{% url 'page_info' %}#tarifs">Tarifs publicités</a>
-          <a href="{% url 'page_info' %}#contact">Nous contacter</a>
-          <a href="{% url 'page_info' %}#faq">FAQ</a>
-        </div>
-      </div>
-
-      <div class="cat-nav-item">
-        <a href="{% url 'page_business' %}" class="cat-nav-link">
-          💼 Business
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </a>
-        <div class="cat-dropdown cat-dropdown--right">
-          <div class="cat-dropdown__header">Business Tahiti</div>
-          <a href="{% url 'page_business' %}">Nouveautés Tahiti</a>
-          <a href="{% url 'page_business' %}#recrutements">Recrutements</a>
-          <a href="{% url 'page_business' %}#tendances">Tendances marché</a>
-          <a href="{% url 'page_business' %}#partenaires">Partenaires</a>
-        </div>
-      </div>
+      {% endif %}
 
       <div class="flex-1"></div>
 
@@ -320,33 +328,29 @@
     </button>
   </div>
   <div class="slide-menu__body">
-    <a href="{% url 'liste_annonces' %}" class="slide-cat-link slide-cat-link--all"><span class="slide-cat-icon">🔍</span> Toutes les annonces</a>
-    <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="slide-cat-link"><span class="slide-cat-icon">🚗</span> Véhicules</a>
-    <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="slide-cat-link"><span class="slide-cat-icon">🏠</span> Immobilier</a>
-    <a href="{% url 'liste_annonces' %}?categorie=electronique" class="slide-cat-link"><span class="slide-cat-icon">📱</span> Électronique</a>
-    <a href="{% url 'liste_annonces' %}?categorie=emploi" class="slide-cat-link"><span class="slide-cat-icon">💼</span> Emploi</a>
-    <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-cat-link"><span class="slide-cat-icon">🔧</span> Services</a>
-    <a href="{% url 'liste_annonces' %}?categorie=autres" class="slide-cat-link"><span class="slide-cat-icon">📦</span> Autres</a>
-    <div class="slide-menu__sep"></div>
-    <div class="slide-menu__section-title">Infos &amp; Aide</div>
-    <a href="{% url 'page_info' %}" class="slide-cat-link"><span class="slide-cat-icon">📢</span> Guide &amp; FAQ</a>
-    <a href="{% url 'tarifs_pubs' %}" class="slide-cat-link"><span class="slide-cat-icon">💰</span> Tarifs publicités</a>
-    <div class="slide-menu__sep"></div>
-    <div class="slide-menu__section-title">Business Tahiti</div>
-    <a href="{% url 'page_business' %}" class="slide-cat-link"><span class="slide-cat-icon">💼</span> Nouveautés &amp; Recrutements</a>
-    <div class="slide-menu__sep"></div>
-    <div class="slide-menu__section-title">Rubriques</div>
-    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon">📰</span> Promo, Info &amp; Nouveautés</a>
+    <!-- Même ordre que le menu desktop -->
+    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon">💰</span> Promo</a>
     {% if user.is_pro %}
-    <a href="{% url 'deposer_promo' %}" class="slide-cat-link"><span class="slide-cat-icon">💰</span> Déposer une promo</a>
-    <a href="{% url 'deposer_nouveaute' %}" class="slide-cat-link"><span class="slide-cat-icon">🚀</span> Publier une nouveauté</a>
+    <a href="{% url 'deposer_promo' %}" class="slide-cat-link" style="padding-left:2.5rem;font-size:.85em;color:#059669"><span class="slide-cat-icon">➕</span> Déposer une promo</a>
     {% endif %}
+    <a href="{% url 'page_info' %}" class="slide-cat-link"><span class="slide-cat-icon">📰</span> Info</a>
+    <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="slide-cat-link"><span class="slide-cat-icon">🏠</span> Immobilier</a>
+    <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="slide-cat-link"><span class="slide-cat-icon">🚗</span> Véhicule</a>
+    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon">🚀</span> Nouveauté</a>
+    {% if user.is_pro %}
+    <a href="{% url 'deposer_nouveaute' %}" class="slide-cat-link" style="padding-left:2.5rem;font-size:.85em;color:#059669"><span class="slide-cat-icon">➕</span> Publier une nouveauté</a>
+    {% endif %}
+    <a href="{% url 'liste_annonces' %}?categorie=emploi" class="slide-cat-link"><span class="slide-cat-icon">💼</span> Emploi</a>
+    <a href="{% url 'liste_annonces' %}?categorie=electronique" class="slide-cat-link"><span class="slide-cat-icon">📱</span> Électronique</a>
+    <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-cat-link"><span class="slide-cat-icon">🔧</span> Services</a>
+    <a href="{% url 'liste_annonces' %}?categorie=autres" class="slide-cat-link"><span class="slide-cat-icon">📦</span> Autres</a>
     {% if user.is_staff %}
-    <a href="{% url 'moderation_dashboard' %}" class="slide-cat-link slide-cat-link--admin"><span class="slide-cat-icon">🛡️</span> Modération</a>
-    <a href="{% url 'admin_stats' %}" class="slide-cat-link slide-cat-link--admin"><span class="slide-cat-icon">📊</span> Dashboard stats</a>
+    <div class="slide-menu__sep"></div>
+    <a href="{% url 'moderation_dashboard' %}" class="slide-cat-link slide-cat-link--admin"><span class="slide-cat-icon">🛡️</span> Modération</a>
+    <a href="{% url 'admin_stats' %}" class="slide-cat-link slide-cat-link--admin"><span class="slide-cat-icon">📊</span> Dashboard stats</a>
     {% endif %}
     <div class="slide-menu__sep"></div>
-    <a href="{% url 'deposer_annonce' %}" class="slide-cat-link slide-cat-link--cta"><span class="slide-cat-icon">✚</span> Déposer une annonce</a>
+    <a href="{% url 'deposer_annonce' %}" class="slide-cat-link slide-cat-link--cta"><span class="slide-cat-icon">✚</span> Déposer une annonce</a>
   </div>
 </div>
 
@@ -367,7 +371,7 @@
 
 <!-- ═══ PUB ARRIÈRE-PLAN FIXE PLEINE PAGE (index + liste uniquement) ═══ -->
 {% with url=request.resolver_match.url_name %}
-{% if url != 'deposer_annonce' and url != 'mes_favoris' and url != 'mes_messages' and url != 'mon_compte' and url != 'edit_annonce' and url != 'login' and url != 'register' and url != 'page_info' and url != 'page_business' and url != 'rubriques_index' and url != 'mes_annonces' %}
+{% if url != 'deposer_annonce' and url != 'mes_favoris' and url != 'mes_messages' and url != 'mon_compte' and url != 'edit_annonce' and url != 'login' and url != 'register' and url != 'page_info' and url != 'page_business' and url != 'rubriques_index' and url != 'mes_annonces' and url != 'tarifs_pubs' and url != 'demande_pub' %}
 <div class="pub-bg-fixed">
   {% if pub_billboard %}
   <a href="{{ pub_billboard.lien }}" target="_blank" rel="noopener sponsored" class="pub-bg-fixed-link">

@@ -1,19 +1,23 @@
 from django.db import models
 
 EMPLACEMENTS = [
-    ('billboard',        'Billboard Haut (25 000 XPF/mois)'),
-    ('billboard_milieu', 'Billboard Milieu (15 000 XPF/mois)'),
-    ('haut',             'Sidebar Haut (10 000 XPF/mois)'),
-    ('milieu',           'Sidebar Milieu (7 000 XPF/mois)'),
-    ('bas',              'Sidebar Bas (5 000 XPF/mois)'),
+    ("billboard", "Billboard plein ecran (25 000 XPF/mois)"),
+    ("strip_1",   "Strip 1 - Apres Promos (8 000 XPF/mois)"),
+    ("strip_2",   "Strip 2 - Milieu page (8 000 XPF/mois)"),
+    ("strip_3",   "Strip 3 - Fin de page (8 000 XPF/mois)"),
+    ("haut",      "Sidebar Haut (10 000 XPF/mois)"),
+    ("milieu",    "Sidebar Milieu (7 000 XPF/mois)"),
+    ("bas",       "Sidebar Bas (5 000 XPF/mois)"),
 ]
 
 PRIX_PAR_EMPLACEMENT = {
-    'billboard':        25000,
-    'billboard_milieu': 15000,
-    'haut':             10000,
-    'milieu':            7000,
-    'bas':               5000,
+    "billboard": 25000,
+    "strip_1":    8000,
+    "strip_2":    8000,
+    "strip_3":    8000,
+    "haut":      10000,
+    "milieu":     7000,
+    "bas":        5000,
 }
 
 

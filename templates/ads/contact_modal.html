@@ -35,7 +35,7 @@
 </div>
 
 <!-- Send form -->
-<form id="contactForm" data-url="{% url 'contact_annonce' pk=annonce.pk %}" class="mt-3 flex gap-2 items-end">
+<form id="contactForm" data-url="{% url 'contact_annonce' pk=annonce.pk %}{% if with_pk %}?with={{ with_pk }}{% endif %}" class="mt-3 flex gap-2 items-end">
   {% csrf_token %}
   <textarea name="content" id="contactContent" class="form-input flex-1 text-sm"
     rows="2" placeholder="Votre message…" required style="resize:none; min-height:60px"></textarea>

@@ -140,24 +140,42 @@ def admin_dashboard(request):
     from pubs.models import Publicite, DemandePublicite
     from .models import User
 
+    SLOTS = [
+        {'key': 'billboard', 'label': 'Billboard',     'desc': 'Plein écran en haut de page',       'prix': 25000, 'icon': '🖼'},
+        {'key': 'strip_1',   'label': 'Strip 1',       'desc': 'Après la section Promos',            'prix': 8000,  'icon': '▬'},
+        {'key': 'strip_2',   'label': 'Strip 2',       'desc': 'Milieu de page (après catégorie 2)', 'prix': 8000,  'icon': '▬'},
+        {'key': 'strip_3',   'label': 'Strip 3',       'desc': 'Fin de page (après catégorie 4)',    'prix': 8000,  'icon': '▬'},
+        {'key': 'haut',      'label': 'Sidebar Haut',  'desc': 'Sidebar – position haute',           'prix': 10000, 'icon': '◻'},
+        {'key': 'milieu',    'label': 'Sidebar Milieu','desc': 'Sidebar – position milieu',          'prix': 7000,  'icon': '◻'},
+        {'key': 'bas',       'label': 'Sidebar Bas',   'desc': 'Sidebar – position basse',           'prix': 5000,  'icon': '◻'},
+    ]
+
+    # Associer chaque slot à sa pub active
+    pubs_par_slot = {}
+    for slot in SLOTS:
+        pubs_par_slot[slot['key']] = Publicite.objects.filter(emplacement=slot['key']).first()
+
+    slots_with_pub = []
+    for slot in SLOTS:
+        slots_with_pub.append({**slot, 'pub': pubs_par_slot.get(slot['key'])})
+
     stats = {
-        'annonces_total': Annonce.objects.count(),
+        'annonces_total':   Annonce.objects.count(),
         'annonces_actives': Annonce.objects.filter(statut='actif').count(),
-        'annonces_moderees': Annonce.objects.filter(statut='modere').count(),
-        'users_total': User.objects.count(),
-        'pubs_actives': Publicite.objects.filter(actif=True).count(),
-        'demandes_pubs': DemandePublicite.objects.filter(traite=False).count(),
+        'annonces_moderees':Annonce.objects.filter(statut='modere').count(),
+        'users_total':      User.objects.count(),
+        'pubs_actives':     Publicite.objects.filter(actif=True).count(),
+        'demandes_pubs':    DemandePublicite.objects.filter(traite=False).count(),
     }
 
     annonces_recentes = Annonce.objects.select_related('user').order_by('-created_at')[:20]
-    demandes_pubs = DemandePublicite.objects.filter(traite=False).order_by('-created_at')
-    pubs = Publicite.objects.all()
+    demandes_pubs     = DemandePublicite.objects.filter(traite=False).order_by('-created_at')
 
     return render(request, 'users/admin_dashboard.html', {
-        'stats': stats,
+        'stats':          stats,
+        'slots':          slots_with_pub,
         'annonces_recentes': annonces_recentes,
-        'demandes_pubs': demandes_pubs,
-        'pubs': pubs,
+        'demandes_pubs':  demandes_pubs,
     })
 
 

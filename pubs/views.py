@@ -1,7 +1,65 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .models import Publicite, DemandePublicite
-from .forms import DemandePubliciteForm
+from .forms import PubliciteForm, DemandePubliciteForm
+
+
+def _staff_required(request):
+    """Retourne True si l'accès est autorisé, sinon redirige."""
+    if not request.user.is_authenticated or not request.user.is_staff:
+        messages.error(request, "Accès réservé aux administrateurs.")
+        return False
+    return True
+
+
+@login_required
+def pub_creer(request):
+    if not _staff_required(request):
+        return redirect('index')
+    emplacement = request.GET.get('emplacement', '')
+    initial = {'emplacement': emplacement} if emplacement else {}
+    form = PubliciteForm(request.POST or None, request.FILES or None, initial=initial)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, "Publicité créée avec succès.")
+        return redirect('admin_dashboard')
+    return render(request, 'pubs/pub_form.html', {'form': form, 'action': 'Créer'})
+
+
+@login_required
+def pub_modifier(request, pk):
+    if not _staff_required(request):
+        return redirect('index')
+    pub = get_object_or_404(Publicite, pk=pk)
+    form = PubliciteForm(request.POST or None, request.FILES or None, instance=pub)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, "Publicité modifiée avec succès.")
+        return redirect('admin_dashboard')
+    return render(request, 'pubs/pub_form.html', {'form': form, 'pub': pub, 'action': 'Modifier'})
+
+
+@login_required
+def pub_supprimer(request, pk):
+    if not _staff_required(request):
+        return redirect('index')
+    pub = get_object_or_404(Publicite, pk=pk)
+    if request.method == 'POST':
+        pub.delete()
+        messages.success(request, "Publicité supprimée.")
+    return redirect('admin_dashboard')
+
+
+@login_required
+def pub_toggle(request, pk):
+    if not _staff_required(request):
+        return redirect('index')
+    pub = get_object_or_404(Publicite, pk=pk)
+    if request.method == 'POST':
+        pub.actif = not pub.actif
+        pub.save()
+    return redirect('admin_dashboard')
 
 
 def tarifs_pubs(request):

@@ -15,7 +15,7 @@
   <div class="space-y-2">
     {% for conv in conversations %}
     <div class="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-sm transition cursor-pointer flex gap-4 items-center group"
-      onclick="openContact({{ conv.annonce.pk }})">
+      onclick="openContact('{% url 'contact_annonce' pk=conv.annonce.pk %}?with={{ conv.other_user.pk }}')">
 
       <!-- Annonce thumbnail -->
       <div class="flex-shrink-0">

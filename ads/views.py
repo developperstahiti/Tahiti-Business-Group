@@ -109,19 +109,22 @@ def page_business(request):
     })
 
 def index(request):
-    annonces_recentes = Annonce.objects.filter(statut='actif').select_related('user')[:8]
-    total_count = Annonce.objects.filter(statut='actif').count()
+    qs = Annonce.objects.filter(statut='actif').select_related('user')
+    annonces_recentes = qs[:10]
+    total_count = qs.count()
+
     annonces_par_cat = {}
     for code, label in CATEGORIES:
+        cat_qs = Annonce.objects.filter(statut='actif', categorie=code).select_related('user')
         annonces_par_cat[code] = {
             'label': label,
-            'annonces': Annonce.objects.filter(
-                statut='actif', categorie=code
-            ).select_related('user')[:4],
+            'annonces': list(cat_qs[:10]),
         }
-    promos_home     = ArticlePromo.objects.filter(statut='valide').select_related('pro_user')[:4]
+
+    promos_home     = ArticlePromo.objects.filter(statut='valide').select_related('pro_user')[:10]
     infos_home      = ArticleInfo.objects.filter(statut='valide').select_related('auteur')[:4]
     nouveautes_home = ArticleNouveaute.objects.filter(statut='valide').select_related('pro_user')[:4]
+
     return render(request, 'ads/index.html', {
         'annonces_recentes': annonces_recentes,
         'annonces_par_cat':  annonces_par_cat,
@@ -155,7 +158,7 @@ def liste_annonces(request):
         except ValueError:
             pass
 
-    paginator = Paginator(qs, 20)
+    paginator = Paginator(qs, 50)
     page = paginator.get_page(request.GET.get('page'))
 
     return render(request, 'ads/liste.html', {
@@ -322,27 +325,36 @@ def marquer_vendu(request, pk):
 @login_required
 def contact_annonce(request, pk):
     annonce = get_object_or_404(Annonce, pk=pk)
-    if annonce.user == request.user:
-        return JsonResponse({'error': 'Votre propre annonce'}, status=400)
+    User = get_user_model()
 
-    # Conversation thread between current user and annonce owner
+    # Le vendeur peut voir ses conversations avec les acheteurs via ?with=<pk>
+    if annonce.user == request.user:
+        other_pk = request.GET.get('with')
+        if not other_pk:
+            return JsonResponse({'error': 'Paramètre manquant'}, status=400)
+        buyer = get_object_or_404(User, pk=other_pk)
+        seller = request.user
+    else:
+        buyer = request.user
+        seller = annonce.user
+
     thread = Message.objects.filter(annonce=annonce).filter(
-        Q(from_user=request.user, to_user=annonce.user) |
-        Q(from_user=annonce.user, to_user=request.user)
+        Q(from_user=buyer, to_user=seller) |
+        Q(from_user=seller, to_user=buyer)
     ).order_by('created_at').select_related('from_user', 'to_user')
 
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
         if not content:
             return JsonResponse({'error': 'Message vide'}, status=400)
+        to_user = buyer if request.user == seller else seller
         msg = Message.objects.create(
             annonce=annonce,
             from_user=request.user,
-            to_user=annonce.user,
+            to_user=to_user,
             content=content,
         )
-        # Mark own older messages as read when they reply
-        thread.filter(from_user=annonce.user, read=False).update(read=True)
+        thread.filter(from_user=to_user, read=False).update(read=True)
         html = render_to_string(
             'partials/_message_bubble.html',
             {'msg': msg, 'me': request.user},
@@ -351,10 +363,11 @@ def contact_annonce(request, pk):
         return JsonResponse({'success': True, 'html': html})
 
     # GET → mark received messages as read, return modal HTML
-    thread.filter(from_user=annonce.user, to_user=request.user, read=False).update(read=True)
+    thread.filter(to_user=request.user, read=False).update(read=True)
+    with_pk = request.GET.get('with')
     html = render_to_string(
         'ads/contact_modal.html',
-        {'annonce': annonce, 'thread': thread},
+        {'annonce': annonce, 'thread': thread, 'with_pk': with_pk},
         request=request,
     )
     return JsonResponse({'html': html})

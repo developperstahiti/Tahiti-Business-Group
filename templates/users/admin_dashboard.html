@@ -1,72 +1,167 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard Admin{% endblock %}
+{% block title %}Dashboard Admin — TBG{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
 
-  <div class="flex items-center justify-between mb-8">
+  <!-- ── En-tête ── -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-8 bg-white border border-gray-200 rounded-2xl shadow-sm px-6 py-5">
     <div>
-      <h1 class="text-2xl font-bold">Dashboard Admin</h1>
-      <p class="text-muted text-sm mt-1">Tahiti Business Group — Modération & Gestion</p>
+      <h1 class="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Tahiti Business Group — Modération & Gestion</p>
     </div>
-    <a href="/admin/" class="bg-border hover:bg-border/80 text-white px-4 py-2 rounded-lg text-sm transition">
+    <a href="/admin/" target="_blank"
+       class="inline-flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition">
       Django Admin →
     </a>
   </div>
 
-  <!-- Stats -->
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-    <div class="bg-card border border-border rounded-xl p-4 text-center">
-      <div class="text-2xl font-bold">{{ stats.annonces_total }}</div>
-      <div class="text-xs text-muted mt-1">Annonces total</div>
+  <!-- ── Statistiques ── -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
+    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center shadow-sm">
+      <div class="text-2xl font-bold text-gray-900">{{ stats.annonces_total }}</div>
+      <div class="text-xs text-gray-500 mt-1">Annonces total</div>
     </div>
-    <div class="bg-card border border-border rounded-xl p-4 text-center">
-      <div class="text-2xl font-bold text-accent">{{ stats.annonces_actives }}</div>
-      <div class="text-xs text-muted mt-1">Actives</div>
+    <div class="bg-white border border-green-200 rounded-xl p-4 text-center shadow-sm">
+      <div class="text-2xl font-bold text-green-600">{{ stats.annonces_actives }}</div>
+      <div class="text-xs text-gray-500 mt-1">Actives</div>
     </div>
-    <div class="bg-card border border-border rounded-xl p-4 text-center">
-      <div class="text-2xl font-bold text-yellow-400">{{ stats.annonces_moderees }}</div>
-      <div class="text-xs text-muted mt-1">Modérées</div>
+    <div class="bg-white border border-orange-200 rounded-xl p-4 text-center shadow-sm">
+      <div class="text-2xl font-bold text-orange-500">{{ stats.annonces_moderees }}</div>
+      <div class="text-xs text-gray-500 mt-1">Modérées</div>
     </div>
-    <div class="bg-card border border-border rounded-xl p-4 text-center">
-      <div class="text-2xl font-bold text-primary">{{ stats.users_total }}</div>
-      <div class="text-xs text-muted mt-1">Utilisateurs</div>
+    <div class="bg-white border border-blue-200 rounded-xl p-4 text-center shadow-sm">
+      <div class="text-2xl font-bold text-blue-600">{{ stats.users_total }}</div>
+      <div class="text-xs text-gray-500 mt-1">Utilisateurs</div>
     </div>
-    <div class="bg-card border border-border rounded-xl p-4 text-center">
-      <div class="text-2xl font-bold text-green-400">{{ stats.pubs_actives }}</div>
-      <div class="text-xs text-muted mt-1">Pubs actives</div>
+    <div class="bg-white border border-purple-200 rounded-xl p-4 text-center shadow-sm">
+      <div class="text-2xl font-bold text-purple-600">{{ stats.pubs_actives }}</div>
+      <div class="text-xs text-gray-500 mt-1">Pubs actives</div>
     </div>
-    <div class="bg-card border border-border rounded-xl p-4 text-center border-yellow-700/50">
-      <div class="text-2xl font-bold text-yellow-400">{{ stats.demandes_pubs }}</div>
-      <div class="text-xs text-muted mt-1">Demandes pubs</div>
+    <div class="bg-white border border-yellow-300 rounded-xl p-4 text-center shadow-sm">
+      <div class="text-2xl font-bold text-yellow-600">{{ stats.demandes_pubs }}</div>
+      <div class="text-xs text-gray-500 mt-1">Demandes pubs</div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- ── Grille principale ── -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-    <!-- Annonces récentes -->
-    <div class="lg:col-span-2">
-      <div class="bg-card border border-border rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold text-lg">Annonces récentes</h2>
-          <a href="/admin/ads/annonce/" class="text-xs text-primary hover:text-accent">Gérer tout →</a>
+    <!-- Colonne gauche (2/3) -->
+    <div class="xl:col-span-2 space-y-8">
+
+      <!-- ── SLOTS PUBLICITAIRES ── -->
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 class="font-bold text-gray-900">Emplacements publicitaires</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Gérez chaque slot indépendamment</p>
+          </div>
+          <a href="{% url 'pub_creer' %}"
+             class="inline-flex items-center gap-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-2 rounded-lg transition">
+            + Nouvelle pub
+          </a>
         </div>
-        <div class="space-y-2">
-          {% for annonce in annonces_recentes %}
-          <div class="flex items-center gap-3 p-3 bg-dark rounded-xl">
+
+        <div class="divide-y divide-gray-100">
+          {% for slot in slots %}
+          <div class="flex flex-wrap items-center gap-3 px-6 py-4 hover:bg-gray-50 transition">
+
+            <!-- Indicateur statut -->
+            <div class="flex-shrink-0 w-2.5 h-2.5 rounded-full mt-0.5
+              {% if slot.pub and slot.pub.actif %}bg-green-500
+              {% elif slot.pub %}bg-orange-400
+              {% else %}bg-gray-300{% endif %}">
+            </div>
+
+            <!-- Infos slot -->
             <div class="flex-1 min-w-0">
-              <a href="{% url 'annonce_detail' annonce.pk %}" class="text-sm font-medium hover:text-accent transition truncate block">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-semibold text-gray-900 text-sm">{{ slot.label }}</span>
+                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{{ slot.prix|floatformat:0 }} XPF/mois</span>
+                {% if slot.pub and slot.pub.actif %}
+                <span class="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Actif</span>
+                {% elif slot.pub %}
+                <span class="text-xs text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Désactivé</span>
+                {% else %}
+                <span class="text-xs text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">Libre</span>
+                {% endif %}
+              </div>
+              <div class="text-xs text-gray-500 mt-0.5">{{ slot.desc }}</div>
+              {% if slot.pub %}
+              <div class="text-xs text-gray-700 font-medium mt-1 truncate">→ {{ slot.pub.titre }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+              {% if slot.pub %}
+              <!-- Toggle actif/inactif -->
+              <form method="post" action="{% url 'pub_toggle' slot.pub.pk %}">
+                {% csrf_token %}
+                <button type="submit"
+                  class="text-xs px-2.5 py-1.5 rounded-lg font-medium transition
+                  {% if slot.pub.actif %}bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200
+                  {% else %}bg-green-50 text-green-700 hover:bg-green-100 border border-green-200{% endif %}">
+                  {% if slot.pub.actif %}Désactiver{% else %}Activer{% endif %}
+                </button>
+              </form>
+              <!-- Modifier -->
+              <a href="{% url 'pub_modifier' slot.pub.pk %}"
+                 class="text-xs px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-lg font-medium transition">
+                Modifier
+              </a>
+              <!-- Supprimer -->
+              <form method="post" action="{% url 'pub_supprimer' slot.pub.pk %}"
+                    onsubmit="return confirm('Supprimer cette publicité ?')">
+                {% csrf_token %}
+                <button type="submit"
+                  class="text-xs px-2 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg transition">
+                  ✕
+                </button>
+              </form>
+              {% else %}
+              <!-- Créer pour ce slot -->
+              <a href="{% url 'pub_creer' %}?emplacement={{ slot.key }}"
+                 class="text-xs px-2.5 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition">
+                + Créer
+              </a>
+              {% endif %}
+            </div>
+
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- ── MODÉRATION ANNONCES ── -->
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 class="font-bold text-gray-900">Annonces récentes</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Approuver, modérer ou supprimer</p>
+          </div>
+          <a href="/admin/ads/annonce/" target="_blank"
+             class="text-xs text-blue-600 hover:text-blue-800 font-medium">Tout gérer →</a>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+          {% for annonce in annonces_recentes %}
+          <div class="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition">
+            <div class="flex-1 min-w-0">
+              <a href="{% url 'annonce_detail' annonce.pk %}"
+                 class="text-sm font-medium text-gray-900 hover:text-blue-600 transition truncate block">
                 {{ annonce.titre }}
               </a>
-              <div class="text-xs text-muted">
-                {{ annonce.user.email }} • {{ annonce.get_categorie_display }} • {{ annonce.created_at|date:"d/m H:i" }}
+              <div class="text-xs text-gray-500 mt-0.5">
+                {{ annonce.user.email }} &bull; {{ annonce.get_categorie_display }} &bull; {{ annonce.created_at|date:"d/m H:i" }}
               </div>
             </div>
-            <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0
-              {% if annonce.statut == 'actif' %}bg-green-900/50 text-green-400
-              {% elif annonce.statut == 'modere' %}bg-yellow-900/50 text-yellow-400
-              {% else %}bg-gray-800 text-gray-400{% endif %}">
+            <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0 font-medium
+              {% if annonce.statut == 'actif' %}bg-green-100 text-green-700
+              {% elif annonce.statut == 'modere' %}bg-orange-100 text-orange-600
+              {% else %}bg-gray-100 text-gray-500{% endif %}">
               {{ annonce.get_statut_display }}
             </span>
             <div class="flex gap-1 flex-shrink-0">
@@ -74,91 +169,120 @@
               <form method="post" action="{% url 'moderer_annonce' annonce.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="approuver">
-                <button type="submit" class="text-xs px-2 py-1 bg-green-900/30 text-green-400 hover:bg-green-900/50 rounded transition">✓</button>
+                <button type="submit"
+                  class="text-xs px-2 py-1 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition font-bold">
+                  ✓
+                </button>
               </form>
               {% endif %}
               {% if annonce.statut == 'actif' %}
               <form method="post" action="{% url 'moderer_annonce' annonce.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="moderer">
-                <button type="submit" class="text-xs px-2 py-1 bg-yellow-900/30 text-yellow-400 hover:bg-yellow-900/50 rounded transition">⚠</button>
+                <button type="submit"
+                  class="text-xs px-2 py-1 bg-orange-100 text-orange-600 hover:bg-orange-200 rounded-lg transition">
+                  ⚠
+                </button>
               </form>
               {% endif %}
-              <form method="post" action="{% url 'moderer_annonce' annonce.pk %}" onsubmit="return confirm('Supprimer ?')">
+              <form method="post" action="{% url 'moderer_annonce' annonce.pk %}"
+                    onsubmit="return confirm('Supprimer cette annonce ?')">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="supprimer">
-                <button type="submit" class="text-xs px-2 py-1 bg-red-900/30 text-red-400 hover:bg-red-900/50 rounded transition">✕</button>
+                <button type="submit"
+                  class="text-xs px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition">
+                  ✕
+                </button>
               </form>
             </div>
           </div>
+          {% empty %}
+          <div class="px-6 py-8 text-center text-gray-400 text-sm">Aucune annonce pour le moment.</div>
           {% endfor %}
         </div>
       </div>
+
     </div>
 
-    <!-- Sidebar: Pubs + Demandes -->
+    <!-- Colonne droite (1/3) -->
     <div class="space-y-6">
 
-      <!-- Pubs actives -->
-      <div class="bg-card border border-border rounded-2xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-bold">Publicités</h2>
-          <a href="/admin/pubs/publicite/add/" class="text-xs bg-accent text-dark font-bold px-2.5 py-1 rounded-lg hover:bg-green-400 transition">+ Créer</a>
-        </div>
-        {% for pub in pubs %}
-        <div class="flex items-center gap-2 p-2 bg-dark rounded-lg mb-2">
-          <div class="w-2 h-2 rounded-full flex-shrink-0 {% if pub.actif %}bg-green-400{% else %}bg-gray-600{% endif %}"></div>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-medium truncate">{{ pub.titre }}</div>
-            <div class="text-xs text-muted">{{ pub.get_emplacement_display }}</div>
-          </div>
-          <a href="/admin/pubs/publicite/{{ pub.pk }}/change/" class="text-xs text-primary hover:text-accent">Éditer</a>
-        </div>
-        {% empty %}
-        <div class="text-center py-4 text-muted text-sm">
-          Aucune publicité.<br>
-          <a href="/admin/pubs/publicite/add/" class="text-accent hover:underline">Créer la première</a>
-        </div>
-        {% endfor %}
-      </div>
-
-      <!-- Demandes pubs -->
+      <!-- ── DEMANDES DE PUB ── -->
       {% if demandes_pubs %}
-      <div class="bg-card border border-yellow-700/40 rounded-2xl p-5">
-        <h2 class="font-bold mb-3 text-yellow-400">⚠ Demandes de pub ({{ demandes_pubs|length }})</h2>
-        {% for d in demandes_pubs %}
-        <div class="p-2 bg-dark rounded-lg mb-2">
-          <div class="text-xs font-medium">{{ d.nom }} — {{ d.entreprise }}</div>
-          <div class="text-xs text-muted">{{ d.email }} • {{ d.get_emplacement_souhaite_display }}</div>
-          <div class="text-xs text-muted">{{ d.created_at|date:"d/m H:i" }}</div>
+      <div class="bg-white border border-yellow-300 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-yellow-200 bg-yellow-50">
+          <h2 class="font-bold text-yellow-800">Demandes de pub ({{ demandes_pubs|length }})</h2>
+          <p class="text-xs text-yellow-600 mt-0.5">En attente de traitement</p>
         </div>
-        {% endfor %}
-        <a href="/admin/pubs/demandepublicite/" class="text-xs text-primary hover:text-accent block mt-2">
-          Gérer toutes les demandes →
-        </a>
+        <div class="divide-y divide-gray-100">
+          {% for d in demandes_pubs %}
+          <div class="px-5 py-3">
+            <div class="text-sm font-semibold text-gray-900">{{ d.nom }}{% if d.entreprise %} — {{ d.entreprise }}{% endif %}</div>
+            <div class="text-xs text-gray-500 mt-0.5">{{ d.email }}{% if d.tel %} &bull; {{ d.tel }}{% endif %}</div>
+            <div class="text-xs text-gray-400 mt-0.5">{{ d.get_emplacement_souhaite_display }} &bull; {{ d.created_at|date:"d/m H:i" }}</div>
+            {% if d.message %}
+            <div class="text-xs text-gray-600 mt-1 italic">{{ d.message|truncatechars:80 }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="px-5 py-3 bg-gray-50 border-t border-gray-100">
+          <a href="/admin/pubs/demandepublicite/" target="_blank"
+             class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+            Gérer toutes les demandes →
+          </a>
+        </div>
       </div>
       {% endif %}
 
-      <!-- Actions rapides -->
-      <div class="bg-card border border-border rounded-2xl p-5">
-        <h2 class="font-bold mb-3">Actions rapides</h2>
-        <div class="space-y-2">
-          <a href="/admin/ads/annonce/" class="flex items-center gap-2 p-2.5 bg-dark hover:bg-border rounded-lg transition text-sm">
-            📋 Gérer les annonces
+      <!-- ── ACTIONS RAPIDES ── -->
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100">
+          <h2 class="font-bold text-gray-900">Actions rapides</h2>
+        </div>
+        <div class="p-4 space-y-2">
+          <a href="{% url 'pub_creer' %}"
+             class="flex items-center gap-3 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition text-sm font-semibold">
+            <span>+</span> Créer une publicité
           </a>
-          <a href="/admin/users/user/" class="flex items-center gap-2 p-2.5 bg-dark hover:bg-border rounded-lg transition text-sm">
-            👥 Gérer les utilisateurs
+          <a href="/admin/ads/annonce/"
+             class="flex items-center gap-3 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition text-sm font-medium">
+            Gérer les annonces
           </a>
-          <a href="/admin/pubs/publicite/add/" class="flex items-center gap-2 p-2.5 bg-dark hover:bg-border rounded-lg transition text-sm">
-            📢 Créer une publicité
+          <a href="/admin/users/user/"
+             class="flex items-center gap-3 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition text-sm font-medium">
+            Gérer les utilisateurs
           </a>
-          <a href="{% url 'tarifs_pubs' %}" class="flex items-center gap-2 p-2.5 bg-dark hover:bg-border rounded-lg transition text-sm">
-            💰 Voir tarifs pubs
+          <a href="{% url 'tarifs_pubs' %}"
+             class="flex items-center gap-3 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition text-sm font-medium">
+            Voir la page tarifs
           </a>
+        </div>
+      </div>
+
+      <!-- ── REVENUS PUBLICITAIRES ── -->
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100">
+          <h2 class="font-bold text-gray-900">Revenus pub actifs</h2>
+        </div>
+        <div class="p-5">
+          {% for slot in slots %}
+          {% if slot.pub and slot.pub.actif %}
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span class="text-gray-600">{{ slot.label }}</span>
+            <span class="font-semibold text-gray-900">{{ slot.prix|floatformat:0 }} XPF</span>
+          </div>
+          {% endif %}
+          {% endfor %}
+          {% if stats.pubs_actives == 0 %}
+          <p class="text-sm text-gray-400 text-center py-2">Aucune pub active.</p>
+          {% endif %}
+          <p class="text-xs text-gray-400 mt-3 border-t border-gray-100 pt-3">Basé sur les pubs actives actuellement.</p>
         </div>
       </div>
 
     </div>
   </div>
+
 </div>
 {% endblock %}

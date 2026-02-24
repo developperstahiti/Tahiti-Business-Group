@@ -1,0 +1,20 @@
+<!-- PUB STRIP COMPACT -->
+<div class="mb-8">
+  {% if current_strip %}
+  <a href="{{ current_strip.lien }}" target="_blank" rel="noopener sponsored"
+     class="pub-strip-img-wrap">
+    <img src="{{ current_strip.get_image }}"
+         alt="{{ current_strip.titre }}"
+         class="pub-strip-img">
+  </a>
+  {% else %}
+  <a href="{% url 'tarifs_pubs' %}" class="billboard-milieu-empty">
+    <div class="billboard-milieu-empty__inner">
+      <div class="billboard-milieu-empty__badge">PUBLICITE</div>
+      <div class="billboard-milieu-empty__title">VOTRE MARQUE ICI</div>
+      <div class="billboard-milieu-empty__price">8 000 XPF / mois</div>
+      <div class="billboard-milieu-empty__cta">Réserver → 89 61 06 13</div>
+    </div>
+  </a>
+  {% endif %}
+</div>
