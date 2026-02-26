@@ -1750,3 +1750,238 @@ body, p, input, textarea, select, button, a, label, span, li {
   transition: color .2s;
 }
 .letsgo-link-footer:hover { color: #1a6cf1; }
+
+/* ── Spacer désactivé — le billboard est désormais en flux statique */
+.pub-spacer { display: none !important; }
+
+/* Sidebar droite et billboard masqués par défaut (mobile) */
+#layout-billboard { display: none; }
+#right-sidebar-pubs { display: none; }
+
+/* ── Animation d'entrée des panneaux ────────────────────────────── */
+@keyframes frameAppear {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ FRAME LAYOUT PREMIUM ─ desktop ≥ 1025px ════════════════════════
+   Architecture Flexbox propre — plus de position:fixed pour les zones :
+     #layout-outer    — colonne flex centrée, 100vh
+       #layout-billboard — bande pub en haut (height fixe, shadow forte)
+       #layout-row    — rangée flex : cadre + sidebar
+         #main-frame  — flex:1, scrollable, coins arrondis en haut
+         #right-sidebar-pubs — 300px, scrollable, coins arrondis en haut
+   ════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1025px) {
+  html, body { height: 100%; }
+  body {
+    overflow: hidden;
+    background: #f5f6f8; /* fond blanc cassé neutre */
+    padding-bottom: 0 !important;
+  }
+
+  /* ── Conteneur principal pleine largeur ─────────────────────── */
+  #layout-outer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    /* Accent coloré en haut : visible sur pages sans billboard */
+    background: linear-gradient(to bottom, #d6e4ff 0%, #f5f6f8 90px);
+  }
+
+  /* ── Billboard : bandeau pub pleine largeur ─────────────────── */
+  #layout-billboard {
+    display: block;
+    flex-shrink: 0;
+    height: 190px;
+    overflow: hidden;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  }
+  #layout-billboard .pub-bg-fixed {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
+  .pub-bg-fixed-empty { gap: 6px; }
+
+  /* ── Rangée : cadre centré + sidebar droite ─────────────────── */
+  /* Grille symétrique 300px | 1fr | 300px :
+     – col 1 (300px) : espace vide à gauche → cadre parfaitement centré
+     – col 2 (1fr)   : cadre principal
+     – col 3 (300px) : sidebar collée au bord droit
+     Par défaut (sans billboard) : padding-top pour que les coins arrondis soient visibles.
+     Quand billboard présent (sibling selector) : margin négatif pour l'effet de chevauchement. */
+  #layout-row {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 160px 1fr 300px; /* spacer asymétrique → cadre ~960px à 1440px */
+    column-gap: 10px;
+    padding: 12px 10px 0; /* espace en haut par défaut (pages sans billboard) */
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Chevauchement billboard → cadre uniquement quand le billboard est présent */
+  #layout-billboard + #layout-row {
+    padding-top: 0;
+    margin-top: -18px;
+  }
+
+  /* ── Cadre central scrollable ───────────────────────────────── */
+  #main-frame {
+    grid-column: 2;
+    min-height: 0;
+    overflow-y: auto;
+    background: var(--bg-alt);
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -4px 32px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.05);
+    animation: frameAppear 200ms ease-out;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+  #main-frame::-webkit-scrollbar       { width: 5px; }
+  #main-frame::-webkit-scrollbar-track { background: transparent; }
+  /* Nav catégories : réduire le padding pour que tous les items tiennent */
+  #main-frame .cat-nav-link { padding: 0 9px; }
+  #main-frame::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+  /* ── Sidebar droite ─────────────────────────────────────────── */
+  #right-sidebar-pubs {
+    display: block;
+    grid-column: 3;
+    /* pas de margin-top par défaut (pages sans billboard) */
+    min-height: 0;
+    overflow-y: auto;
+    background: white;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
+    animation: frameAppear 200ms ease-out 60ms both;
+    padding: 12px 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+
+  /* Quand billboard présent : compensation + 5px d'espace sous le billboard */
+  #layout-billboard + #layout-row #right-sidebar-pubs {
+    margin-top: 23px;
+  }
+  #right-sidebar-pubs::-webkit-scrollbar       { width: 4px; }
+  #right-sidebar-pubs::-webkit-scrollbar-track { background: transparent; }
+  #right-sidebar-pubs::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+  /* ── Sidebar inline dans la page → masquée (gérée hors cadre) ─ */
+  .layout-sidebar       { display: none !important; }
+  .layout-with-sidebar  { display: block !important; }
+  .layout-main          { width: 100% !important; max-width: 100% !important; }
+
+  /* Override : dans la sidebar droite, réafficher le contenu */
+  #right-sidebar-pubs .layout-sidebar {
+    display: block !important;
+    width: 100% !important;
+    position: static !important;
+    top: auto !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* ── Déposer dropdown PRO ─────────────────────────────────────── */
+.deposer-wrap {
+  position: relative;
+}
+
+.deposer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #111111;
+  color: #fff;
+  font-weight: 700;
+  font-size: .875rem;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background 150ms;
+  box-shadow: 0 1px 3px rgba(0,0,0,.20);
+  line-height: 1;
+  white-space: nowrap;
+}
+.deposer-btn:hover { background: #333333; }
+
+.deposer-chevron {
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+}
+.deposer-wrap.open .deposer-chevron { transform: rotate(180deg); }
+
+.deposer-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  right: auto;
+  min-width: 175px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.13), 0 0 0 1px rgba(0,0,0,.06);
+  overflow: hidden;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-6px);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.deposer-wrap.open .deposer-menu,
+.deposer-menu.open {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.deposer-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  font-size: .875rem;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
+  transition: background 120ms;
+}
+.deposer-menu__item:hover {
+  background: #f0fdf4;
+  color: #059669;
+}
+.deposer-menu__icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Mobile : menu fixe au-dessus de la bottom nav */
+.deposer-menu--mobile {
+  position: fixed;
+  bottom: calc(64px + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  right: auto;
+  top: auto;
+  min-width: 210px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.deposer-menu--mobile.open {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}

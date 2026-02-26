@@ -10,7 +10,7 @@
       </div>
       {% if pub_haut %}
         {% if pub_haut.lien %}<a href="{{ pub_haut.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% with img=pub_haut.get_image|default:pub_billboard.get_image %}
+        {% with img=pub_haut.get_image %}
         {% if img %}
           <img src="{{ img }}" alt="{{ pub_haut.titre }}" class="w-full h-40 object-cover">
         {% else %}
@@ -55,7 +55,7 @@
       </div>
       {% if pub_milieu %}
         {% if pub_milieu.lien %}<a href="{{ pub_milieu.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% with img=pub_milieu.get_image|default:pub_billboard.get_image %}
+        {% with img=pub_milieu.get_image %}
         {% if img %}
           <img src="{{ img }}" alt="{{ pub_milieu.titre }}" class="w-full h-36 object-cover">
         {% else %}
@@ -86,7 +86,7 @@
       </div>
       {% if pub_bas %}
         {% if pub_bas.lien %}<a href="{{ pub_bas.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% with img=pub_bas.get_image|default:pub_billboard.get_image %}
+        {% with img=pub_bas.get_image %}
         {% if img %}
           <img src="{{ img }}" alt="{{ pub_bas.titre }}" class="w-full h-32 object-cover">
         {% else %}

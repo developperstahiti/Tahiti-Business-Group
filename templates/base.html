@@ -43,6 +43,35 @@
 </head>
 <body class="bg-gray-50 text-gray-900">
 
+<div id="layout-outer">
+
+<!-- ═══ BILLBOARD — au-dessus du cadre (desktop ≥1025px) ═══ -->
+{% with url=request.resolver_match.url_name %}
+{% if url != 'deposer_annonce' and url != 'mes_favoris' and url != 'mes_messages' and url != 'mon_compte' and url != 'edit_annonce' and url != 'login' and url != 'register' and url != 'page_info' and url != 'page_business' and url != 'rubriques_index' and url != 'mes_annonces' and url != 'tarifs_pubs' and url != 'demande_pub' %}
+<div id="layout-billboard">
+<div class="pub-bg-fixed">
+  {% if pub_billboard %}
+  <a href="{{ pub_billboard.lien }}" target="_blank" rel="noopener sponsored" class="pub-bg-fixed-link">
+    <img src="{{ pub_billboard.get_image }}" alt="{{ pub_billboard.titre }}" class="pub-bg-fixed-img">
+  </a>
+  {% else %}
+  <a href="{% url 'tarifs_pubs' %}" class="pub-bg-fixed-empty">
+    <div style="color:#fff;font-size:clamp(20px,4vw,48px);font-weight:900;letter-spacing:-.02em;text-align:center">📢 VOTRE PUB ICI</div>
+    <div style="color:rgba(255,255,255,.9);font-size:clamp(14px,2.5vw,28px);font-weight:700">25 000 XPF / mois</div>
+    <div style="color:rgba(255,255,255,.7);font-size:clamp(12px,1.5vw,18px);font-weight:600;text-decoration:underline">Réserver → 89 61 06 13</div>
+  </a>
+  {% endif %}
+</div>
+</div><!-- /#layout-billboard -->
+{% endif %}
+{% endwith %}
+
+<!-- ═══ ROW : cadre central + sidebar droite ═══ -->
+<div id="layout-row">
+
+<!-- ═══ CADRE CENTRAL SCROLLABLE ═══ -->
+<div id="main-frame">
+
 <!-- ═══════════════ HEADER ═══════════════ -->
 <header class="bg-white sticky top-0 z-50 header-shadow">
 
@@ -71,12 +100,37 @@
 
       <!-- Actions droite -->
       <div class="flex items-center gap-2 flex-shrink-0">
+        {% if user.is_authenticated and user.is_pro %}
+        <div class="hidden sm:block deposer-wrap" id="deposerWrap">
+          <button class="deposer-btn" id="deposerBtn" onclick="toggleDeposerMenu(event)" aria-haspopup="true" aria-expanded="false">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            Déposer
+            <svg class="deposer-chevron w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="deposer-menu" id="deposerMenu" role="menu">
+            <a href="{% url 'deposer_annonce' %}" class="deposer-menu__item" role="menuitem">
+              <span class="deposer-menu__icon">📋</span> Annonce
+            </a>
+            <a href="{% url 'deposer_promo' %}" class="deposer-menu__item" role="menuitem">
+              <span class="deposer-menu__icon">🏷️</span> Promo
+            </a>
+            <a href="{% url 'deposer_nouveaute' %}" class="deposer-menu__item" role="menuitem">
+              <span class="deposer-menu__icon">✨</span> Nouveauté
+            </a>
+          </div>
+        </div>
+        {% else %}
         <a href="{% url 'deposer_annonce' %}" class="hidden sm:inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
           </svg>
           Déposer
         </a>
+        {% endif %}
 
         <!-- Hamburger catégories (mobile) -->
         <button class="hamburger-btn" onclick="openCatMenu()" aria-label="Catégories" id="hamburgerBtn">
@@ -369,25 +423,6 @@
 </div>
 {% endif %}
 
-<!-- ═══ PUB ARRIÈRE-PLAN FIXE PLEINE PAGE (index + liste uniquement) ═══ -->
-{% with url=request.resolver_match.url_name %}
-{% if url != 'deposer_annonce' and url != 'mes_favoris' and url != 'mes_messages' and url != 'mon_compte' and url != 'edit_annonce' and url != 'login' and url != 'register' and url != 'page_info' and url != 'page_business' and url != 'rubriques_index' and url != 'mes_annonces' and url != 'tarifs_pubs' and url != 'demande_pub' %}
-<div class="pub-bg-fixed">
-  {% if pub_billboard %}
-  <a href="{{ pub_billboard.lien }}" target="_blank" rel="noopener sponsored" class="pub-bg-fixed-link">
-    <img src="{{ pub_billboard.get_image }}" alt="{{ pub_billboard.titre }}" class="pub-bg-fixed-img">
-  </a>
-  {% else %}
-  <a href="{% url 'tarifs_pubs' %}" class="pub-bg-fixed-empty">
-    <div style="color:#fff;font-size:clamp(20px,4vw,48px);font-weight:900;letter-spacing:-.02em;text-align:center">📢 VOTRE PUB ICI</div>
-    <div style="color:rgba(255,255,255,.9);font-size:clamp(14px,2.5vw,28px);font-weight:700">25 000 XPF / mois</div>
-    <div style="color:rgba(255,255,255,.7);font-size:clamp(12px,1.5vw,18px);font-weight:600;text-decoration:underline">Réserver → 89 61 06 13</div>
-  </a>
-  {% endif %}
-</div>
-{% endif %}
-{% endwith %}
-
 {% block pub_spacer %}{% endblock %}
 <main>{% block content %}{% endblock %}</main>
 
@@ -449,6 +484,16 @@
   </div>
 </footer>
 
+</div><!-- /#main-frame -->
+
+<!-- SIDEBAR DROITE ─ pubs hors cadre (desktop ≥1025px uniquement) -->
+<div id="right-sidebar-pubs">
+  {% include 'partials/_sidebar_pubs.html' %}
+</div>
+
+</div><!-- /#layout-row -->
+</div><!-- /#layout-outer -->
+
 <!-- Bottom navigation (mobile) -->
 <nav class="bottom-nav" aria-label="Navigation mobile">
 
@@ -466,11 +511,19 @@
     <span>Annonces</span>
   </a>
 
+  {% if user.is_authenticated and user.is_pro %}
+  <button class="bottom-nav__item bottom-nav__item--deposer" id="deposerBtnMobile" onclick="toggleDeposerMenuMobile(event)" aria-haspopup="true">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+    </svg>
+  </button>
+  {% else %}
   <a href="{% url 'deposer_annonce' %}" class="bottom-nav__item bottom-nav__item--deposer">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
     </svg>
   </a>
+  {% endif %}
 
   <a href="{% url 'mes_favoris' %}" class="bottom-nav__item{% if request.resolver_match.url_name == 'mes_favoris' %} bottom-nav__item--active{% endif %}">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -529,18 +582,52 @@
 </div>
 
 <script>
+// ── Cible de scroll : cadre central (desktop) ou body (mobile) ────────
+function _frameScrollTarget() {
+  const f = document.getElementById('main-frame');
+  return (f && window.matchMedia('(min-width:1025px)').matches) ? f : document.body;
+}
 // ── Slide menu catégories ──────────────────────────────────────────────
 function openCatMenu() {
   document.getElementById('slideMenu').classList.add('slide-menu--open');
   document.getElementById('slideOverlay').classList.add('slide-overlay--visible');
-  document.body.style.overflow = 'hidden';
+  _frameScrollTarget().style.overflow = 'hidden';
 }
 function closeCatMenu() {
   document.getElementById('slideMenu').classList.remove('slide-menu--open');
   document.getElementById('slideOverlay').classList.remove('slide-overlay--visible');
-  document.body.style.overflow = '';
+  _frameScrollTarget().style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCatMenu(); });
+</script>
+
+<script>
+// ── Déposer dropdown PRO ──────────────────────────────────────────────
+function _closeAllDeposerMenus() {
+  const wrap = document.getElementById('deposerWrap');
+  if (wrap) { wrap.classList.remove('open'); }
+  const mobileMenu = document.getElementById('deposerMenuMobile');
+  if (mobileMenu) { mobileMenu.classList.remove('open'); }
+}
+function toggleDeposerMenu(e) {
+  e.stopPropagation();
+  const wrap = document.getElementById('deposerWrap');
+  if (!wrap) return;
+  const isOpen = wrap.classList.toggle('open');
+  document.getElementById('deposerBtn').setAttribute('aria-expanded', isOpen);
+  const mobileMenu = document.getElementById('deposerMenuMobile');
+  if (mobileMenu) mobileMenu.classList.remove('open');
+}
+function toggleDeposerMenuMobile(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('deposerMenuMobile');
+  if (!menu) return;
+  menu.classList.toggle('open');
+  const wrap = document.getElementById('deposerWrap');
+  if (wrap) wrap.classList.remove('open');
+}
+document.addEventListener('click', _closeAllDeposerMenus);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeAllDeposerMenus(); });
 </script>
 
 <script>
@@ -549,7 +636,7 @@ function openContact(url) {
   const modal = document.getElementById('contactModal');
   const content = document.getElementById('modalContent');
   modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  _frameScrollTarget().style.overflow = 'hidden';
   content.innerHTML = '<div class="text-center py-10 text-gray-400"><div class="text-4xl mb-2">&#x1F4AC;</div>Chargement…</div>';
   fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(r => r.json())
@@ -568,7 +655,7 @@ function openContact(url) {
 
 function closeContact() {
   document.getElementById('contactModal').style.display = 'none';
-  document.body.style.overflow = '';
+  _frameScrollTarget().style.overflow = '';
 }
 
 function submitContact(e) {
@@ -608,6 +695,20 @@ function submitContact(e) {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact(); });
 </script>
+
+{% if user.is_authenticated and user.is_pro %}
+<div class="deposer-menu deposer-menu--mobile" id="deposerMenuMobile" role="menu">
+  <a href="{% url 'deposer_annonce' %}" class="deposer-menu__item" role="menuitem">
+    <span class="deposer-menu__icon">📋</span> Annonce
+  </a>
+  <a href="{% url 'deposer_promo' %}" class="deposer-menu__item" role="menuitem">
+    <span class="deposer-menu__icon">🏷️</span> Promo
+  </a>
+  <a href="{% url 'deposer_nouveaute' %}" class="deposer-menu__item" role="menuitem">
+    <span class="deposer-menu__icon">✨</span> Nouveauté
+  </a>
+</div>
+{% endif %}
 
 </body>
 </html>

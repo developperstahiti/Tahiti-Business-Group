@@ -32,6 +32,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     whatsapp = models.CharField(max_length=20, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='personnel')
     nom_entreprise = models.CharField(max_length=150, blank=True, default='', help_text="Obligatoire pour les comptes Pro")
+    numero_tahiti = models.CharField(max_length=50, blank=True, default='', help_text="Numéro Tahiti ISPF (obligatoire pour les pros)")
+    abonnement_promo_actif = models.BooleanField(default=False, help_text="Accès payant à la section Promos")
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

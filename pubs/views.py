@@ -46,8 +46,22 @@ def pub_supprimer(request, pk):
         return redirect('index')
     pub = get_object_or_404(Publicite, pk=pk)
     if request.method == 'POST':
-        pub.delete()
-        messages.success(request, "Publicité supprimée.")
+        # Libérer le slot : effacer le contenu client sans supprimer l'objet
+        # → l'emplacement redevient "disponible" et affiche l'encart vide
+        if pub.image:
+            pub.image.delete(save=False)
+        pub.titre       = 'Emplacement disponible'
+        pub.description = ''
+        pub.image_url   = ''
+        pub.lien        = ''
+        pub.actif       = False
+        pub.client_nom  = ''
+        pub.client_email = ''
+        pub.client_tel  = ''
+        pub.date_debut  = None
+        pub.date_fin    = None
+        pub.save()
+        messages.success(request, "Slot libéré — l'emplacement est à nouveau disponible à la réservation.")
     return redirect('admin_dashboard')
 
 

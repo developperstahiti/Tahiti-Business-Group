@@ -43,9 +43,15 @@ class RegisterForm(forms.ModelForm):
         label="Nom d'entreprise",
     )
 
+    numero_tahiti = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': "Ex : N°A12345", 'class': 'form-input'}),
+        label="Numéro Tahiti (ISPF)",
+    )
+
     class Meta:
         model = User
-        fields = ['email', 'nom', 'tel', 'role', 'nom_entreprise']
+        fields = ['email', 'nom', 'tel', 'role', 'nom_entreprise', 'numero_tahiti']
         widgets = {
             'email': forms.EmailInput(attrs={'placeholder': 'votre@email.com', 'class': 'form-input'}),
             'nom': forms.TextInput(attrs={'placeholder': 'Votre nom complet', 'class': 'form-input'}),
@@ -69,6 +75,8 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("Les mots de passe ne correspondent pas.")
         if cleaned_data.get('role') == 'pro' and not cleaned_data.get('nom_entreprise', '').strip():
             self.add_error('nom_entreprise', "Le nom d'entreprise est obligatoire pour un compte Pro.")
+        if cleaned_data.get('role') == 'pro' and not cleaned_data.get('numero_tahiti', '').strip():
+            self.add_error('numero_tahiti', "Le numéro Tahiti est obligatoire pour un compte Pro.")
         return cleaned_data
 
     def save(self, commit=True):

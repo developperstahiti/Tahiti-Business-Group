@@ -1,4 +1,10 @@
+import io
+import os
+import uuid
+import urllib.request
+from django.conf import settings as django_settings
 from django.db import models
+from PIL import Image as PILImage, ImageOps as PILImageOps
 
 EMPLACEMENTS = [
     ("billboard", "Billboard plein ecran (25 000 XPF/mois)"),
@@ -19,6 +25,22 @@ PRIX_PAR_EMPLACEMENT = {
     "milieu":     7000,
     "bas":        5000,
 }
+
+# Dimensions cibles (w × h) par emplacement — crop centré via ImageOps.fit
+DIMS_PAR_EMPLACEMENT = {
+    "billboard":        (1400, 300),
+    "billboard_milieu": (1400, 90),
+    "strip_1":          (1400, 90),
+    "strip_2":          (1400, 90),
+    "strip_3":          (1400, 90),
+    "haut":             (600, 300),
+    "milieu":           (600, 270),
+    "bas":              (600, 240),
+}
+
+# Formats d'image supportés par Pillow (les SVG et autres vecteurs sont exclus)
+_SUPPORTED_MIME_PREFIXES = ('image/jpeg', 'image/png', 'image/webp', 'image/gif',
+                             'image/bmp', 'image/tiff')
 
 
 class Publicite(models.Model):
@@ -48,7 +70,84 @@ class Publicite(models.Model):
     def save(self, *args, **kwargs):
         if not self.prix:
             self.prix = PRIX_PAR_EMPLACEMENT.get(self.emplacement, 0)
+
+        # Détecter si la source image a changé avant de sauvegarder
+        image_changed = False
+        if self.pk:
+            try:
+                old = Publicite.objects.get(pk=self.pk)
+                uploaded_changed = bool(self.image) and old.image != self.image
+                url_changed = (bool(self.image_url) and old.image_url != self.image_url
+                               and not self.image)
+                image_changed = uploaded_changed or url_changed
+            except Publicite.DoesNotExist:
+                image_changed = bool(self.image) or bool(self.image_url)
+        else:
+            image_changed = bool(self.image) or bool(self.image_url)
+
         super().save(*args, **kwargs)
+
+        if image_changed:
+            self._resize_to_slot()
+
+    def _resize_to_slot(self):
+        """Redimensionne l'image (uploadée ou URL externe) aux dimensions exactes de l'encart.
+
+        Pour une image uploadée : traitement local.
+        Pour une image_url      : téléchargement → vérification format → traitement → WebP local.
+        Retourne None si succès, un message d'erreur (str) si échec.
+        """
+        dims = DIMS_PAR_EMPLACEMENT.get(self.emplacement)
+        if not dims:
+            return f"Emplacement '{self.emplacement}' sans dimensions définies — ignoré."
+
+        old_path = None
+        try:
+            # ── Ouvrir l'image selon la source ──────────────────────────────
+            if self.image:
+                img = PILImage.open(self.image.path)
+                old_path = self.image.path
+            elif self.image_url:
+                req = urllib.request.Request(
+                    self.image_url,
+                    headers={'User-Agent': 'Mozilla/5.0 (compatible; TBG-bot/1.0)'},
+                )
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    content_type = resp.headers.get('Content-Type', '').lower()
+                    # Rejeter les SVG et formats non-raster (Pillow ne les supporte pas)
+                    if 'svg' in content_type or 'xml' in content_type:
+                        return f"Format SVG non supporté pour l'URL : {self.image_url}"
+                    data = resp.read()
+                img = PILImage.open(io.BytesIO(data))
+                img.load()
+            else:
+                return "Aucune source image."
+
+            # ── Traitement ────────────────────────────────────────────────
+            if img.mode in ('RGBA', 'P'):
+                img = img.convert('RGB')
+            img = PILImageOps.fit(img, dims, PILImage.LANCZOS)
+
+            # ── Sauvegarde locale en WebP ─────────────────────────────────
+            upload_dir = os.path.join(django_settings.MEDIA_ROOT, 'pubs')
+            os.makedirs(upload_dir, exist_ok=True)
+            filename = f"pub_{self.pk}_{uuid.uuid4().hex[:8]}.webp"
+            new_path = os.path.join(upload_dir, filename)
+            img.save(new_path, format='WEBP', quality=85, method=6)
+
+            # Supprimer l'ancien fichier uploadé si différent
+            if old_path and os.path.exists(old_path) and old_path != new_path:
+                os.remove(old_path)
+
+            # Mettre à jour les champs en BDD (sans relancer save → pas de boucle)
+            new_name = f"pubs/{filename}"
+            Publicite.objects.filter(pk=self.pk).update(image=new_name, image_url='')
+            self.image.name = new_name
+            self.image_url = ''
+            return None  # succès
+
+        except Exception as e:
+            return str(e)  # remonter l'erreur sans bloquer la sauvegarde
 
     def get_image(self):
         if self.image:

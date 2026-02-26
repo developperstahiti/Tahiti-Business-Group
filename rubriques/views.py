@@ -21,6 +21,9 @@ def deposer_promo(request):
     if not request.user.is_pro:
         messages.error(request, "Accès réservé aux comptes professionnels.")
         return redirect('rubriques_index')
+    if not request.user.abonnement_promo_actif:
+        messages.error(request, "Un abonnement actif est requis pour publier une promo. Contactez TBG pour activer votre accès.")
+        return redirect('rubriques_index')
     if request.method == 'POST':
         titre = request.POST.get('titre', '').strip()
         contenu = request.POST.get('contenu', '').strip()
