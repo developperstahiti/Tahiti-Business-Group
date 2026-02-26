@@ -80,7 +80,7 @@
     <div class="max-w-7xl mx-auto px-4 flex items-center h-16 gap-3">
 
       <!-- Logo -->
-      <a href="{% url 'index' %}" class="flex-shrink-0 mr-2">
+      <a href="{% url 'index' %}" class="flex-shrink-0 mr-2 ml-4">
         <img src="{% static 'img/logo-tbg.svg' %}" alt="Tahiti Business Group" class="logo-header">
       </a>
 
@@ -139,16 +139,11 @@
           </svg>
         </button>
         {% if user.is_authenticated %}
-        <!-- Messages badge -->
-        <a href="{% url 'mes_messages' %}" class="msg-icon-header relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-gray-100 transition flex-shrink-0" title="Mes messages">
+        <!-- Favoris -->
+        <a href="{% url 'mes_favoris' %}" class="msg-icon-header relative flex items-center justify-center w-9 h-9 rounded-xl hover:bg-gray-100 transition flex-shrink-0" title="Mes favoris">
           <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
           </svg>
-          {% if unread_count %}
-          <span class="msg-badge absolute -top-0.5 -right-0.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold leading-none" style="font-size:9px">
-            {{ unread_count }}
-          </span>
-          {% endif %}
         </a>
         <div class="cat-nav-item user-menu">
           <button class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
@@ -167,6 +162,7 @@
             </div>
             <a href="{% url 'mon_compte' %}">Mon compte</a>
             <a href="{% url 'mes_annonces' %}">Mes annonces</a>
+            <a href="{% url 'mes_favoris' %}">Mes favoris</a>
             {% if user.is_staff %}
             <a href="{% url 'admin_dashboard' %}" class="user-menu-admin">Dashboard admin</a>
             <a href="/admin/" class="user-menu-django">Django Admin</a>
@@ -524,13 +520,6 @@
     </svg>
   </a>
   {% endif %}
-
-  <a href="{% url 'mes_favoris' %}" class="bottom-nav__item{% if request.resolver_match.url_name == 'mes_favoris' %} bottom-nav__item--active{% endif %}">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-    </svg>
-    <span>Favoris</span>
-  </a>
 
   <a href="{% url 'mes_messages' %}" class="bottom-nav__item">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

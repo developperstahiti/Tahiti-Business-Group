@@ -145,6 +145,66 @@
               <div class="cat-carousel__item">
                 {% include 'partials/_annonce_card.html' %}
               </div>
+              {% if forloop.counter == 2 %}
+              <!-- ── PUB MOBILE inline · position 3 dans le carousel ─── -->
+              <!-- Caché sur desktop via CSS (.mobile-pub-inject{display:none}) -->
+              <!-- Affiché sur mobile via @media (max-width:768px)            -->
+              <div class="cat-carousel__item mobile-pub-inject">
+                <a href="{% if pub_haut and pub_haut.lien %}{{ pub_haut.lien }}{% else %}{% url 'demande_pub' %}{% endif %}"
+                   {% if pub_haut and pub_haut.lien %}target="_blank" rel="noopener sponsored"{% endif %}
+                   class="mobile-pub-card">
+                  <span class="mobile-pub-card__badge">Sponsorisé</span>
+                  {% if pub_haut %}
+                    {% with img=pub_haut.get_image %}
+                    {% if img %}
+                      <img src="{{ img }}" alt="{{ pub_haut.titre }}" class="mobile-pub-card__img" loading="lazy">
+                    {% else %}
+                      <div class="mobile-pub-card__placeholder">📢</div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="mobile-pub-card__body">
+                      <div class="mobile-pub-card__title">{{ pub_haut.titre }}</div>
+                      <div class="mobile-pub-card__cta">Découvrir →</div>
+                    </div>
+                  {% else %}
+                    <div class="mobile-pub-card__placeholder">📢</div>
+                    <div class="mobile-pub-card__body">
+                      <div class="mobile-pub-card__title">Votre pub ici</div>
+                      <div class="mobile-pub-card__cta">Réserver →</div>
+                    </div>
+                  {% endif %}
+                </a>
+              </div>
+              {% endif %}
+              {% if forloop.counter == 5 %}
+              <!-- ── PUB MOBILE inline · position 7 dans le carousel ─── -->
+              <div class="cat-carousel__item mobile-pub-inject">
+                <a href="{% if pub_milieu and pub_milieu.lien %}{{ pub_milieu.lien }}{% else %}{% url 'demande_pub' %}{% endif %}"
+                   {% if pub_milieu and pub_milieu.lien %}target="_blank" rel="noopener sponsored"{% endif %}
+                   class="mobile-pub-card">
+                  <span class="mobile-pub-card__badge">Sponsorisé</span>
+                  {% if pub_milieu %}
+                    {% with img=pub_milieu.get_image %}
+                    {% if img %}
+                      <img src="{{ img }}" alt="{{ pub_milieu.titre }}" class="mobile-pub-card__img" loading="lazy">
+                    {% else %}
+                      <div class="mobile-pub-card__placeholder">🎯</div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="mobile-pub-card__body">
+                      <div class="mobile-pub-card__title">{{ pub_milieu.titre }}</div>
+                      <div class="mobile-pub-card__cta">Découvrir →</div>
+                    </div>
+                  {% else %}
+                    <div class="mobile-pub-card__placeholder">🎯</div>
+                    <div class="mobile-pub-card__body">
+                      <div class="mobile-pub-card__title">Votre pub ici</div>
+                      <div class="mobile-pub-card__cta">Réserver →</div>
+                    </div>
+                  {% endif %}
+                </a>
+              </div>
+              {% endif %}
               {% endfor %}
               <div class="cat-carousel__item">
                 <a href="{% url 'liste_annonces' %}" class="cat-voir-tout">
@@ -248,49 +308,71 @@
 </div>
 
 <script>
+/* ─── Carousel : mobile (scroll-snap + scrollLeft) vs desktop (transform) ─── */
+/* Les .mobile-pub-inject sont display:none sur desktop → on les exclut du JS  */
 (function () {
+  var MQ = window.matchMedia('(max-width: 768px)');
+
   document.querySelectorAll('.cat-carousel-wrapper').forEach(function (wrapper) {
     var carousel = wrapper.querySelector('.cat-carousel');
     var track    = wrapper.querySelector('.cat-carousel__track');
-    var items    = wrapper.querySelectorAll('.cat-carousel__item');
     var btnPrev  = wrapper.querySelector('.cat-carousel__btn--prev');
     var btnNext  = wrapper.querySelector('.cat-carousel__btn--next');
-    var total    = items.length;
-    var current  = 0;
+    if (!carousel || !track) return;
 
-    function itemWidth() {
-      return items[0] ? items[0].offsetWidth : 0;
-    }
-    function visibleCount() {
-      var iw = itemWidth() + 12;
-      return iw ? Math.round((carousel.offsetWidth + 12) / iw) : 4;
-    }
-    function maxIndex() {
-      return Math.max(0, total - visibleCount());
-    }
-    function update() {
-      var mx = maxIndex();
-      if (current > mx) current = mx;
-      var offset = current * (itemWidth() + 12);
-      track.style.transform = 'translateX(-' + offset + 'px)';
-      if (btnPrev) btnPrev.disabled = current === 0;
-      if (btnNext) btnNext.disabled = current >= mx;
-    }
-
-    if (total <= 1) {
-      if (btnPrev) btnPrev.style.display = 'none';
-      if (btnNext) btnNext.style.display = 'none';
-    } else {
-      if (btnPrev) btnPrev.addEventListener('click', function () {
-        if (current > 0) { current--; update(); }
-      });
-      if (btnNext) btnNext.addEventListener('click', function () {
-        if (current < maxIndex()) { current++; update(); }
+    /* Retourne uniquement les items visibles (exclut les pubs cachées desktop) */
+    function getItems() {
+      return Array.from(wrapper.querySelectorAll('.cat-carousel__item')).filter(function (el) {
+        return window.getComputedStyle(el).display !== 'none';
       });
     }
 
-    update();
-    window.addEventListener('resize', update);
+    /* ── MODE MOBILE : scroll natif + scroll-snap ── */
+    function initMobile() {
+      var items = getItems();
+      if (!items.length) return;
+      track.style.transform = ''; // annuler tout transform résiduel
+      function stepW() { return (items[0] ? items[0].offsetWidth : 0) + 12; }
+      if (btnPrev) btnPrev.onclick = function () {
+        carousel.scrollBy({ left: -stepW(), behavior: 'smooth' });
+      };
+      if (btnNext) btnNext.onclick = function () {
+        carousel.scrollBy({ left: stepW(), behavior: 'smooth' });
+      };
+    }
+
+    /* ── MODE DESKTOP : transform translateX ── */
+    function initDesktop() {
+      var items = getItems(); // items visibles uniquement (sans pubs mobiles)
+      if (!items.length) return;
+      carousel.scrollLeft = 0;
+      var current = 0;
+      var total   = items.length;
+      function itemWidth()    { return items[0] ? items[0].offsetWidth : 0; }
+      function visibleCount() { var iw = itemWidth() + 12; return iw ? Math.round((carousel.offsetWidth + 12) / iw) : 4; }
+      function maxIndex()     { return Math.max(0, total - visibleCount()); }
+      function update() {
+        var mx = maxIndex();
+        if (current > mx) current = mx;
+        track.style.transform = 'translateX(-' + current * (itemWidth() + 12) + 'px)';
+        if (btnPrev) btnPrev.disabled = current === 0;
+        if (btnNext) btnNext.disabled = current >= mx;
+      }
+      if (total <= 1) {
+        if (btnPrev) btnPrev.style.display = 'none';
+        if (btnNext) btnNext.style.display = 'none';
+      } else {
+        if (btnPrev) btnPrev.onclick = function () { if (current > 0)          { current--; update(); } };
+        if (btnNext) btnNext.onclick = function () { if (current < maxIndex()) { current++; update(); } };
+      }
+      update();
+      window.addEventListener('resize', update);
+    }
+
+    /* Choisir le mode selon l'écran, et re-init si la taille change */
+    function init() { MQ.matches ? initMobile() : initDesktop(); }
+    init();
+    MQ.addEventListener ? MQ.addEventListener('change', init) : MQ.addListener(init);
   });
 })();
 </script>

@@ -120,13 +120,13 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
 
 /* ── Logo header ─────────────────────────────────────────────── */
 .logo-header {
-  height: 42px;
+  height: 54px;
   width: auto;
   display: block;
   transition: opacity .15s;
 }
 .logo-header:hover { opacity: .82; }
-@media (max-width: 640px) { .logo-header { height: 34px; } }
+@media (max-width: 640px) { .logo-header { height: 42px; } }
 
 /* ── Header shadow ───────────────────────────────────────────── */
 .header-shadow {
@@ -603,9 +603,12 @@ main {
 .cat-carousel__btn--prev { left: -15px; }
 .cat-carousel__btn--next { right: -15px; }
 @media (max-width: 640px) {
-  .cat-carousel__item { flex: 0 0 calc(50% - 6px); }
-  .cat-carousel__btn--prev { left: -10px; }
-  .cat-carousel__btn--next { right: -10px; }
+  /* Carousel : exactement 2 items visibles + flèches */
+  .cat-carousel         { overflow: hidden; }
+  .cat-carousel__item   { flex: 0 0 calc(50% - 6px) !important; }
+  .cat-carousel__btn    { display: flex !important; width: 26px; height: 26px; font-size: 14px; }
+  .cat-carousel__btn--prev { left: 2px !important; }
+  .cat-carousel__btn--next { right: 2px !important; }
 }
 
 /* ── Cat section row : carte label fixe + carousel ── */
@@ -619,8 +622,8 @@ main {
   min-width: 0;
 }
 .cat-label-card {
-  flex: 0 0 148px;
-  height: 212px;
+  flex: 0 0 120px;
+  height: 172px;
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
@@ -1758,6 +1761,9 @@ body, p, input, textarea, select, button, a, label, span, li {
 #layout-billboard { display: none; }
 #right-sidebar-pubs { display: none; }
 
+/* Cartes pub inline dans le carousel — cachées sur desktop, affichées sur mobile */
+.mobile-pub-inject { display: none; }
+
 /* ── Animation d'entrée des panneaux ────────────────────────────── */
 @keyframes frameAppear {
   from { opacity: 0; transform: translateY(10px); }
@@ -1984,4 +1990,400 @@ body, p, input, textarea, select, button, a, label, span, li {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
   pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — TABLETTE & MOBILE
+   Règle : rien ne touche ≥ 1025px (layout premium desktop intact)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── ANTI-OVERFLOW HORIZONTAL (mobile & tablette) ─────────────── */
+@media (max-width: 1024px) {
+  html { overflow-x: hidden; }
+  body { overflow-x: hidden; max-width: 100vw; }
+  #layout-outer { overflow-x: hidden; }
+  /* Sidebar : forcer 100% et jamais 280px fixe */
+  .layout-sidebar { width: 100% !important; max-width: 100% !important; min-width: 0 !important; }
+  /* Carousel wrapper : ne pas clipper les boutons ni les promos expandables */
+  .cat-carousel-wrapper { overflow: visible; }
+  /* Images : ne jamais dépasser leur conteneur */
+  img { max-width: 100%; }
+
+  /* ── Billboard : bandeau pub au-dessus du contenu ──────────── */
+  #layout-billboard {
+    display: block;
+    height: 80px;
+    overflow: hidden;
+  }
+  #layout-billboard .pub-bg-fixed {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    height: 80px !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+    pointer-events: auto !important;
+  }
+  #layout-billboard .pub-bg-fixed-empty {
+    gap: 3px;
+  }
+  /* Spacer inutile sur mobile (billboard n'est plus en position:fixed) */
+  .pub-spacer { display: none; }
+}
+
+/* ── TABLETTE (641px → 1024px) ────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1024px) {
+
+  /* Grille annonces : 3 colonnes au lieu de auto-fill trop généreux */
+  .ads-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .ads-grid--5 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  /* Carousels : 3 items visibles sur tablette */
+  .cat-carousel__item {
+    flex: 0 0 calc(33.333% - 8px);
+  }
+
+  /* Pages : py-8 → py-5 */
+  .max-w-7xl.mx-auto.px-4.py-8 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+}
+
+/* ── MOBILE (≤ 640px) ────────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Photo principale détail : ratio plus carré, moins de hauteur */
+  .photo-main {
+    aspect-ratio: 4/3;
+  }
+
+  /* Thumbnails : un peu plus grandes pour être tapables */
+  .photo-thumb {
+    width: 80px;
+    height: 62px;
+    min-width: 80px;
+  }
+
+  /* Header formulaire dépôt : moins de padding */
+  .deposer-form-header {
+    padding: 16px 20px !important;
+  }
+  .deposer-form-header h1 {
+    font-size: 1.2rem;
+  }
+
+  /* Barre d'actions détail : empilement en colonne sous 480px */
+  .detail-actions-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .detail-actions-bar > * {
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    margin-left: 0 !important;
+  }
+
+  /* Bulle "annonce parfaite" : étire sur la largeur au-dessus de la bottom nav */
+  #bulle-parfaite {
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 10px);
+  }
+
+  /* Formulaire : py-8 → py-3 sur mobile */
+  .max-w-7xl.mx-auto.px-4.py-8 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  /* Dropzone photos : padding plus serré */
+  #dropzone {
+    padding: 20px 16px;
+  }
+
+  /* Filtres liste annonces : font-size 16px anti-zoom iOS */
+  .ads-grid + div .form-input,
+  .layout-main .form-input {
+    font-size: 16px;
+  }
+}
+
+/* ── MICRO-AJUSTEMENTS (≤ 767px) ─────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Touch targets minimum recommandé 44px */
+  .btn {
+    min-height: 44px;
+  }
+  .btn-contact-card {
+    min-height: 44px;
+    padding: 10px 0;
+    font-size: 12px;
+  }
+
+  /* Boutons carousel : dans le cadre pour ne pas sortir de l'écran */
+  .cat-carousel__btn--prev { left: 2px; }
+  .cat-carousel__btn--next { right: 2px; }
+
+  /* Pages contenu : réduire py-8 */
+  .max-w-7xl.mx-auto.px-4 {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Vider le trop-plein de padding sur les cards de contenu */
+  .bg-white.border.border-gray-200.rounded-2xl.p-6 {
+    padding: 16px;
+  }
+
+  /* Titre annonce détail : moins imposant */
+  .bg-white.border.border-gray-200.rounded-2xl.p-6 h1.text-2xl {
+    font-size: 1.25rem;
+  }
+
+  /* Prix détail : réduit */
+  .text-3xl.font-black.text-blue-600 {
+    font-size: 1.5rem;
+  }
+
+  /* Breadcrumb : texte plus petit */
+  nav.text-xs.text-gray-400.mb-6 {
+    margin-bottom: 12px;
+    font-size: 11px;
+  }
+
+  /* Pagination : boutons full width sur très petit */
+  .flex.justify-center.items-center.gap-2 {
+    flex-wrap: wrap;
+  }
+
+  /* Section "Vendeur" : avatar + texte plus compact */
+  .w-14.h-14.bg-blue-600 {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}
+
+/* ── HOMEPAGE MOBILE — carousels & annonces compacts ──────────── */
+@media (max-width: 767px) {
+
+  /* Promo card : plus compacte */
+  .promo-card {
+    padding: 10px 12px;
+  }
+  .promo-card__title {
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+  }
+  .promo-card__preview {
+    font-size: 0.7rem;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Annonce card : image moins haute pour voir plus de contenu */
+  .ad-card__img {
+    aspect-ratio: 16/9;
+  }
+  .ad-card__body {
+    padding: 7px 9px 9px;
+  }
+  .ad-card__title {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+  }
+  .ad-card__price {
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .ad-card__meta {
+    font-size: 9px;
+    margin-top: 3px;
+  }
+
+  /* Boutons flèches carousel : visibles et dans l'espace */
+  .cat-carousel__btn {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+  }
+  .cat-carousel__btn--prev { left: 2px; }
+  .cat-carousel__btn--next { right: 2px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE-FIRST LAYOUT — max-width: 768px
+   ───────────────────────────────────────────────────────────────
+   1. Billboard pub FIXE en haut (80px) — rendu amélioré
+   2. Sidebar droite SUPPRIMÉE → 100% largeur écran
+   3. Slider carousel : 2 items + pubs intégrées + scroll-snap
+   ZÉRO impact sur desktop (≥769px) — uniquement media queries
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── 1. BILLBOARD — fixe 80px, lisibilité améliorée ──────────── */
+  #layout-billboard {
+    position: fixed !important;
+    top: 0; left: 0; right: 0;
+    height: 80px !important;
+    z-index: 200;
+    overflow: hidden;
+  }
+  #layout-billboard .pub-bg-fixed {
+    position: static !important;
+    width: 100% !important;
+    height: 80px !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+    pointer-events: auto !important;
+  }
+  /* Image pub : couvre la hauteur */
+  #layout-billboard .pub-bg-fixed-img  { width: 100% !important; height: 80px !important; object-fit: cover; }
+  #layout-billboard .pub-bg-fixed-link { height: 80px !important; }
+  /* État vide : 3 lignes centrées dans 80px, gap compact */
+  #layout-billboard .pub-bg-fixed-empty {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    gap: 2px;
+  }
+  .pub-spacer { display: none; }
+
+  /* ── 2. COMPENSATION BILLBOARD FIXE 80px ─────────────────────── */
+  #layout-row { margin-top: 80px; }
+  #main-frame header { top: 80px; }
+
+  /* ── 3. LAYOUT — sidebar supprimée, contenu 100% largeur ─────── */
+  #right-sidebar-pubs { display: none !important; }
+  #main-frame { margin-right: 0 !important; }
+  /* layout-with-sidebar est flex column : on force align-items:stretch      */
+  /* pour que .layout-main prenne 100% de la largeur (pas juste son contenu) */
+  .layout-with-sidebar { align-items: stretch !important; }
+  .layout-main { width: 100% !important; }
+  /* Masquer le sidebar in-flow (_sidebar_pubs.html inclus dans index.html)   */
+  .layout-sidebar { display: none !important; }
+
+  /* ── 4. PUB STRIP INTER-SECTIONS — pleine largeur téléphone ─────── */
+  /* Compense le padding px-4 (12px × 2 = 24px) du container max-w-7xl  */
+  .billboard-milieu-empty {
+    width: calc(100% + 24px) !important;
+    margin-left: -12px !important;
+    border-radius: 0 !important;
+  }
+
+  /* ── 5. SLIDER CAROUSEL — scroll-snap, 2 items visibles ──────── */
+  /* padding-top : overflow-x:scroll force overflow-y:auto par le navigateur */
+  /* → sans padding, le haut des cartes arrondies est rogné                  */
+  .cat-carousel {
+    overflow-x: scroll !important;
+    overflow-y: visible !important;
+    padding-top: 4px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cat-carousel::-webkit-scrollbar { display: none; }
+  .cat-carousel__item {
+    flex: 0 0 auto !important;
+    width: calc(50vw - 18px) !important;  /* (100vw - 24px - 12px) / 2 */
+    scroll-snap-align: start;
+  }
+  /* Flèches : overflow:visible sur le wrapper pour ne pas clipper les boutons */
+  .cat-carousel-wrapper { overflow: visible !important; }
+  .cat-carousel__btn {
+    display: flex !important;
+    position: absolute !important;
+    top: 32% !important;
+    transform: translateY(-50%) !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 16px !important;
+    background: rgba(255,255,255,0.95) !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25) !important;
+    z-index: 30 !important;
+  }
+  .cat-carousel__btn--prev { left: 4px !important; }
+  .cat-carousel__btn--next { right: 4px !important; }
+
+  /* ── 5. CARTES PUB INLINE (mobile-only) ──────────────────────── */
+  /* Affichage : override le display:none global défini hors media query  */
+  .mobile-pub-inject { display: flex !important; }
+
+  /* Style : identique à .ad-card mais teinte dorée + badge "Sponsorisé" */
+  .mobile-pub-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid #fbbf24;
+    background: #fffbeb;
+    position: relative;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .mobile-pub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+
+  /* Badge "Sponsorisé" superposé à l'image */
+  .mobile-pub-card__badge {
+    position: absolute;
+    top: 7px; left: 7px;
+    background: #f59e0b;
+    color: #fff;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+  /* Image (ratio 4/3 identique aux cartes annonces) */
+  .mobile-pub-card__img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+  /* Placeholder sans image */
+  .mobile-pub-card__placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+  /* Corps texte */
+  .mobile-pub-card__body {
+    padding: 7px 9px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+  }
+  .mobile-pub-card__title {
+    font-size: 11px; font-weight: 700;
+    color: #111827; line-height: 1.3;
+    overflow: hidden; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .mobile-pub-card__cta {
+    font-size: 10px; font-weight: 700;
+    color: #d97706; margin-top: auto;
+  }
 }
