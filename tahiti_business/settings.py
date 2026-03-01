@@ -18,6 +18,9 @@ ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
 
+# Railway envoie les requetes en HTTP en interne, mais le header X-Forwarded-Proto indique HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # ── Applications ───────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
