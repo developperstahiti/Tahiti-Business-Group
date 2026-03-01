@@ -3,16 +3,31 @@ from users.models import User
 
 
 class Command(BaseCommand):
-    help = "Cree le compte admin si absent"
+    help = "Cree ou reset le compte admin"
 
     def handle(self, *args, **options):
         email = "admin@tahitibusinessgroup.com"
-        if User.objects.filter(email=email).exists():
-            self.stdout.write(f"Admin {email} existe deja.")
-            return
-        User.objects.create_superuser(
+        password = "TBG-Admin-2026!Secure"
+
+        user, created = User.objects.get_or_create(
             email=email,
-            password="TBG-Admin-2026!Secure",
-            nom="Admin TBG",
+            defaults={
+                "nom": "Admin TBG",
+                "role": "admin",
+                "is_staff": True,
+                "is_superuser": True,
+            },
         )
-        self.stdout.write(self.style.SUCCESS(f"Admin {email} cree avec succes."))
+
+        if not created:
+            user.is_staff = True
+            user.is_superuser = True
+            user.role = "admin"
+
+        user.set_password(password)
+        user.save()
+
+        status = "cree" if created else "reset"
+        self.stdout.write(self.style.SUCCESS(
+            f"Admin {email} {status} avec succes."
+        ))
