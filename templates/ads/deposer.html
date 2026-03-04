@@ -94,44 +94,46 @@
               <div id="photoPreview" class="flex gap-2 flex-wrap mt-3"></div>
             </div>
 
-            <!-- ── Section Boost ─────────────────────────────────────── -->
+            <!-- ── Module Boost ───────────────────────────────────────── -->
             {% if user.is_authenticated %}
-            <div class="boost-wrap">
+            <div class="bst-module">
 
-              <!-- En-tête cliquable : icône + texte + toggle switch -->
-              <label class="boost-header" for="boost-activer">
-                <div class="boost-header__left">
-                  <span class="boost-icon">⚡</span>
-                  <div>
-                    <p class="boost-title">Booster l'annonce</p>
-                    <p class="boost-sub">Apparaît en tête de liste après publication</p>
-                  </div>
-                </div>
-                <span class="boost-toggle">
-                  <input type="checkbox" id="boost-activer" class="sr-only">
-                  <span class="boost-toggle__track"></span>
+              <!-- Ligne checkbox -->
+              <label class="bst-label" for="boost-activer">
+                <span class="bst-label__check">
+                  <input type="checkbox" id="boost-activer" class="bst-cb">
+                  <span class="bst-cb__box" aria-hidden="true"></span>
                 </span>
+                <span class="bst-label__text">
+                  <span class="bst-flame" id="bst-flame" aria-hidden="true">🔥</span>
+                  <span class="bst-label__title">Booster mon annonce</span>
+                </span>
+                {% if can_free_boost %}
+                <span class="bst-badge">1<sup>er</sup> boost gratuit ✨</span>
+                {% endif %}
               </label>
 
-              <!-- Options (cachées par défaut via style inline) -->
-              <div id="boost-options" class="boost-options" style="display:none">
-                <div class="boost-select-row">
-                  <label class="boost-select-label">Durée :</label>
-                  <select name="boost_duree" id="boost-select" class="boost-select-input">
-                    <option value="1jour"{% if not can_free_boost %} disabled{% endif %}>
-                      1 jour — GRATUIT{% if not can_free_boost %} (déjà utilisé){% endif %}
-                    </option>
-                    <option value="7jours">7 jours — Payant</option>
-                    <option value="1mois">1 mois — Payant</option>
-                  </select>
-                </div>
+              <!-- Panel options (max-height animé) -->
+              <div id="bst-panel" class="bst-panel" aria-hidden="true">
+                <div class="bst-panel__inner">
+                  <p class="bst-panel__hint">Ton annonce passera en tête de liste dès la publication.</p>
 
-                <!-- Boîte de message (uniquement 7j / 1 mois) -->
-                <div id="boost-msg" class="boost-msg-box" style="display:none">
-                  <p class="boost-msg-box__label">Votre message de demande</p>
-                  <textarea name="boost_demande" rows="3" class="form-input"
-                    placeholder="Ex : Je souhaite booster mon annonce 7 jours. Contactez-moi sur WhatsApp au 87 XX XX XX."></textarea>
-                  <p class="boost-msg-box__hint">Notre équipe vous contactera pour valider et encaisser le paiement.</p>
+                  <div class="bst-field">
+                    <label class="bst-field__label" for="bst-select">Durée du boost</label>
+                    <select name="boost_duree" id="bst-select" class="bst-select" disabled>
+                      <option value="">— Choisir une durée —</option>
+                      <option value="1jour"{% if not can_free_boost %} disabled{% endif %}>🎁 1 jour — Gratuit{% if not can_free_boost %} (déjà utilisé){% endif %}</option>
+                      <option value="7jours">7 jours — Payant</option>
+                      <option value="1mois">1 mois — Payant</option>
+                    </select>
+                  </div>
+
+                  <!-- Textarea (7j / 1mois uniquement) -->
+                  <div id="bst-msg" class="bst-msg" aria-hidden="true">
+                    <textarea name="boost_demande" id="bst-textarea" class="bst-textarea" disabled rows="3"
+                      placeholder="Explique-nous pourquoi tu souhaites booster ton annonce..."></textarea>
+                    <p class="bst-msg__hint">Notre équipe te contactera pour valider et encaisser le paiement.</p>
+                  </div>
                 </div>
               </div>
 
@@ -204,113 +206,212 @@
   margin-left: 4px;
 }
 
-/* ── Section Boost ── */
-.boost-wrap {
+/* ══ MODULE BOOST ══════════════════════════════════════════════ */
+
+/* Conteneur */
+.bst-module {
   border: 1.5px solid #e5e7eb;
   border-radius: 14px;
   overflow: hidden;
+  background: #fff;
 }
-.boost-header {
+
+/* Ligne principale */
+.bst-label {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 14px 18px;
   cursor: pointer;
   user-select: none;
   background: #f9fafb;
-  gap: 12px;
   transition: background .15s;
 }
-.boost-header:hover { background: #f3f4f6; }
-.boost-header__left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.boost-icon { font-size: 22px; line-height: 1; }
-.boost-title { font-size: 13px; font-weight: 700; color: #111827; }
-.boost-sub   { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.bst-label:hover { background: #f3f4f6; }
 
-/* Toggle switch */
-.boost-toggle { position: relative; display: inline-flex; flex-shrink: 0; }
-.boost-toggle__track {
-  display: block;
-  width: 42px;
-  height: 24px;
-  border-radius: 12px;
-  background: #d1d5db;
-  transition: background .2s;
-  position: relative;
-}
-.boost-toggle__track::after {
-  content: '';
+/* Checkbox custom */
+.bst-label__check { position: relative; display: inline-flex; flex-shrink: 0; }
+.bst-cb {
   position: absolute;
-  top: 3px; left: 3px;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,.2);
-  transition: transform .2s;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
 }
-#boost-activer:checked + .boost-toggle__track { background: #2563eb; }
-#boost-activer:checked + .boost-toggle__track::after { transform: translateX(18px); }
-
-/* Options panel */
-.boost-options {
-  padding: 14px 16px;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
-}
-.boost-select-row {
+.bst-cb__box {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 5px;
+  background: #fff;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+  flex-shrink: 0;
 }
-.boost-select-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
+.bst-cb__box::after {
+  content: '';
+  display: none;
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(45deg) translateY(-1px);
+}
+.bst-cb:checked + .bst-cb__box {
+  background: #111827;
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17,24,39,.12);
+}
+.bst-cb:checked + .bst-cb__box::after { display: block; }
+
+/* Texte + flamme */
+.bst-label__text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.bst-label__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.bst-flame {
+  font-size: 16px;
+  display: inline-block;
+  opacity: 0;
+  transform: scale(.6);
+  transition: opacity .25s ease, transform .25s ease;
+  line-height: 1;
+}
+.bst-flame--on {
+  opacity: 1;
+  transform: scale(1);
+  animation: bst-flicker 2s ease-in-out infinite;
+}
+@keyframes bst-flicker {
+  0%, 100% { transform: scale(1)    translateY(0); }
+  50%       { transform: scale(1.1) translateY(-2px); }
+}
+
+/* Badge gratuit */
+.bst-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #065f46;
+  background: #d1fae5;
+  padding: 3px 9px;
+  border-radius: 20px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
-.boost-select-input {
-  padding: 7px 32px 7px 10px;
+
+/* Panel options — animé via max-height */
+.bst-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-6px);
+  transition: max-height .35s ease, opacity .3s ease, transform .3s ease;
+  pointer-events: none;
+}
+.bst-panel--open {
+  max-height: 440px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.bst-panel__inner {
+  padding: 14px 18px 18px;
+  border-top: 1px solid #e5e7eb;
+}
+.bst-panel__hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 14px;
+  font-style: italic;
+}
+
+/* Champ select */
+.bst-field { display: flex; flex-direction: column; gap: 6px; }
+.bst-field__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.bst-select {
+  display: inline-block;
+  padding: 8px 36px 8px 12px;
   font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
+  color: #111827;
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
   background: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
-  font-family: inherit;
-  color: #111827;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
+  transition: border-color .2s, opacity .2s;
 }
-.boost-select-input:focus {
+.bst-select:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(17,24,39,.10);
+}
+.bst-select:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
 }
 
-/* Boîte de message payant */
-.boost-msg-box {
+/* Textarea payant — animé via max-height */
+.bst-msg {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: max-height .3s ease, opacity .25s ease, transform .25s ease;
+  pointer-events: none;
+}
+.bst-msg--open {
+  max-height: 200px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
   margin-top: 14px;
-  padding: 14px;
+}
+.bst-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
+  color: #111827;
+  border: 1.5px solid #fcd34d;
+  border-radius: 8px;
   background: #fffbeb;
-  border: 1px solid #fcd34d;
-  border-radius: 10px;
+  resize: vertical;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
 }
-.boost-msg-box__label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #92400e;
-  margin-bottom: 8px;
+.bst-textarea:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245,158,11,.15);
 }
-.boost-msg-box__hint {
+.bst-textarea:disabled { opacity: .4; cursor: not-allowed; }
+.bst-msg__hint {
   font-size: 11px;
   color: #92400e;
-  margin-top: 8px;
+  margin-top: 6px;
   font-style: italic;
 }
 
@@ -679,27 +780,33 @@ function previewPhotos(input) {
   });
 }
 
-// ─── Boost : toggle switch + durée ───────────────────────────────────────────
+// ─── Boost : module complet ────────────────────────────────────────────────────
 (function () {
-  var checkbox = document.getElementById('boost-activer');
-  var options  = document.getElementById('boost-options');
-  var select   = document.getElementById('boost-select');
-  var msgBox   = document.getElementById('boost-msg');
-  if (!checkbox) return;
+  var cb       = document.getElementById('boost-activer');
+  var panel    = document.getElementById('bst-panel');
+  var select   = document.getElementById('bst-select');
+  var msgBox   = document.getElementById('bst-msg');
+  var textarea = document.getElementById('bst-textarea');
+  var flame    = document.getElementById('bst-flame');
+  if (!cb) return;
 
-  function syncMsg() {
-    if (!msgBox) return;
-    var paid = select && ['7jours', '1mois'].includes(select.value);
-    msgBox.style.display = paid ? '' : 'none';
+  function syncMsg(forceClose) {
+    var paid = !forceClose && select && ['7jours', '1mois'].includes(select.value);
+    if (msgBox)   { msgBox.classList.toggle('bst-msg--open', !!paid); msgBox.setAttribute('aria-hidden', !paid); }
+    if (textarea) { textarea.disabled = !paid; textarea.required = !!paid; }
   }
 
-  checkbox.addEventListener('change', function () {
-    if (options) options.style.display = checkbox.checked ? '' : 'none';
-    if (!checkbox.checked && msgBox) msgBox.style.display = 'none';
-    else syncMsg();
-  });
+  function syncPanel() {
+    var on = cb.checked;
+    if (panel)  { panel.classList.toggle('bst-panel--open', on); panel.setAttribute('aria-hidden', !on); }
+    if (flame)  { flame.classList.toggle('bst-flame--on', on); }
+    if (select) { select.disabled = !on; if (!on) select.value = ''; }
+    syncMsg(!on);
+  }
 
-  if (select) select.addEventListener('change', syncMsg);
+  cb.addEventListener('change', syncPanel);
+  if (select) select.addEventListener('change', function () { syncMsg(); });
+  syncPanel();
 })();
 
 // Drag & drop
