@@ -40,13 +40,21 @@ html {
 }
 
 body {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif !important;
   background: var(--bg-alt);
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   max-width: 100%;
 }
+
+/* Force Playfair sur tous les éléments — Tailwind CDN injecte ses propres
+   font-family sur button/input/etc. après notre CSS, on les force ici */
+button, input, select, textarea, a,
+nav, header, li, span, div, p, label {
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+code, pre, kbd, samp { font-family: ui-monospace, Menlo, Monaco, Consolas, monospace !important; }
 
 /* ── Scrollbar ────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
