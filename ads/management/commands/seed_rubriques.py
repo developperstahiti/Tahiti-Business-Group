@@ -116,6 +116,73 @@ PROMOS = [
 ]
 
 
+INFOS = [
+    {
+        'titre': 'Le port de Papeete modernise ses installations pour 2025',
+        'contenu': (
+            'Le Port Autonome de Papeete annonce un vaste programme de modernisation de ses quais '
+            'et terminaux pour 2025-2026. Les travaux, finances par l\'Etat et la Polynesie francaise, '
+            'visent a doubler la capacite d\'accueil des navires de croisiere et a ameliorer '
+            'les conditions de travail des dockers. La premiere phase demarrera en avril 2025.'
+        ),
+        'source': '',
+    },
+    {
+        'titre': 'Nouvelle ligne aerienne Papeete — Bora Bora ouverte par Air Moana',
+        'contenu': (
+            'Air Moana lance une nouvelle liaison directe entre Faa\'a et Bora Bora avec '
+            'trois rotations quotidiennes. Les tarifs debutent a 8 500 XPF l\'aller simple. '
+            'Cette ouverture devrait renforcer le tourisme local et faciliter les deplacements '
+            'des residents des iles Sous-le-Vent. Reservations disponibles sur airmoana.pf.'
+        ),
+        'source': '',
+    },
+    {
+        'titre': 'Salon de l\'Emploi de Polynésie : 200 postes a pourvoir en mai',
+        'contenu': (
+            'Le Salon de l\'Emploi et de la Formation se tiendra le 15 mai 2025 a la Maison '
+            'de la Culture de Papeete. Plus de 50 entreprises locales y proposeront quelque '
+            '200 postes dans les secteurs du tourisme, du BTP, de la sante et du numerique. '
+            'Entree gratuite sur inscription sur le site du Sefi.'
+        ),
+        'source': '',
+    },
+]
+
+NOUVEAUTES = [
+    {
+        'titre': 'Tahiti Fresh Market : livraison de fruits et legumes locaux a domicile',
+        'contenu': (
+            'La startup Tahiti Fresh Market lance son service de livraison de paniers de fruits '
+            'et legumes 100% locaux directement chez vous. Paniers disponibles a partir de '
+            '2 500 XPF, livraison le lendemain sur Papeete, Punaauia et Pirae. '
+            'Commandes en ligne sur tahitifreshmarket.pf ou via WhatsApp au 87 XX XX XX.'
+        ),
+        'lien': '',
+    },
+    {
+        'titre': 'FenuaPay : paiement mobile sans contact entre particuliers lance en Polynesie',
+        'contenu': (
+            'La fintech polynesienne FenuaPay vient de lancer son application de paiement '
+            'mobile entre particuliers et commerces. Virement instantane, sans frais jusqu\'a '
+            '10 000 XPF par mois, compatible iOS et Android. Deja accepte dans une cinquantaine '
+            'de commerces partenaires sur Tahiti et Moorea. Telechargement gratuit.'
+        ),
+        'lien': '',
+    },
+    {
+        'titre': 'Espace Coworking Fare Hana ouvre ses portes a Papeete Centre',
+        'contenu': (
+            'Fare Hana, le nouvel espace de coworking au coeur de Papeete, propose 40 postes '
+            'de travail, 3 salles de reunion equipees et un espace detente avec vue sur le '
+            'lagon. Formules demi-journee (1 500 XPF), journee (2 500 XPF) ou abonnement '
+            'mensuel (18 000 XPF). Ouvert du lundi au vendredi de 7h a 19h.'
+        ),
+        'lien': '',
+    },
+]
+
+
 class Command(BaseCommand):
     help = 'Cree des articles Promo/Info/Nouveaute factices pour le rendu du site'
 
@@ -126,7 +193,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['reset']:
             dp, _ = ArticlePromo.objects.filter(titre__startswith=SEED_TAG).delete()
-            self.stdout.write(self.style.WARNING(f'  {dp} promos [SEED] supprimees.'))
+            di, _ = ArticleInfo.objects.filter(titre__startswith=SEED_TAG).delete()
+            dn, _ = ArticleNouveaute.objects.filter(titre__startswith=SEED_TAG).delete()
+            self.stdout.write(self.style.WARNING(
+                f'  {dp} promos, {di} infos, {dn} nouveautes [SEED] supprimees.'
+            ))
 
         seed_email = 'seed@tbg.pf'
         user, created = User.objects.get_or_create(
@@ -137,7 +208,7 @@ class Command(BaseCommand):
             user.set_password('seed_password_tbg_2025')
             user.save()
 
-        total = 0
+        total_promos = 0
         for p in PROMOS:
             titre_seed = f"{SEED_TAG} {p['titre']}"
             if ArticlePromo.objects.filter(titre=titre_seed).exists():
@@ -149,10 +220,38 @@ class Command(BaseCommand):
                 lien_promo=p['lien'],
                 statut='valide',
             )
-            total += 1
+            total_promos += 1
+
+        total_infos = 0
+        for i in INFOS:
+            titre_seed = f"{SEED_TAG} {i['titre']}"
+            if ArticleInfo.objects.filter(titre=titre_seed).exists():
+                continue
+            ArticleInfo.objects.create(
+                auteur=user,
+                titre=titre_seed,
+                contenu=i['contenu'],
+                source_media=i['source'],
+                statut='valide',
+            )
+            total_infos += 1
+
+        total_nouv = 0
+        for n in NOUVEAUTES:
+            titre_seed = f"{SEED_TAG} {n['titre']}"
+            if ArticleNouveaute.objects.filter(titre=titre_seed).exists():
+                continue
+            ArticleNouveaute.objects.create(
+                pro_user=user,
+                titre=titre_seed,
+                contenu=n['contenu'],
+                lien_redirection=n['lien'],
+                statut='valide',
+            )
+            total_nouv += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f'\n[OK] {total} promos factices creees.'
+            f'\n[OK] {total_promos} promos, {total_infos} infos, {total_nouv} nouveautes creees.'
         ))
         self.stdout.write(
             '   Pour les supprimer : python manage.py seed_rubriques --reset\n'
