@@ -3,7 +3,7 @@
    Inspiré : ladagemaxime.com + Facebook Marketplace
    ================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
 
 :root {
   --bg:        #ffffff;
@@ -41,6 +41,7 @@ html {
 
 body {
   font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 500;
   background: var(--bg-alt);
   color: var(--text);
   line-height: 1.6;
@@ -53,6 +54,7 @@ body {
 button, input, select, textarea, a,
 nav, header, li, span, div, p, label {
   font-family: 'Playfair Display', Georgia, serif !important;
+  font-weight: 500;
 }
 code, pre, kbd, samp { font-family: ui-monospace, Menlo, Monaco, Consolas, monospace !important; }
 

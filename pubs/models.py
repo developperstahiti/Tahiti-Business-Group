@@ -132,7 +132,7 @@ class Publicite(models.Model):
                 # ── Upload S3 (production Railway) ────────────────────────
                 import boto3
                 bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
-                region = os.environ.get('AWS_S3_REGION_NAME', 'eu-west-3')
+                region = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
                 key = f"pubs/pub_{self.pk}_{uuid.uuid4().hex[:8]}.webp"
                 buf = io.BytesIO()
                 img.save(buf, format='WEBP', quality=85, method=6)

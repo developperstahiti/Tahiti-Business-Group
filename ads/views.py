@@ -31,7 +31,7 @@ def _save_webp(file_obj, user_pk):
     if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
         import boto3
         bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
-        region = os.environ.get('AWS_S3_REGION_NAME', 'eu-west-3')
+        region = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
         key = f"annonces/{user_pk}_{uuid.uuid4().hex[:8]}.webp"
         buf = io.BytesIO()
         img.save(buf, format='WEBP', quality=85, method=6)

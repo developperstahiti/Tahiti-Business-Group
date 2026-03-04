@@ -83,9 +83,9 @@
                 Photos — converties automatiquement en WebP 🚀
               </label>
               <div id="dropzone"
-                class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-8 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50"
+                class="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer"
                 onclick="document.getElementById('photoInput').click()">
-                <div class="text-4xl mb-2">📷</div>
+                <div class="dz-icon text-4xl mb-2">📷</div>
                 <div class="font-semibold text-gray-700 text-sm">Cliquez ou glissez vos photos ici</div>
                 <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP • Max 5 photos • Auto-convertis en WebP</div>
                 <input type="file" id="photoInput" name="photos" multiple accept="image/*"
@@ -96,41 +96,45 @@
 
             <!-- ── Section Boost ─────────────────────────────────────── -->
             {% if user.is_authenticated %}
-            <div class="boost-section">
-              <div class="boost-section__header">
-                <span class="boost-icon">⚡</span>
-                <div>
-                  <p class="boost-section__title">Booster votre annonce</p>
-                  <p class="boost-section__sub">Les annonces boostées apparaissent en tête de liste</p>
+            <div class="boost-wrap">
+
+              <!-- En-tête cliquable : icône + texte + toggle switch -->
+              <label class="boost-header" for="boost-activer">
+                <div class="boost-header__left">
+                  <span class="boost-icon">⚡</span>
+                  <div>
+                    <p class="boost-title">Booster l'annonce</p>
+                    <p class="boost-sub">Apparaît en tête de liste après publication</p>
+                  </div>
+                </div>
+                <span class="boost-toggle">
+                  <input type="checkbox" id="boost-activer" class="sr-only">
+                  <span class="boost-toggle__track"></span>
+                </span>
+              </label>
+
+              <!-- Options (cachées par défaut via style inline) -->
+              <div id="boost-options" class="boost-options" style="display:none">
+                <div class="boost-select-row">
+                  <label class="boost-select-label">Durée :</label>
+                  <select name="boost_duree" id="boost-select" class="boost-select-input">
+                    <option value="1jour"{% if not can_free_boost %} disabled{% endif %}>
+                      1 jour — GRATUIT{% if not can_free_boost %} (déjà utilisé){% endif %}
+                    </option>
+                    <option value="7jours">7 jours — Payant</option>
+                    <option value="1mois">1 mois — Payant</option>
+                  </select>
+                </div>
+
+                <!-- Boîte de message (uniquement 7j / 1 mois) -->
+                <div id="boost-msg" class="boost-msg-box" style="display:none">
+                  <p class="boost-msg-box__label">Votre message de demande</p>
+                  <textarea name="boost_demande" rows="3" class="form-input"
+                    placeholder="Ex : Je souhaite booster mon annonce 7 jours. Contactez-moi sur WhatsApp au 87 XX XX XX."></textarea>
+                  <p class="boost-msg-box__hint">Notre équipe vous contactera pour valider et encaisser le paiement.</p>
                 </div>
               </div>
 
-              <div class="boost-row">
-                <!-- Case à cocher -->
-                <input type="checkbox" id="boost-activer" class="boost-checkbox">
-                <label for="boost-activer" class="boost-checkbox-label">Activer le boost</label>
-
-                <!-- Menu déroulant (grisé si case décochée) -->
-                <select name="boost_duree" id="boost-select" class="form-input boost-select" disabled>
-                  <option value="">— Choisir une durée</option>
-                  <option value="1jour" {% if not can_free_boost %}disabled class="text-gray-400"{% endif %}>
-                    1 jour — GRATUIT{% if not can_free_boost %} (déjà utilisé){% endif %}
-                  </option>
-                  <option value="7jours">7 jours — Payant</option>
-                  <option value="1mois">1 mois — Payant</option>
-                </select>
-              </div>
-
-              <!-- Boîte de message (visible uniquement pour 7j ou 1 mois) -->
-              <div id="boost-demande-box" class="boost-demande-box boost-demande-box--hidden">
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">
-                  Votre message de demande
-                </label>
-                <textarea name="boost_demande" rows="3"
-                  class="form-input"
-                  placeholder="Ex : Je souhaite booster mon annonce pour une meilleure visibilité. Merci de me contacter par WhatsApp au 87 XX XX XX."></textarea>
-                <p class="text-xs text-gray-400 mt-1">Notre équipe vous contactera pour valider et encaisser le paiement.</p>
-              </div>
             </div>
             {% endif %}
             <!-- ── Fin Boost ──────────────────────────────────────────── -->
@@ -160,6 +164,28 @@
 
 {% block extra_css %}
 <style>
+/* ── Dropzone photos ── */
+#dropzone {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+}
+#dropzone:hover {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 4px rgba(59,130,246,.10);
+  transform: translateY(-2px);
+}
+#dropzone.dz-over {
+  background: #dbeafe !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 6px rgba(37,99,235,.15);
+  transform: translateY(-2px);
+}
+#dropzone .dz-icon { transition: transform .2s ease; }
+#dropzone:hover .dz-icon,
+#dropzone.dz-over .dz-icon { transform: scale(1.15); }
+
 /* ── Animation specs container ── */
 #specs-container {
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -179,66 +205,114 @@
 }
 
 /* ── Section Boost ── */
-.boost-section {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 20px;
-  margin-top: 4px;
+.boost-wrap {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
 }
-.boost-section__header {
+.boost-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  background: #f9fafb;
+  gap: 12px;
+  transition: background .15s;
 }
-.boost-icon { font-size: 22px; line-height: 1; }
-.boost-section__title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #111827;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-.boost-section__sub { font-size: 12px; color: #6b7280; margin-top: 1px; }
-
-/* Ligne checkbox + select */
-.boost-row {
+.boost-header:hover { background: #f3f4f6; }
+.boost-header__left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.boost-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: #2563eb;
-  cursor: pointer;
-  flex-shrink: 0;
+.boost-icon { font-size: 22px; line-height: 1; }
+.boost-title { font-size: 13px; font-weight: 700; color: #111827; }
+.boost-sub   { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+/* Toggle switch */
+.boost-toggle { position: relative; display: inline-flex; flex-shrink: 0; }
+.boost-toggle__track {
+  display: block;
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  background: #d1d5db;
+  transition: background .2s;
+  position: relative;
 }
-.boost-checkbox-label {
+.boost-toggle__track::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .2s;
+}
+#boost-activer:checked + .boost-toggle__track { background: #2563eb; }
+#boost-activer:checked + .boost-toggle__track::after { transform: translateX(18px); }
+
+/* Options panel */
+.boost-options {
+  padding: 14px 16px;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+.boost-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.boost-select-label {
   font-size: 13px;
   font-weight: 600;
   color: #374151;
-  cursor: pointer;
   white-space: nowrap;
 }
-.boost-select {
-  flex: 1;
-  transition: opacity .2s;
+.boost-select-input {
+  padding: 7px 32px 7px 10px;
+  font-size: 13px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: #111827;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
-.boost-select:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-  background: #f3f4f6;
+.boost-select-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
 }
 
-/* Boîte de demande payante */
-.boost-demande-box {
+/* Boîte de message payant */
+.boost-msg-box {
   margin-top: 14px;
   padding: 14px;
   background: #fffbeb;
   border: 1px solid #fcd34d;
-  border-radius: 12px;
+  border-radius: 10px;
 }
-.boost-demande-box--hidden { display: none; }
+.boost-msg-box__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+.boost-msg-box__hint {
+  font-size: 11px;
+  color: #92400e;
+  margin-top: 8px;
+  font-style: italic;
+}
 
 </style>
 {% endblock %}
@@ -605,37 +679,37 @@ function previewPhotos(input) {
   });
 }
 
-// ─── Boost : checkbox + menu déroulant ───────────────────────────────────────
+// ─── Boost : toggle switch + durée ───────────────────────────────────────────
 (function () {
-  const checkbox = document.getElementById('boost-activer');
-  const select   = document.getElementById('boost-select');
-  const box      = document.getElementById('boost-demande-box');
-  if (!checkbox || !select || !box) return;
+  var checkbox = document.getElementById('boost-activer');
+  var options  = document.getElementById('boost-options');
+  var select   = document.getElementById('boost-select');
+  var msgBox   = document.getElementById('boost-msg');
+  if (!checkbox) return;
 
-  function syncBoost() {
-    select.disabled = !checkbox.checked;
-    if (!checkbox.checked) {
-      select.value = '';
-      box.classList.add('boost-demande-box--hidden');
-    } else {
-      const paid = ['7jours', '1mois'].includes(select.value);
-      box.classList.toggle('boost-demande-box--hidden', !paid);
-    }
+  function syncMsg() {
+    if (!msgBox) return;
+    var paid = select && ['7jours', '1mois'].includes(select.value);
+    msgBox.style.display = paid ? '' : 'none';
   }
 
-  checkbox.addEventListener('change', syncBoost);
-  select.addEventListener('change', syncBoost);
-  syncBoost();
+  checkbox.addEventListener('change', function () {
+    if (options) options.style.display = checkbox.checked ? '' : 'none';
+    if (!checkbox.checked && msgBox) msgBox.style.display = 'none';
+    else syncMsg();
+  });
+
+  if (select) select.addEventListener('change', syncMsg);
 })();
 
 // Drag & drop
 const dz = document.getElementById('dropzone');
 if (dz) {
   ['dragover','dragenter'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('border-blue-500','bg-blue-50'); });
+    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dz-over'); });
   });
   ['dragleave','drop'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('border-blue-500','bg-blue-50'); });
+    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dz-over'); });
   });
   dz.addEventListener('drop', e => {
     const input = document.getElementById('photoInput');
