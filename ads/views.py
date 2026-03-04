@@ -6,7 +6,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
+from django.utils import timezone
 from django.conf import settings as django_settings
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -127,14 +128,32 @@ def page_business(request):
         'partenaires': partenaires,
     })
 
+def _apply_boost_sort(qs):
+    """Annote et trie un queryset : boosts actifs non expirés en premier."""
+    now = timezone.now()
+    return qs.annotate(
+        _boost_rank=Case(
+            When(
+                Q(boost=True) & (Q(boost_expires_at__isnull=True) | Q(boost_expires_at__gt=now)),
+                then=Value(1)
+            ),
+            default=Value(0),
+            output_field=IntegerField()
+        )
+    ).order_by('-_boost_rank', '-created_at')
+
+
 def index(request):
-    qs = Annonce.objects.filter(statut='actif').select_related('user')
+    base = Annonce.objects.filter(statut='actif').select_related('user')
+    qs = _apply_boost_sort(base)
     annonces_recentes = qs[:10]
-    total_count = qs.count()
+    total_count = base.count()
 
     annonces_par_cat = {}
     for code, label in CATEGORIES:
-        cat_qs = Annonce.objects.filter(statut='actif', categorie=code).select_related('user')
+        cat_qs = _apply_boost_sort(
+            Annonce.objects.filter(statut='actif', categorie=code).select_related('user')
+        )
         annonces_par_cat[code] = {
             'label': label,
             'annonces': list(cat_qs[:10]),
@@ -177,6 +196,7 @@ def liste_annonces(request):
         except ValueError:
             pass
 
+    qs = _apply_boost_sort(qs)
     paginator = Paginator(qs, 50)
     page = paginator.get_page(request.GET.get('page'))
 
@@ -246,22 +266,31 @@ def deposer_annonce(request):
             annonce.photos = photos
 
             # ── Boost ──────────────────────────────────────────────────────
-            boost_duree = request.POST.get('boost_duree', '')
+            boost_duree   = request.POST.get('boost_duree', '').strip()
             boost_demande = request.POST.get('boost_demande', '').strip()
+
             if boost_duree == '1jour':
                 if can_free_boost:
-                    annonce.boost = True
-                    annonce.boost_duree = '1jour'
+                    annonce.boost            = True
+                    annonce.boost_duree      = '1jour'
+                    annonce.boost_status     = 'active'
+                    annonce.boost_expires_at = timezone.now() + datetime.timedelta(days=1)
                 else:
                     messages.warning(request, "Boost gratuit déjà utilisé — annonce publiée sans boost.")
-            elif boost_duree in ('7jours', '1mois'):
-                annonce.boost_duree = boost_duree
-                annonce.boost_demande = boost_demande
-                # boost=False jusqu'à validation admin
+            elif boost_duree == '7jours':
+                annonce.boost_duree    = '7jours'
+                annonce.boost_status   = 'pending'
+                annonce.boost_demande  = boost_demande
+            elif boost_duree == '1mois':
+                annonce.boost_duree    = '1mois'
+                annonce.boost_status   = 'pending'
+                annonce.boost_demande  = boost_demande
 
             annonce.save()
             if boost_duree in ('7jours', '1mois'):
-                messages.success(request, "Annonce publiée ! Votre demande de boost a bien été envoyée, nous vous contacterons.")
+                messages.success(request, "Annonce publiée ! Votre demande de boost a bien été envoyée — notre équipe vous contactera pour le paiement.")
+            elif boost_duree == '1jour' and can_free_boost:
+                messages.success(request, f"Annonce publiée et boostée 24h ! {len(photos)} photo(s) ajoutée(s).")
             else:
                 messages.success(request, f"Annonce publiée ! {len(photos)} photo(s) ajoutée(s).")
             return redirect('annonce_detail', pk=annonce.pk)

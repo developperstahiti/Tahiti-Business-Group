@@ -91,9 +91,14 @@ class Annonce(models.Model):
     photos         = models.JSONField(default=list, blank=True)
     specs          = models.JSONField(default=dict, blank=True)
     statut         = models.CharField(max_length=20, choices=STATUTS, default='actif')
-    boost          = models.BooleanField(default=False)
-    boost_duree    = models.CharField(max_length=20, choices=BOOST_DUREE_CHOICES, default='', blank=True)
-    boost_demande  = models.TextField(blank=True, default='')
+    boost            = models.BooleanField(default=False)
+    boost_duree      = models.CharField(max_length=20, choices=BOOST_DUREE_CHOICES, default='', blank=True)
+    boost_demande    = models.TextField(blank=True, default='')
+    boost_status     = models.CharField(
+        max_length=20, blank=True, default='',
+        choices=[('', 'Sans boost'), ('active', 'Actif'), ('pending', 'En attente'), ('expired', 'Expiré')]
+    )
+    boost_expires_at = models.DateTimeField(null=True, blank=True)
     views          = models.PositiveIntegerField(default=0)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
