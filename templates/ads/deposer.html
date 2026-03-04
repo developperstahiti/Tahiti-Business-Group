@@ -96,47 +96,38 @@
 
             <!-- ── Module Boost ───────────────────────────────────────── -->
             {% if user.is_authenticated %}
-            <div class="bst-module">
+            <div id="boost-wrap">
 
-              <!-- Ligne checkbox -->
-              <label class="bst-label">
-                <span class="bst-label__check">
-                  <input type="checkbox" id="boost-activer" class="bst-cb">
-                  <span class="bst-cb__box" aria-hidden="true"></span>
-                </span>
-                <span class="bst-label__text">
-                  <span class="bst-flame" id="bst-flame" aria-hidden="true">🔥</span>
-                  <span class="bst-label__title">Booster mon annonce</span>
-                </span>
+              <!-- Ligne principale -->
+              <div id="boost-row" onclick="boostToggle()">
+                <input type="checkbox" id="boost-cb" onchange="boostToggle()" onclick="event.stopPropagation()">
+                <span id="boost-flame">🔥</span>
+                <span id="boost-title">Booster mon annonce</span>
                 {% if can_free_boost %}
-                <span class="bst-badge">1<sup>er</sup> boost gratuit ✨</span>
+                <span id="boost-free-badge">1<sup>er</sup> boost gratuit ✨</span>
                 {% endif %}
-              </label>
-
-              <!-- Panel options -->
-              <div id="bst-panel" class="bst-panel" style="display:none">
-                <div class="bst-panel__inner">
-                  <p class="bst-panel__hint">Ton annonce passera en tête de liste dès la publication.</p>
-
-                  <div class="bst-field">
-                    <label class="bst-field__label" for="bst-select">Durée du boost</label>
-                    <select name="boost_duree" id="bst-select" class="bst-select">
-                      <option value="">— Choisir une durée —</option>
-                      <option value="1jour"{% if not can_free_boost %} disabled{% endif %}>🎁 1 jour — Gratuit{% if not can_free_boost %} (déjà utilisé){% endif %}</option>
-                      <option value="7jours">7 jours — Payant</option>
-                      <option value="1mois">1 mois — Payant</option>
-                    </select>
-                  </div>
-
-                  <!-- Textarea (7j / 1mois uniquement) -->
-                  <div id="bst-msg" class="bst-msg" style="display:none">
-                    <textarea name="boost_demande" id="bst-textarea" class="bst-textarea" rows="3"
-                      placeholder="Explique-nous pourquoi tu souhaites booster ton annonce..."></textarea>
-                    <p class="bst-msg__hint">Notre équipe te contactera pour valider et encaisser le paiement.</p>
-                  </div>
-                </div>
               </div>
 
+              <!-- Panel déroulant (caché par défaut) -->
+              <div id="boost-panel">
+                <p id="boost-hint">Ton annonce passera en tête de liste dès la publication.</p>
+
+                <label id="boost-dur-label">Durée du boost</label>
+                <select name="boost_duree" id="boost-select" onchange="boostDurationChange(this)">
+                  <option value="">— Choisir une durée —</option>
+                  <option value="1jour"{% if not can_free_boost %} disabled{% endif %}>🎁 1 jour — Gratuit{% if not can_free_boost %} (déjà utilisé){% endif %}</option>
+                  <option value="7jours">7 jours — Payant</option>
+                  <option value="1mois">1 mois — Payant</option>
+                </select>
+
+                <!-- Textarea uniquement pour 7j / 1mois -->
+                <div id="boost-msg">
+                  <textarea name="boost_demande" id="boost-textarea" rows="3"
+                    placeholder="Explique-nous pourquoi tu souhaites booster ton annonce..."></textarea>
+                  <p id="boost-msg-hint">Notre équipe te contactera pour valider et encaisser le paiement.</p>
+                </div>
+
+              </div>
             </div>
             {% endif %}
             <!-- ── Fin Boost ──────────────────────────────────────────── -->
@@ -207,101 +198,41 @@
 }
 
 /* ══ MODULE BOOST ══════════════════════════════════════════════ */
-
-/* Conteneur */
-.bst-module {
+#boost-wrap {
   border: 1.5px solid #e5e7eb;
   border-radius: 14px;
   overflow: hidden;
   background: #fff;
 }
-
-/* Ligne principale */
-.bst-label {
+#boost-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 14px 18px;
+  background: #f9fafb;
   cursor: pointer;
   user-select: none;
-  background: #f9fafb;
-  transition: background .15s;
 }
-.bst-label:hover { background: #f3f4f6; }
-
-/* Checkbox custom */
-.bst-label__check { position: relative; display: inline-flex; flex-shrink: 0; width: 20px; height: 20px; }
-.bst-cb {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 20px;
-  height: 20px;
-  margin: 0;
+#boost-row:hover { background: #f3f4f6; }
+#boost-cb {
+  width: 18px;
+  height: 18px;
   cursor: pointer;
-  z-index: 1;
-}
-.bst-cb__box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #d1d5db;
-  border-radius: 5px;
-  background: #fff;
-  transition: background .15s, border-color .15s, box-shadow .15s;
+  accent-color: #111827;
   flex-shrink: 0;
 }
-.bst-cb__box::after {
-  content: '';
-  display: none;
-  width: 5px;
-  height: 9px;
-  border: 2px solid #fff;
-  border-top: 0;
-  border-left: 0;
-  transform: rotate(45deg) translateY(-1px);
+#boost-flame {
+  font-size: 16px;
+  opacity: 0;
+  transition: opacity .25s;
 }
-.bst-cb:checked + .bst-cb__box {
-  background: #111827;
-  border-color: #111827;
-  box-shadow: 0 0 0 3px rgba(17,24,39,.12);
-}
-.bst-cb:checked + .bst-cb__box::after { display: block; }
-
-/* Texte + flamme */
-.bst-label__text {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-}
-.bst-label__title {
+#boost-title {
   font-size: 14px;
   font-weight: 700;
   color: #111827;
+  flex: 1;
 }
-.bst-flame {
-  font-size: 16px;
-  display: inline-block;
-  opacity: 0;
-  transform: scale(.6);
-  transition: opacity .25s ease, transform .25s ease;
-  line-height: 1;
-}
-.bst-flame--on {
-  opacity: 1;
-  transform: scale(1);
-  animation: bst-flicker 2s ease-in-out infinite;
-}
-@keyframes bst-flicker {
-  0%, 100% { transform: scale(1)    translateY(0); }
-  50%       { transform: scale(1.1) translateY(-2px); }
-}
-
-/* Badge gratuit */
-.bst-badge {
+#boost-free-badge {
   font-size: 11px;
   font-weight: 700;
   color: #065f46;
@@ -309,41 +240,36 @@
   padding: 3px 9px;
   border-radius: 20px;
   white-space: nowrap;
-  flex-shrink: 0;
 }
-
-/* Panel options */
-.bst-panel {
+#boost-panel {
+  display: none;
   border-top: 1px solid #e5e7eb;
-  animation: bst-slidein .3s ease;
-}
-.bst-panel__inner {
   padding: 14px 18px 18px;
+  animation: boost-in .2s ease;
 }
-.bst-panel__hint {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 14px;
-  font-style: italic;
-}
-@keyframes bst-slidein {
-  from { opacity: 0; transform: translateY(-6px); }
+@keyframes boost-in {
+  from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-/* Champ select */
-.bst-field { display: flex; flex-direction: column; gap: 6px; }
-.bst-field__label {
+#boost-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  margin-bottom: 12px;
+}
+#boost-dur-label {
+  display: block;
   font-size: 11px;
   font-weight: 700;
   color: #374151;
   text-transform: uppercase;
   letter-spacing: .05em;
+  margin-bottom: 6px;
 }
-.bst-select {
+#boost-select {
   display: block;
   width: 100%;
-  padding: 8px 36px 8px 12px;
+  padding: 9px 12px;
   font-size: 13px;
   font-family: inherit;
   font-weight: 500;
@@ -351,50 +277,26 @@
   border: 1.5px solid #d1d5db;
   border-radius: 8px;
   background: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  -webkit-appearance: none;
-  appearance: none;
   cursor: pointer;
-  transition: border-color .2s, opacity .2s;
 }
-.bst-select:focus {
-  outline: none;
-  border-color: #111827;
-  box-shadow: 0 0 0 3px rgba(17,24,39,.10);
-}
-.bst-select:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-  background-color: #f3f4f6;
-}
-
-/* Textarea payant */
-.bst-msg {
+#boost-select:focus { outline: none; border-color: #111827; }
+#boost-msg {
+  display: none;
   margin-top: 14px;
-  animation: bst-slidein .25s ease;
 }
-.bst-textarea {
+#boost-textarea {
   width: 100%;
   padding: 10px 12px;
   font-size: 13px;
   font-family: inherit;
-  font-weight: 500;
   color: #111827;
   border: 1.5px solid #fcd34d;
   border-radius: 8px;
   background: #fffbeb;
   resize: vertical;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
 }
-.bst-textarea:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245,158,11,.15);
-}
-.bst-textarea:disabled { opacity: .4; cursor: not-allowed; }
-.bst-msg__hint {
+#boost-textarea:focus { outline: none; border-color: #f59e0b; }
+#boost-msg-hint {
   font-size: 11px;
   color: #92400e;
   margin-top: 6px;
@@ -766,43 +668,37 @@ function previewPhotos(input) {
   });
 }
 
-// ─── Boost : module complet ────────────────────────────────────────────────────
-(function () {
-  var cb     = document.getElementById('boost-activer');
-  var panel  = document.getElementById('bst-panel');
-  var select = document.getElementById('bst-select');
-  var msgBox = document.getElementById('bst-msg');
-  var flame  = document.getElementById('bst-flame');
-  if (!cb || !panel || !select) return;
-
-  // Quand la checkbox change
-  cb.addEventListener('change', function () {
-    if (cb.checked) {
-      panel.style.display = '';
-      if (flame) flame.classList.add('bst-flame--on');
-    } else {
-      panel.style.display = 'none';
-      select.value = '';
-      if (msgBox) msgBox.style.display = 'none';
-      if (flame) flame.classList.remove('bst-flame--on');
-    }
-  });
-
-  // Quand la durée change → afficher/cacher textarea
-  select.addEventListener('change', function () {
-    if (!msgBox) return;
-    var paid = ['7jours', '1mois'].includes(select.value);
-    msgBox.style.display = paid ? '' : 'none';
-  });
-
-  // Avant soumission : si checkbox non cochée, vider boost_duree
-  var form = cb.closest('form');
-  if (form) {
-    form.addEventListener('submit', function () {
-      if (!cb.checked) select.value = '';
-    });
+// ─── Boost ────────────────────────────────────────────────────────────────────
+function boostToggle() {
+  var cb    = document.getElementById('boost-cb');
+  var panel = document.getElementById('boost-panel');
+  var sel   = document.getElementById('boost-select');
+  var msg   = document.getElementById('boost-msg');
+  var flame = document.getElementById('boost-flame');
+  if (!cb || !panel) return;
+  if (cb.checked) {
+    panel.style.display = 'block';
+    if (flame) flame.style.opacity = '1';
+  } else {
+    panel.style.display = 'none';
+    if (sel)   sel.value = '';
+    if (msg)   msg.style.display = 'none';
+    if (flame) flame.style.opacity = '0';
   }
-})();
+}
+
+function boostDurationChange(sel) {
+  var msg = document.getElementById('boost-msg');
+  if (!msg) return;
+  msg.style.display = (sel.value === '7jours' || sel.value === '1mois') ? 'block' : 'none';
+}
+
+// Vider boost_duree si checkbox non cochée avant soumission
+document.querySelector('form[method="post"]') && document.querySelector('form[method="post"]').addEventListener('submit', function() {
+  var cb  = document.getElementById('boost-cb');
+  var sel = document.getElementById('boost-select');
+  if (cb && !cb.checked && sel) sel.value = '';
+});
 
 // Drag & drop
 const dz = document.getElementById('dropzone');
