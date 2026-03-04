@@ -105,40 +105,23 @@
                 </div>
               </div>
 
-              <div class="boost-cards">
+              <div class="boost-row">
+                <!-- Case à cocher -->
+                <input type="checkbox" id="boost-activer" class="boost-checkbox">
+                <label for="boost-activer" class="boost-checkbox-label">Activer le boost</label>
 
-                <!-- 1 jour gratuit -->
-                <label class="boost-card {% if not can_free_boost %}boost-card--disabled{% endif %}" id="boost-label-1jour">
-                  <input type="radio" name="boost_duree" value="1jour"
-                    {% if not can_free_boost %}disabled{% endif %}
-                    class="boost-radio sr-only">
-                  <div class="boost-card__badge boost-card__badge--free">GRATUIT</div>
-                  <div class="boost-card__duration">1 jour</div>
-                  <div class="boost-card__info">À usage unique</div>
-                  {% if not can_free_boost %}
-                  <div class="boost-card__used">Déjà utilisé</div>
-                  {% endif %}
-                </label>
-
-                <!-- 7 jours payant -->
-                <label class="boost-card" id="boost-label-7jours">
-                  <input type="radio" name="boost_duree" value="7jours" class="boost-radio sr-only">
-                  <div class="boost-card__badge boost-card__badge--paid">PAYANT</div>
-                  <div class="boost-card__duration">7 jours</div>
-                  <div class="boost-card__info">Demande envoyée à l'équipe</div>
-                </label>
-
-                <!-- 1 mois payant -->
-                <label class="boost-card" id="boost-label-1mois">
-                  <input type="radio" name="boost_duree" value="1mois" class="boost-radio sr-only">
-                  <div class="boost-card__badge boost-card__badge--paid">PAYANT</div>
-                  <div class="boost-card__duration">1 mois</div>
-                  <div class="boost-card__info">Meilleure visibilité</div>
-                </label>
-
+                <!-- Menu déroulant (grisé si case décochée) -->
+                <select name="boost_duree" id="boost-select" class="form-input boost-select" disabled>
+                  <option value="">— Choisir une durée</option>
+                  <option value="1jour" {% if not can_free_boost %}disabled class="text-gray-400"{% endif %}>
+                    1 jour — GRATUIT{% if not can_free_boost %} (déjà utilisé){% endif %}
+                  </option>
+                  <option value="7jours">7 jours — Payant</option>
+                  <option value="1mois">1 mois — Payant</option>
+                </select>
               </div>
 
-              <!-- Boîte de message (visible uniquement pour options payantes) -->
+              <!-- Boîte de message (visible uniquement pour 7j ou 1 mois) -->
               <div id="boost-demande-box" class="boost-demande-box boost-demande-box--hidden">
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">
                   Votre message de demande
@@ -207,10 +190,7 @@
   gap: 10px;
   margin-bottom: 14px;
 }
-.boost-icon {
-  font-size: 22px;
-  line-height: 1;
-}
+.boost-icon { font-size: 22px; line-height: 1; }
 .boost-section__title {
   font-size: 13px;
   font-weight: 700;
@@ -218,85 +198,36 @@
   text-transform: uppercase;
   letter-spacing: .05em;
 }
-.boost-section__sub {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 1px;
-}
-.boost-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-@media (max-width: 480px) {
-  .boost-cards { grid-template-columns: 1fr; }
-}
-.boost-card {
-  position: relative;
+.boost-section__sub { font-size: 12px; color: #6b7280; margin-top: 1px; }
+
+/* Ligne checkbox + select */
+.boost-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 16px 10px 14px;
-  border: 2px solid #e5e7eb;
-  border-radius: 14px;
-  text-align: center;
+  gap: 12px;
+}
+.boost-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
   cursor: pointer;
-  transition: border-color .18s, background .18s, box-shadow .18s;
-  background: #fff;
+  flex-shrink: 0;
 }
-.boost-card:hover:not(.boost-card--disabled) {
-  border-color: #93c5fd;
-  background: #f0f9ff;
-}
-.boost-card:has(.boost-radio:checked) {
-  border-color: #2563eb;
-  background: #eff6ff;
-  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-}
-.boost-card--disabled {
-  opacity: .5;
-  cursor: not-allowed;
-  background: #f9fafb;
-}
-.boost-card__badge {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .1em;
-  padding: 2px 8px;
-  border-radius: 99px;
-  position: absolute;
-  top: -9px;
-  left: 50%;
-  transform: translateX(-50%);
+.boost-checkbox-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
   white-space: nowrap;
 }
-.boost-card__badge--free {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #86efac;
+.boost-select {
+  flex: 1;
+  transition: opacity .2s;
 }
-.boost-card__badge--paid {
-  background: #fef3c7;
-  color: #b45309;
-  border: 1px solid #fcd34d;
-}
-.boost-card__duration {
-  font-size: 18px;
-  font-weight: 800;
-  color: #111827;
-  margin-top: 6px;
-}
-.boost-card__info {
-  font-size: 11px;
-  color: #6b7280;
-}
-.boost-card__used {
-  font-size: 10px;
-  font-weight: 700;
-  color: #ef4444;
-  margin-top: 2px;
+.boost-select:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  background: #f3f4f6;
 }
 
 /* Boîte de demande payante */
@@ -306,11 +237,8 @@
   background: #fffbeb;
   border: 1px solid #fcd34d;
   border-radius: 12px;
-  transition: opacity .2s, transform .2s;
 }
-.boost-demande-box--hidden {
-  display: none;
-}
+.boost-demande-box--hidden { display: none; }
 
 </style>
 {% endblock %}
@@ -677,28 +605,27 @@ function previewPhotos(input) {
   });
 }
 
-// ─── Boost : afficher/masquer la boîte de demande payante ────────────────────
+// ─── Boost : checkbox + menu déroulant ───────────────────────────────────────
 (function () {
-  const radios  = document.querySelectorAll('input[name="boost_duree"]');
-  const box     = document.getElementById('boost-demande-box');
-  const labels  = document.querySelectorAll('.boost-card');
-  if (!radios.length || !box) return;
+  const checkbox = document.getElementById('boost-activer');
+  const select   = document.getElementById('boost-select');
+  const box      = document.getElementById('boost-demande-box');
+  if (!checkbox || !select || !box) return;
 
-  radios.forEach(r => {
-    r.addEventListener('change', () => {
-      const paid = ['7jours', '1mois'].includes(r.value);
+  function syncBoost() {
+    select.disabled = !checkbox.checked;
+    if (!checkbox.checked) {
+      select.value = '';
+      box.classList.add('boost-demande-box--hidden');
+    } else {
+      const paid = ['7jours', '1mois'].includes(select.value);
       box.classList.toggle('boost-demande-box--hidden', !paid);
-    });
-  });
+    }
+  }
 
-  // Clic sur la carte sélectionne le radio
-  labels.forEach(lbl => {
-    lbl.addEventListener('click', function () {
-      const radio = this.querySelector('.boost-radio');
-      if (radio && !radio.disabled) radio.checked = true;
-      radios.forEach(r => r.dispatchEvent(new Event('change')));
-    });
-  });
+  checkbox.addEventListener('change', syncBoost);
+  select.addEventListener('change', syncBoost);
+  syncBoost();
 })();
 
 // Drag & drop
