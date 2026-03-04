@@ -3,7 +3,7 @@
    Inspiré : ladagemaxime.com + Facebook Marketplace
    ================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
 
 :root {
   --bg:        #ffffff;
@@ -40,7 +40,7 @@ html {
 }
 
 body {
-  font-family: 'Libre Baskerville', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   background: var(--bg-alt);
   color: var(--text);
   line-height: 1.6;
@@ -222,9 +222,18 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   background: #05051a;
 }
 .pub-empty__icon { font-size: 2rem; margin-bottom: 8px; }
-.pub-empty__title { font-weight: 700; font-size: 14px; color: #fff; letter-spacing: .02em; }
-.pub-empty__price { font-weight: 800; color: #f59e0b; font-size: 20px; margin: 6px 0; letter-spacing: -.3px; }
-.pub-empty__sub   { font-size: 11px; color: rgba(255,255,255,.55); }
+.pub-empty__title {
+  font-weight: 700; font-size: 15px;
+  color: #fff;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  letter-spacing: .02em;
+}
+.pub-empty__price {
+  font-weight: 800; font-size: 21px; margin: 6px 0; letter-spacing: -.3px;
+  color: #fff;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 8px rgba(0,0,0,.7);
+}
+.pub-empty__sub   { font-size: 11px; color: rgba(255,255,255,.7); text-shadow: 0 1px 3px rgba(0,0,0,.8); }
 .pub-empty__cta   {
   margin-top: 14px;
   background: rgba(255,255,255,.12);
@@ -988,13 +997,15 @@ img.loaded     { opacity: 1; }
   font-weight: 900;
   color: #fff;
   letter-spacing: -.3px;
-  font-family: "Inter", sans-serif;
+  font-family: 'Playfair Display', Georgia, serif;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
   flex: 1;
 }
 .billboard-milieu-empty__price {
   font-size: clamp(10px, 1.4vw, 13px);
   font-weight: 700;
-  color: rgba(255,255,255,.85);
+  color: #fff;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
   white-space: nowrap;
   flex-shrink: 0;
   display: none;

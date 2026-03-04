@@ -7,15 +7,15 @@
   <meta name="description" content="{% block meta_desc %}Annonces gratuites en Polynésie française. Achetez et vendez véhicules, immobilier, électronique, emploi.{% endblock %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans:  ['Libre Baskerville', 'Georgia', 'serif'],
-            serif: ['Libre Baskerville', 'Georgia', 'serif'],
+            sans:  ['Playfair Display', 'Georgia', 'serif'],
+            serif: ['Playfair Display', 'Georgia', 'serif'],
           },
           colors: { primary: '#1a6cf1', accent: '#059669' }
         }
@@ -57,9 +57,9 @@
   {% else %}
   <a href="{% url 'tarifs_pubs' %}" class="pub-bg-fixed-empty">
     <canvas class="pub-space-canvas"></canvas>
-    <div style="color:#fff;font-size:clamp(20px,4vw,48px);font-weight:900;letter-spacing:-.02em;text-align:center">📢 VOTRE PUB ICI</div>
-    <div style="color:rgba(255,255,255,.9);font-size:clamp(14px,2.5vw,28px);font-weight:700">100 000 XPF / mois</div>
-    <div style="color:rgba(255,255,255,.7);font-size:clamp(12px,1.5vw,18px);font-weight:600;text-decoration:underline">Réserver → 89 61 06 13</div>
+    <div style="color:#fff;font-size:clamp(20px,4vw,48px);font-weight:900;letter-spacing:-.02em;text-align:center;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">📢 VOTRE PUB ICI</div>
+    <div style="color:#fff;font-size:clamp(14px,2.5vw,28px);font-weight:700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">100 000 XPF / mois</div>
+    <div style="color:#fff;font-size:clamp(12px,1.5vw,18px);font-weight:600;text-decoration:underline;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">Réserver → 89 61 06 13</div>
   </a>
   {% endif %}
 </div>
