@@ -128,28 +128,30 @@ class Publicite(models.Model):
                 img = img.convert('RGB')
             img = PILImageOps.fit(img, dims, PILImage.LANCZOS)
 
-            if os.environ.get('CLOUDINARY_URL'):
-                # ── Upload Cloudinary (production Railway) ────────────────
-                import cloudinary.uploader
+            if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
+                # ── Upload S3 (production Railway) ────────────────────────
+                import boto3
+                bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
+                region = os.environ.get('AWS_S3_REGION_NAME', 'eu-west-3')
+                key = f"pubs/pub_{self.pk}_{uuid.uuid4().hex[:8]}.webp"
                 buf = io.BytesIO()
                 img.save(buf, format='WEBP', quality=85, method=6)
                 buf.seek(0)
-                result = cloudinary.uploader.upload(
-                    buf,
-                    folder='pubs',
-                    public_id=f"pub_{self.pk}_{uuid.uuid4().hex[:8]}",
-                    format='webp',
-                    resource_type='image',
-                )
-                cloudinary_url = result['secure_url']
+                boto3.client(
+                    's3',
+                    region_name=region,
+                    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+                    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+                ).put_object(Bucket=bucket, Key=key, Body=buf, ContentType='image/webp')
+                s3_url = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
                 # Supprimer le fichier local temporaire
                 if old_path and os.path.exists(old_path):
                     try:
                         os.remove(old_path)
                     except OSError:
                         pass
-                Publicite.objects.filter(pk=self.pk).update(image='', image_url=cloudinary_url)
-                self.image_url = cloudinary_url
+                Publicite.objects.filter(pk=self.pk).update(image='', image_url=s3_url)
+                self.image_url = s3_url
             else:
                 # ── Sauvegarde locale en WebP (développement) ─────────────
                 upload_dir = os.path.join(django_settings.MEDIA_ROOT, 'pubs')

@@ -28,21 +28,23 @@ def _save_webp(file_obj, user_pk):
         img = img.convert('RGB')
     img.thumbnail((900, 700), PILImage.LANCZOS)
 
-    if os.environ.get('CLOUDINARY_URL'):
-        import cloudinary.uploader
+    if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
+        import boto3
+        bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
+        region = os.environ.get('AWS_S3_REGION_NAME', 'eu-west-3')
+        key = f"annonces/{user_pk}_{uuid.uuid4().hex[:8]}.webp"
         buf = io.BytesIO()
         img.save(buf, format='WEBP', quality=85, method=6)
         buf.seek(0)
-        result = cloudinary.uploader.upload(
-            buf,
-            folder='annonces',
-            public_id=f"{user_pk}_{uuid.uuid4().hex[:8]}",
-            format='webp',
-            resource_type='image',
-        )
-        return result['secure_url']
+        boto3.client(
+            's3',
+            region_name=region,
+            aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        ).put_object(Bucket=bucket, Key=key, Body=buf, ContentType='image/webp')
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
 
-    # Fallback local (développement sans Cloudinary)
+    # Fallback local (développement sans S3)
     upload_dir = os.path.join(django_settings.MEDIA_ROOT, 'annonces')
     os.makedirs(upload_dir, exist_ok=True)
     filename = f"{user_pk}_{uuid.uuid4().hex[:8]}.webp"

@@ -107,10 +107,10 @@ LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# ── Cloudinary (stockage persistant sur Railway) ───────────────────────────────
-# 1. Créer un compte gratuit sur cloudinary.com
-# 2. Copier la CLOUDINARY_URL depuis le dashboard (format: cloudinary://key:secret@cloud)
-# 3. L'ajouter comme variable d'environnement dans Railway
-if os.environ.get('CLOUDINARY_URL'):
-    import cloudinary
-    cloudinary.config(secure=True)
+# ── AWS S3 (stockage persistant sur Railway) ──────────────────────────────────
+# Variables à ajouter dans Railway → Settings → Variables :
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S3_REGION_NAME
+AWS_ACCESS_KEY_ID      = os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY  = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+AWS_S3_REGION_NAME     = os.environ.get('AWS_S3_REGION_NAME', 'eu-west-3')
