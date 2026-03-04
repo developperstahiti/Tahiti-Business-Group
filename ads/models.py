@@ -17,6 +17,13 @@ STATUTS = [
     ('expire', 'Expiré'),
 ]
 
+BOOST_DUREE_CHOICES = [
+    ('',       'Sans boost'),
+    ('1jour',  '1 jour gratuit'),
+    ('7jours', '7 jours (payant)'),
+    ('1mois',  '1 mois (payant)'),
+]
+
 # Sous-catégories style Leboncoin — source unique de vérité
 SOUS_CATEGORIES = {
     'vehicules': [
@@ -85,6 +92,8 @@ class Annonce(models.Model):
     specs          = models.JSONField(default=dict, blank=True)
     statut         = models.CharField(max_length=20, choices=STATUTS, default='actif')
     boost          = models.BooleanField(default=False)
+    boost_duree    = models.CharField(max_length=20, choices=BOOST_DUREE_CHOICES, default='', blank=True)
+    boost_demande  = models.TextField(blank=True, default='')
     views          = models.PositiveIntegerField(default=0)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)

@@ -220,6 +220,11 @@ def annonce_detail(request, pk):
 @login_required
 def deposer_annonce(request):
     from .forms import AnnonceForm
+    # L'utilisateur a-t-il déjà utilisé son boost gratuit ?
+    can_free_boost = True
+    if request.user.is_authenticated:
+        can_free_boost = not request.user.annonces.filter(boost_duree='1jour').exists()
+
     if request.method == 'POST':
         if _rate_limited(request, 'deposer', max_count=5, period_minutes=60):
             messages.error(request, "Limite atteinte : 5 annonces par heure maximum. Réessayez plus tard.")
@@ -239,15 +244,34 @@ def deposer_annonce(request):
                 except Exception:
                     pass
             annonce.photos = photos
+
+            # ── Boost ──────────────────────────────────────────────────────
+            boost_duree = request.POST.get('boost_duree', '')
+            boost_demande = request.POST.get('boost_demande', '').strip()
+            if boost_duree == '1jour':
+                if can_free_boost:
+                    annonce.boost = True
+                    annonce.boost_duree = '1jour'
+                else:
+                    messages.warning(request, "Boost gratuit déjà utilisé — annonce publiée sans boost.")
+            elif boost_duree in ('7jours', '1mois'):
+                annonce.boost_duree = boost_duree
+                annonce.boost_demande = boost_demande
+                # boost=False jusqu'à validation admin
+
             annonce.save()
-            messages.success(request, f"Annonce publiée ! {len(photos)} photo(s) converties en WebP.")
+            if boost_duree in ('7jours', '1mois'):
+                messages.success(request, "Annonce publiée ! Votre demande de boost a bien été envoyée, nous vous contacterons.")
+            else:
+                messages.success(request, f"Annonce publiée ! {len(photos)} photo(s) ajoutée(s).")
             return redirect('annonce_detail', pk=annonce.pk)
     else:
         form = AnnonceForm()
 
     return render(request, 'ads/deposer.html', {
-        'form':                form,
+        'form':                 form,
         'sous_categories_json': _sous_cats_json(),
+        'can_free_boost':       can_free_boost,
     })
 
 
