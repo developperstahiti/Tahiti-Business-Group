@@ -106,3 +106,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ── Cloudinary (stockage persistant sur Railway) ───────────────────────────────
+# 1. Créer un compte gratuit sur cloudinary.com
+# 2. Copier la CLOUDINARY_URL depuis le dashboard (format: cloudinary://key:secret@cloud)
+# 3. L'ajouter comme variable d'environnement dans Railway
+if os.environ.get('CLOUDINARY_URL'):
+    import cloudinary
+    cloudinary.config(secure=True)

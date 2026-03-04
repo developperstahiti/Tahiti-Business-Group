@@ -1,3 +1,4 @@
+import io
 import os
 import json
 import uuid
@@ -26,6 +27,22 @@ def _save_webp(file_obj, user_pk):
     if img.mode in ('RGBA', 'P'):
         img = img.convert('RGB')
     img.thumbnail((900, 700), PILImage.LANCZOS)
+
+    if os.environ.get('CLOUDINARY_URL'):
+        import cloudinary.uploader
+        buf = io.BytesIO()
+        img.save(buf, format='WEBP', quality=85, method=6)
+        buf.seek(0)
+        result = cloudinary.uploader.upload(
+            buf,
+            folder='annonces',
+            public_id=f"{user_pk}_{uuid.uuid4().hex[:8]}",
+            format='webp',
+            resource_type='image',
+        )
+        return result['secure_url']
+
+    # Fallback local (développement sans Cloudinary)
     upload_dir = os.path.join(django_settings.MEDIA_ROOT, 'annonces')
     os.makedirs(upload_dir, exist_ok=True)
     filename = f"{user_pk}_{uuid.uuid4().hex[:8]}.webp"
