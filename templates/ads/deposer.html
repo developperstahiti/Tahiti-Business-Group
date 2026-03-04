@@ -99,7 +99,7 @@
             <div class="bst-module">
 
               <!-- Ligne checkbox -->
-              <label class="bst-label" for="boost-activer">
+              <label class="bst-label">
                 <span class="bst-label__check">
                   <input type="checkbox" id="boost-activer" class="bst-cb">
                   <span class="bst-cb__box" aria-hidden="true"></span>
@@ -120,7 +120,7 @@
 
                   <div class="bst-field">
                     <label class="bst-field__label" for="bst-select">Durée du boost</label>
-                    <select name="boost_duree" id="bst-select" class="bst-select" disabled>
+                    <select name="boost_duree" id="bst-select" class="bst-select">
                       <option value="">— Choisir une durée —</option>
                       <option value="1jour"{% if not can_free_boost %} disabled{% endif %}>🎁 1 jour — Gratuit{% if not can_free_boost %} (déjà utilisé){% endif %}</option>
                       <option value="7jours">7 jours — Payant</option>
@@ -230,13 +230,16 @@
 .bst-label:hover { background: #f3f4f6; }
 
 /* Checkbox custom */
-.bst-label__check { position: relative; display: inline-flex; flex-shrink: 0; }
+.bst-label__check { position: relative; display: inline-flex; flex-shrink: 0; width: 20px; height: 20px; }
 .bst-cb {
   position: absolute;
+  inset: 0;
   opacity: 0;
-  width: 0;
-  height: 0;
+  width: 20px;
+  height: 20px;
   margin: 0;
+  cursor: pointer;
+  z-index: 1;
 }
 .bst-cb__box {
   display: flex;
@@ -764,31 +767,40 @@ function previewPhotos(input) {
 
 // ─── Boost : module complet ────────────────────────────────────────────────────
 (function () {
-  var cb       = document.getElementById('boost-activer');
-  var panel    = document.getElementById('bst-panel');
-  var select   = document.getElementById('bst-select');
-  var msgBox   = document.getElementById('bst-msg');
-  var textarea = document.getElementById('bst-textarea');
-  var flame    = document.getElementById('bst-flame');
-  if (!cb) return;
+  var cb     = document.getElementById('boost-activer');
+  var panel  = document.getElementById('bst-panel');
+  var select = document.getElementById('bst-select');
+  var msgBox = document.getElementById('bst-msg');
+  var flame  = document.getElementById('bst-flame');
+  if (!cb || !panel || !select) return;
 
-  function syncMsg(forceClose) {
-    var paid = !forceClose && select && ['7jours', '1mois'].includes(select.value);
-    if (msgBox)   msgBox.style.display   = paid ? '' : 'none';
-    if (textarea) { textarea.disabled = !paid; textarea.required = !!paid; }
+  // Quand la checkbox change
+  cb.addEventListener('change', function () {
+    if (cb.checked) {
+      panel.style.display = '';
+      if (flame) flame.classList.add('bst-flame--on');
+    } else {
+      panel.style.display = 'none';
+      select.value = '';
+      if (msgBox) msgBox.style.display = 'none';
+      if (flame) flame.classList.remove('bst-flame--on');
+    }
+  });
+
+  // Quand la durée change → afficher/cacher textarea
+  select.addEventListener('change', function () {
+    if (!msgBox) return;
+    var paid = ['7jours', '1mois'].includes(select.value);
+    msgBox.style.display = paid ? '' : 'none';
+  });
+
+  // Avant soumission : si checkbox non cochée, vider boost_duree
+  var form = cb.closest('form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      if (!cb.checked) select.value = '';
+    });
   }
-
-  function syncPanel() {
-    var on = cb.checked;
-    if (panel)  panel.style.display  = on ? '' : 'none';
-    if (flame)  flame.classList.toggle('bst-flame--on', on);
-    if (select) { select.disabled = !on; if (!on) select.value = ''; }
-    syncMsg(!on);
-  }
-
-  cb.addEventListener('change', syncPanel);
-  if (select) select.addEventListener('change', function () { syncMsg(); });
-  syncPanel();
 })();
 
 // Drag & drop
