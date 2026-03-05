@@ -1,57 +1,27 @@
-import io
-import os
 import json
+import os
 import uuid
+import datetime
+import csv
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Case, When, Value, IntegerField
-from django.utils import timezone
-from django.conf import settings as django_settings
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from PIL import Image as PILImage
-from django.http import HttpResponse, JsonResponse
-from django.contrib.auth import get_user_model
+from django.db.models import Q, Case, When, Value, IntegerField, Count
 from django.db.models.functions import TruncDay
-from django.db.models import Count
-import datetime
-import csv
+from django.utils import timezone
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
+from django.contrib.auth import get_user_model
 from .models import Annonce, Message, CATEGORIES, SOUS_CATEGORIES, Signalement
+from .image_utils import save_webp
 from rubriques.models import ArticlePromo, ArticleInfo, ArticleNouveaute
+
 User = get_user_model()
 
 
 def _save_webp(file_obj, user_pk):
-    img = PILImage.open(file_obj)
-    if img.mode in ('RGBA', 'P'):
-        img = img.convert('RGB')
-    img.thumbnail((900, 700), PILImage.LANCZOS)
-
-    if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
-        import boto3
-        bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
-        region = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
-        key = f"annonces/{user_pk}_{uuid.uuid4().hex[:8]}.webp"
-        buf = io.BytesIO()
-        img.save(buf, format='WEBP', quality=85, method=6)
-        buf.seek(0)
-        boto3.client(
-            's3',
-            region_name=region,
-            aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-            aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        ).put_object(Bucket=bucket, Key=key, Body=buf, ContentType='image/webp')
-        return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
-
-    # Fallback local (développement sans S3)
-    upload_dir = os.path.join(django_settings.MEDIA_ROOT, 'annonces')
-    os.makedirs(upload_dir, exist_ok=True)
-    filename = f"{user_pk}_{uuid.uuid4().hex[:8]}.webp"
-    filepath = os.path.join(upload_dir, filename)
-    img.save(filepath, format='WEBP', quality=85, method=6)
-    return f"{django_settings.MEDIA_URL}annonces/{filename}"
+    return save_webp(file_obj, 'annonces', str(user_pk), max_size=(900, 700))
 
 
 def _sous_cats_json():

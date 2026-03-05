@@ -1,21 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Soumettre une info — TBG{% endblock %}
+{% block title %}{{ titre_page }} — TBG{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto px-4 py-10">
   <div class="mb-8">
     <a href="{% url 'rubriques_index' %}" class="text-sm text-blue-600 hover:underline">← Rubriques</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-3 flex items-center gap-2">
-      📰 Soumettre une actualité
+      {{ emoji }} {{ titre_page }}
     </h1>
-    <p class="text-gray-500 mt-1 text-sm">
-      Partagez une actualité locale ou internationale. Sera visible après validation.
-    </p>
   </div>
 
-  <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 text-sm text-blue-800">
-    <strong>Règles :</strong> Actualités factuelles uniquement. Aucun prix, aucune pub déguisée.
-    Si votre article contient des prix/réductions → utilisez la rubrique <strong>Promo</strong>.
+  <div class="bg-{{ couleur }}-50 border border-{{ couleur }}-200 rounded-2xl p-4 mb-6 text-sm text-{{ couleur }}-800">
+    <strong>Règles :</strong> {{ regles }}
   </div>
 
   {% if messages %}
@@ -30,40 +26,39 @@
     {% csrf_token %}
     <div>
       <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="titre">
-        Titre de l'actualité <span class="text-red-500">*</span>
+        Titre <span class="text-red-500">*</span>
       </label>
       <input type="text" id="titre" name="titre" required maxlength="200"
-             placeholder="Ex : Rappel Toyota — défaut sur les freins ABS"
+             placeholder="{{ titre_placeholder }}"
              class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
     </div>
     <div>
       <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="contenu">
-        Résumé de l'info <span class="text-red-500">*</span>
+        Description <span class="text-red-500">*</span>
       </label>
       <textarea id="contenu" name="contenu" required rows="4" maxlength="1000"
-                placeholder="Résumez l'actualité en 2-4 phrases..."
+                placeholder="{{ contenu_placeholder }}"
                 class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none"></textarea>
     </div>
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="source_media">
-        Lien source (optionnel mais recommandé)
+      <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="lien">
+        {{ lien_label }}
       </label>
-      <input type="url" id="source_media" name="source_media"
-             placeholder="https://www.tahiti-infos.com/..."
+      <input type="url" id="lien" name="lien"
+             placeholder="{{ lien_placeholder }}"
              class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
-      <p class="text-xs text-gray-400 mt-1">Lien vers l'article original : Tahiti Infos, Radio1, AFP, etc.</p>
     </div>
     <div>
       <label class="block text-sm font-semibold text-gray-700 mb-1.5">
         Photo (optionnel)
       </label>
       <input type="file" name="photo" accept="image/*"
-             class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 cursor-pointer">
+             class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-{{ couleur }}-100 file:text-{{ couleur }}-800 hover:file:bg-{{ couleur }}-200 cursor-pointer">
       <p class="text-xs text-gray-400 mt-1">JPG, PNG ou WebP — max 5 Mo. Convertie automatiquement en WebP.</p>
     </div>
     <button type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition text-sm">
-      📰 Soumettre l'info
+            class="w-full bg-{{ couleur }}-{% if couleur == 'amber' %}500 hover:bg-amber-600{% elif couleur == 'blue' %}600 hover:bg-blue-700{% else %}600 hover:bg-emerald-700{% endif %} text-white font-bold py-3 rounded-xl transition text-sm">
+      {{ emoji }} {{ bouton_label }}
     </button>
   </form>
 </div>
