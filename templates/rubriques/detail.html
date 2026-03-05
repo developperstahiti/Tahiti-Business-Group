@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.titre }} — TBG{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+
+  <!-- Retour -->
+  <a href="{% url 'rubriques_index' %}"
+     class="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 mb-8 transition">
+    ← Retour aux rubriques
+  </a>
+
+  <!-- Card détail -->
+  <div class="border-2 border-gray-900 bg-white">
+
+    <!-- Header coloré -->
+    <div class="border-b-2 border-gray-900 px-8 py-6 flex items-center gap-4">
+      <span class="text-5xl">{{ emoji }}</span>
+      <div>
+        <span class="inline-block text-xs font-black tracking-widest uppercase border border-gray-900 px-2 py-0.5 mb-2">{{ badge }}</span>
+        <h1 class="text-2xl font-bold text-gray-900 leading-tight" style="font-family:'Libre Baskerville',Georgia,serif">
+          {{ article.titre }}
+        </h1>
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="flex items-center gap-4 px-8 py-3 border-b border-gray-200 text-xs text-gray-500 font-medium">
+      <span>
+        {% if auteur %}{{ auteur.nom|default:auteur.email }}{% else %}TBG{% endif %}
+      </span>
+      <span>·</span>
+      <span>{{ article.created_at|date:"d/m/Y" }}</span>
+    </div>
+
+    <!-- Contenu -->
+    <div class="px-8 py-8">
+      <p class="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{{ article.contenu }}</p>
+    </div>
+
+    <!-- Lien externe (si présent) -->
+    {% if lien %}
+    <div class="px-8 pb-8">
+      <a href="{{ lien }}" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-bold px-6 py-3 hover:bg-black transition">
+        {{ lien_label }} →
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

@@ -79,6 +79,45 @@ def deposer_nouveaute(request):
     return render(request, 'rubriques/deposer_nouveaute.html')
 
 
+def promo_detail(request, pk):
+    article = get_object_or_404(ArticlePromo, pk=pk, statut='valide')
+    return render(request, 'rubriques/detail.html', {
+        'article': article,
+        'type': 'promo',
+        'emoji': '💰',
+        'badge': 'Promo',
+        'lien': article.lien_promo,
+        'lien_label': "Voir l'offre",
+        'auteur': article.pro_user,
+    })
+
+
+def info_detail(request, pk):
+    article = get_object_or_404(ArticleInfo, pk=pk, statut='valide')
+    return render(request, 'rubriques/detail.html', {
+        'article': article,
+        'type': 'info',
+        'emoji': '📰',
+        'badge': 'Info',
+        'lien': article.source_media,
+        'lien_label': 'Lire la source',
+        'auteur': article.auteur,
+    })
+
+
+def nouveaute_detail(request, pk):
+    article = get_object_or_404(ArticleNouveaute, pk=pk, statut='valide')
+    return render(request, 'rubriques/detail.html', {
+        'article': article,
+        'type': 'nouveaute',
+        'emoji': '🚀',
+        'badge': 'Nouveauté',
+        'lien': article.lien_redirection,
+        'lien_label': 'En savoir plus',
+        'auteur': article.pro_user,
+    })
+
+
 @login_required
 def moderation_dashboard(request):
     if not request.user.is_staff:

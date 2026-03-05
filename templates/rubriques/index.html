@@ -47,9 +47,7 @@
     {% if promos %}
     <div class="rubrique-grid">
       {% for p in promos %}
-      <a href="{{ p.lien_promo|default:'#' }}"
-         {% if p.lien_promo %}target="_blank" rel="noopener"{% endif %}
-         class="article-card">
+      <a href="{% url 'promo_detail' p.pk %}" class="article-card">
         <div class="article-card__image">
           <span class="article-card__emoji">💰</span>
         </div>
@@ -59,9 +57,7 @@
           <div class="article-card__desc">{{ p.contenu }}</div>
           <div class="article-card__meta">
             <span>{{ p.pro_user.nom|default:p.pro_user.email }} · {{ p.created_at|date:"d/m/Y" }}</span>
-            {% if p.lien_promo %}
-            <span class="article-card__cta">Voir l'offre →</span>
-            {% endif %}
+            <span class="article-card__cta">Lire →</span>
           </div>
         </div>
       </a>
@@ -88,9 +84,7 @@
     {% if infos %}
     <div class="rubrique-grid">
       {% for a in infos %}
-      <a href="{{ a.source_media|default:'#' }}"
-         {% if a.source_media %}target="_blank" rel="noopener"{% endif %}
-         class="article-card">
+      <a href="{% url 'info_detail' a.pk %}" class="article-card">
         <div class="article-card__image">
           <span class="article-card__emoji">📰</span>
         </div>
@@ -100,9 +94,7 @@
           <div class="article-card__desc">{{ a.contenu }}</div>
           <div class="article-card__meta">
             <span>{% if a.auteur %}{{ a.auteur.nom|default:a.auteur.email }}{% else %}TBG{% endif %} · {{ a.created_at|date:"d/m/Y" }}</span>
-            {% if a.source_media %}
-            <span class="article-card__cta">Lire la source →</span>
-            {% endif %}
+            <span class="article-card__cta">Lire →</span>
           </div>
         </div>
       </a>
@@ -130,9 +122,7 @@
     {% if nouveautes %}
     <div class="rubrique-grid">
       {% for n in nouveautes %}
-      <a href="{{ n.lien_redirection|default:'#' }}"
-         {% if n.lien_redirection %}target="_blank" rel="noopener"{% endif %}
-         class="article-card">
+      <a href="{% url 'nouveaute_detail' n.pk %}" class="article-card">
         <div class="article-card__image">
           <span class="article-card__emoji">🚀</span>
         </div>
@@ -142,9 +132,7 @@
           <div class="article-card__desc">{{ n.contenu }}</div>
           <div class="article-card__meta">
             <span>{{ n.pro_user.nom|default:n.pro_user.email }} · {{ n.created_at|date:"d/m/Y" }}</span>
-            {% if n.lien_redirection %}
-            <span class="article-card__cta">En savoir plus →</span>
-            {% endif %}
+            <span class="article-card__cta">Lire →</span>
           </div>
         </div>
       </a>

@@ -21,50 +21,96 @@
 
         {% if infos_home %}
         <div class="mb-6">
-          <div class="flex items-center gap-3 mb-3">
-            <span class="text-xs font-bold text-gray-900 border border-gray-900 px-2 py-0.5" style="letter-spacing:.06em;text-transform:uppercase">Info</span>
-            <span class="text-xs text-gray-400 font-medium">📰 Actualités locales</span>
+          <div class="over-img flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">📰 Actualités &amp; Infos</h2>
+            <a href="{% url 'rubriques_index' %}#info" class="text-sm text-sky-600 hover:text-sky-800 font-medium transition">Voir tout →</a>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {% for a in infos_home %}
-            <a href="{{ a.source_media|default:'#' }}"
-               {% if a.source_media %}target="_blank" rel="noopener"{% endif %}
-               class="article-card">
-              <div class="article-card__body">
-                <div class="article-card__title">{{ a.titre }}</div>
-                <div class="article-card__desc">{{ a.contenu }}</div>
-                <div class="article-card__meta">
-                  <span>{% if a.auteur %}{{ a.auteur.nom|default:a.auteur.email }}{% else %}TBG{% endif %}</span>
-                  {% if a.source_media %}<span class="article-card__cta">Source →</span>{% endif %}
+          <div class="cat-section-row">
+            <a href="{% url 'rubriques_index' %}#info" class="cat-label-card">
+              <div class="cat-label-card__img-wrap" style="background:#e0f2fe;display:flex;align-items:center;justify-content:center;font-size:2.5rem">📰</div>
+              <div class="cat-label-card__title">Actualités locales</div>
+            </a>
+            <div class="cat-carousel-wrapper cat-section-row__carousel">
+              <div class="cat-carousel">
+                <div class="cat-carousel__track">
+                  {% for a in infos_home %}
+                  <div class="cat-carousel__item">
+                    <div class="info-card" onclick="this.classList.toggle('open')">
+                      <span class="info-card__badge">📰 Info</span>
+                      <div class="info-card__title">{{ a.titre }}</div>
+                      <div class="info-card__preview">{{ a.contenu }}</div>
+                      <div class="info-card__expand">
+                        <p>{{ a.contenu }}</p>
+                        <a href="{% url 'info_detail' a.pk %}" class="info-card__cta" onclick="event.stopPropagation()">
+                          Lire l'article →
+                        </a>
+                        <div class="info-card__source">{% if a.auteur %}{{ a.auteur.nom|default:a.auteur.email }}{% else %}TBG{% endif %}</div>
+                      </div>
+                      <div class="info-card__hint">Cliquer pour lire →</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                  <div class="cat-carousel__item">
+                    <a href="{% url 'rubriques_index' %}#info" class="cat-voir-tout">
+                      <div class="cat-voir-tout__inner">
+                        <span class="cat-voir-tout__arrow">→</span>
+                        <span class="cat-voir-tout__label">Voir tout</span>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </a>
-            {% endfor %}
+              <button class="cat-carousel__btn cat-carousel__btn--prev" aria-label="Précédent">‹</button>
+              <button class="cat-carousel__btn cat-carousel__btn--next" aria-label="Suivant">›</button>
+            </div>
           </div>
         </div>
         {% endif %}
 
         {% if nouveautes_home %}
         <div class="mb-2">
-          <div class="flex items-center gap-3 mb-3">
-            <span class="text-xs font-bold text-gray-900 border border-gray-900 px-2 py-0.5" style="letter-spacing:.06em;text-transform:uppercase">Nouveauté</span>
-            <span class="text-xs text-gray-400 font-medium">🚀 Nouveaux business</span>
+          <div class="over-img flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900">🚀 Nouveautés Business</h2>
+            <a href="{% url 'rubriques_index' %}#nouveautes" class="text-sm text-emerald-600 hover:text-emerald-800 font-medium transition">Voir tout →</a>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {% for n in nouveautes_home %}
-            <a href="{{ n.lien_redirection|default:'#' }}"
-               {% if n.lien_redirection %}target="_blank" rel="noopener"{% endif %}
-               class="article-card">
-              <div class="article-card__body">
-                <div class="article-card__title">{{ n.titre }}</div>
-                <div class="article-card__desc">{{ n.contenu }}</div>
-                <div class="article-card__meta">
-                  <span>{{ n.pro_user.nom|default:n.pro_user.email }}</span>
-                  {% if n.lien_redirection %}<span class="article-card__cta">En savoir + →</span>{% endif %}
+          <div class="cat-section-row">
+            <a href="{% url 'rubriques_index' %}#nouveautes" class="cat-label-card">
+              <div class="cat-label-card__img-wrap" style="background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:2.5rem">🚀</div>
+              <div class="cat-label-card__title">Nouveaux business</div>
+            </a>
+            <div class="cat-carousel-wrapper cat-section-row__carousel">
+              <div class="cat-carousel">
+                <div class="cat-carousel__track">
+                  {% for n in nouveautes_home %}
+                  <div class="cat-carousel__item">
+                    <div class="nouv-card" onclick="this.classList.toggle('open')">
+                      <span class="nouv-card__badge">🚀 Nouveauté</span>
+                      <div class="nouv-card__title">{{ n.titre }}</div>
+                      <div class="nouv-card__preview">{{ n.contenu }}</div>
+                      <div class="nouv-card__expand">
+                        <p>{{ n.contenu }}</p>
+                        <a href="{% url 'nouveaute_detail' n.pk %}" class="nouv-card__cta" onclick="event.stopPropagation()">
+                          Lire l'article →
+                        </a>
+                        <div class="nouv-card__source">{{ n.pro_user.nom|default:n.pro_user.email }}</div>
+                      </div>
+                      <div class="nouv-card__hint">Cliquer pour lire →</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                  <div class="cat-carousel__item">
+                    <a href="{% url 'rubriques_index' %}#nouveautes" class="cat-voir-tout">
+                      <div class="cat-voir-tout__inner">
+                        <span class="cat-voir-tout__arrow">→</span>
+                        <span class="cat-voir-tout__label">Voir tout</span>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </a>
-            {% endfor %}
+              <button class="cat-carousel__btn cat-carousel__btn--prev" aria-label="Précédent">‹</button>
+              <button class="cat-carousel__btn cat-carousel__btn--next" aria-label="Suivant">›</button>
+            </div>
           </div>
         </div>
         {% endif %}
