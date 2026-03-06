@@ -5,10 +5,14 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Securite ───────────────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'django-tahiti-business-2026-super-secret-key-production'
-)
+_secret_key = os.environ.get('SECRET_KEY', '')
+if not _secret_key:
+    if os.environ.get('DATABASE_URL'):
+        raise RuntimeError(
+            "La variable d'environnement SECRET_KEY doit être définie en production !"
+        )
+    _secret_key = 'dev-only-insecure-key-ne-pas-utiliser-en-production'
+SECRET_KEY = _secret_key
 
 # En l'absence de DATABASE_URL on est en local (SQLite)
 _local = not os.environ.get('DATABASE_URL')

@@ -5,6 +5,9 @@ import uuid
 from django.conf import settings as django_settings
 from PIL import Image as PILImage
 
+_MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo
+_ALLOWED_FORMATS = {'JPEG', 'PNG', 'WEBP', 'GIF', 'BMP', 'TIFF'}
+
 
 def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
     """Convertit un upload image en WebP, sauvegarde localement ou sur S3.
@@ -18,7 +21,12 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
     Returns:
         URL publique (str)
     """
+    if hasattr(file_obj, 'size') and file_obj.size > _MAX_FILE_SIZE:
+        raise ValueError("Fichier trop volumineux (max 5 Mo).")
+
     img = PILImage.open(file_obj)
+    if img.format not in _ALLOWED_FORMATS:
+        raise ValueError(f"Format d'image non autorisé : {img.format}.")
     if img.mode in ('RGBA', 'P'):
         img = img.convert('RGB')
     img.thumbnail(max_size, PILImage.LANCZOS)

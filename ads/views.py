@@ -1,5 +1,5 @@
-import json
 import os
+import re
 import uuid
 import datetime
 import csv
@@ -24,12 +24,31 @@ def _save_webp(file_obj, user_pk):
     return save_webp(file_obj, 'annonces', str(user_pk), max_size=(900, 700))
 
 
-def _sous_cats_json():
-    return json.dumps(
-        {cat: [{'value': v, 'label': l} for v, l in items]
-         for cat, items in SOUS_CATEGORIES.items()},
-        ensure_ascii=False
-    )
+_SPEC_KEY_RE = re.compile(r'^[a-z0-9_]{1,50}$')
+
+
+def _clean_specs(post_data):
+    """Extrait les champs spec_ du POST avec validation clé/valeur."""
+    specs = {}
+    for k, v in post_data.items():
+        if not k.startswith('spec_'):
+            continue
+        key = k[5:]
+        if not _SPEC_KEY_RE.match(key):
+            continue
+        value = v.strip()[:200]
+        if value:
+            specs[key] = value
+        if len(specs) >= 20:
+            break
+    return specs
+
+
+def _sous_cats_data():
+    return {
+        cat: [{'value': v, 'label': l} for v, l in items]
+        for cat, items in SOUS_CATEGORIES.items()
+    }
 
 
 
@@ -220,9 +239,7 @@ def deposer_annonce(request):
             annonce = form.save(commit=False)
             annonce.user = request.user
             annonce.sous_categorie = request.POST.get('sous_categorie', '')
-            specs = {k[5:]: v.strip() for k, v in request.POST.items()
-                     if k.startswith('spec_') and v.strip()}
-            annonce.specs = specs
+            annonce.specs = _clean_specs(request.POST)
             photos = []
             for f in request.FILES.getlist('photos')[:5]:
                 try:
@@ -254,8 +271,8 @@ def deposer_annonce(request):
         form = AnnonceForm()
 
     return render(request, 'ads/deposer.html', {
-        'form':                 form,
-        'sous_categories_json': _sous_cats_json(),
+        'form':               form,
+        'sous_categories_data': _sous_cats_data(),
     })
 
 
@@ -282,8 +299,7 @@ def edit_annonce(request, pk):
         annonce.description    = request.POST.get('description', '').strip() or annonce.description
         annonce.categorie      = request.POST.get('categorie', annonce.categorie)
         annonce.sous_categorie = request.POST.get('sous_categorie', '')
-        new_specs = {k[5:]: v.strip() for k, v in request.POST.items()
-                     if k.startswith('spec_') and v.strip()}
+        new_specs = _clean_specs(request.POST)
         if new_specs:
             annonce.specs = new_specs
         annonce.localisation   = request.POST.get('localisation', '').strip() or annonce.localisation
@@ -322,7 +338,7 @@ def edit_annonce(request, pk):
     return render(request, 'ads/edit_annonce.html', {
         'annonce':              annonce,
         'categories':           CATEGORIES,
-        'sous_categories_json': _sous_cats_json(),
+        'sous_categories_data': _sous_cats_data(),
         'remaining_slots':      max(0, 5 - len(annonce.photos)),
     })
 

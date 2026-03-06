@@ -385,10 +385,11 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ sous_categories_data|json_script:"sous-cats-data" }}
 <script>
 
 // ─── Sous-catégories dynamiques ────────────────────────────────────────────────
-const SOUS_CATS_DEP = {{ sous_categories_json|safe }};
+const SOUS_CATS_DEP = JSON.parse(document.getElementById("sous-cats-data").textContent);
 
 function updateSousCatsDep(cat) {
   const sel = document.getElementById('id_sous_categorie');

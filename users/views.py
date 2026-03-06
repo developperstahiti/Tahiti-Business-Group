@@ -1,11 +1,7 @@
-import json
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 from .forms import LoginForm, RegisterForm, ProfileForm
 from ads.models import Annonce, Message
 
@@ -27,59 +23,6 @@ def login_view(request):
             form.add_error(None, "Email ou mot de passe incorrect.")
 
     return render(request, 'users/login.html', {'form': form})
-
-
-# Endpoint JSON pour login AJAX (compatible ancien frontend)
-@csrf_exempt
-@require_POST
-def api_login(request):
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        data = {}
-    email = data.get('email', '')
-    password = data.get('password', '')
-    user = authenticate(request, username=email, password=password)
-    if user:
-        login(request, user)
-        return JsonResponse({
-            'success': True,
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'nom': user.nom,
-                'role': user.role,
-            }
-        })
-    return JsonResponse({'success': False, 'error': 'Identifiants incorrects'}, status=401)
-
-
-# Endpoint JSON pour register AJAX
-@csrf_exempt
-@require_POST
-def api_register(request):
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'JSON invalide'}, status=400)
-
-    from .models import User
-    from django.contrib.auth.password_validation import validate_password
-    from django.core.exceptions import ValidationError
-
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-    nom = data.get('nom', '')
-    role = data.get('role', 'personnel')
-
-    if not email or not password:
-        return JsonResponse({'success': False, 'error': 'Email et mot de passe requis'}, status=400)
-    if User.objects.filter(email=email).exists():
-        return JsonResponse({'success': False, 'error': 'Email déjà utilisé'}, status=400)
-
-    user = User.objects.create_user(email=email, password=password, nom=nom, role=role)
-    login(request, user)
-    return JsonResponse({'success': True, 'user': {'id': user.id, 'email': user.email, 'role': user.role}})
 
 
 def register_view(request):

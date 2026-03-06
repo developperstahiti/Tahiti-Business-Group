@@ -1,7 +1,9 @@
 import io
+import ipaddress
 import os
 import uuid
 import urllib.request
+from urllib.parse import urlparse
 from django.conf import settings as django_settings
 from django.db import models
 from PIL import Image as PILImage, ImageOps as PILImageOps
@@ -108,6 +110,17 @@ class Publicite(models.Model):
                 img = PILImage.open(self.image.path)
                 old_path = self.image.path
             elif self.image_url:
+                parsed = urlparse(self.image_url)
+                if parsed.scheme not in ('http', 'https'):
+                    return f"Schéma URL non autorisé : {parsed.scheme}"
+                host = parsed.hostname or ''
+                try:
+                    addr = ipaddress.ip_address(host)
+                    if addr.is_private or addr.is_loopback or addr.is_link_local:
+                        return f"URL privée ou locale non autorisée : {host}"
+                except ValueError:
+                    if host.lower() in ('localhost', '0.0.0.0') or host.endswith('.local'):
+                        return f"Hôte local non autorisé : {host}"
                 req = urllib.request.Request(
                     self.image_url,
                     headers={'User-Agent': 'Mozilla/5.0 (compatible; TBG-bot/1.0)'},
