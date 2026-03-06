@@ -1,0 +1,275 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Administration TBG{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+    <img src="{% static 'img/logo-tbg.webp' %}" alt="TBG" style="height:30px;vertical-align:middle;margin-right:8px;filter:brightness(10)">
+    <span style="vertical-align:middle">Administration</span>
+  </a>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ══════════════════════════════════════════════
+   TBG ADMIN — Thème personnalisé
+   ══════════════════════════════════════════════ */
+:root {
+  --tbg-blue:    #1a6cf1;
+  --tbg-blue-h:  #1558c8;
+  --tbg-dark:    #0f172a;
+  --tbg-sidebar: #1e293b;
+  --tbg-green:   #10b981;
+  --tbg-amber:   #f59e0b;
+  --tbg-red:     #ef4444;
+}
+
+/* ── Header ─────────────────────────────────── */
+#header {
+  background: var(--tbg-dark) !important;
+  border-bottom: 3px solid var(--tbg-blue);
+  padding: 10px 24px;
+}
+#site-name a { color: #fff !important; font-weight: 700; font-size: 1rem; letter-spacing: .01em; }
+#user-tools { font-size: 12px; }
+#user-tools a { color: #93c5fd !important; }
+#user-tools a:hover { color: #fff !important; }
+
+/* ── Breadcrumbs ─────────────────────────────── */
+div.breadcrumbs {
+  background: var(--tbg-sidebar) !important;
+  color: #94a3b8;
+  padding: 8px 24px;
+  font-size: 12px;
+}
+div.breadcrumbs a { color: #93c5fd !important; }
+div.breadcrumbs a:hover { color: #fff !important; text-decoration: none; }
+
+/* ── Contenu ─────────────────────────────────── */
+#content { padding: 20px 24px; }
+#content h1 {
+  color: var(--tbg-dark);
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 20px;
+}
+#content-main { padding-right: 0; }
+
+/* ── Modules (headers bleus) ─────────────────── */
+.module h2, .module caption, .inline-group h2 {
+  background: var(--tbg-blue) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 8px 12px !important;
+  border-radius: 6px 6px 0 0;
+}
+
+/* ── Fieldsets ───────────────────────────────── */
+fieldset {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  margin-bottom: 16px !important;
+  padding: 0 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+fieldset h2 {
+  background: var(--tbg-dark) !important;
+  color: #e2e8f0 !important;
+  margin: 0 !important;
+  padding: 9px 16px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-radius: 6px 6px 0 0;
+}
+fieldset .form-row { padding: 10px 16px; }
+fieldset.collapsed h2 { border-radius: 6px; }
+
+/* ── Boutons ─────────────────────────────────── */
+.button, input[type=submit], input[type=button],
+.submit-row input, a.button {
+  background: var(--tbg-blue) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  cursor: pointer;
+  transition: background .15s;
+}
+.button:hover, input[type=submit]:hover,
+.submit-row input:hover { background: var(--tbg-blue-h) !important; }
+
+.button.default, input[type=submit].default,
+.submit-row input.default {
+  background: var(--tbg-dark) !important;
+}
+.button.default:hover { background: #1e293b !important; }
+
+.deletelink, .submit-row a.deletelink {
+  background: var(--tbg-red) !important;
+  border-radius: 6px !important;
+  padding: 8px 16px !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+.deletelink:hover { background: #dc2626 !important; }
+
+/* ── Formulaires ─────────────────────────────── */
+.form-row input[type=text],
+.form-row input[type=url],
+.form-row input[type=email],
+.form-row input[type=number],
+.form-row input[type=password],
+.form-row textarea,
+.form-row select {
+  border: 1.5px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 7px 10px !important;
+  font-size: 13px !important;
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-row input:focus,
+.form-row textarea:focus,
+.form-row select:focus {
+  border-color: var(--tbg-blue) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(26,108,241,.12) !important;
+}
+.form-row label { font-weight: 600; font-size: 12px; color: #374151; }
+
+/* ── Tableau liste ───────────────────────────── */
+#changelist table { border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; }
+#changelist table thead th {
+  background: var(--tbg-dark) !important;
+  color: #e2e8f0 !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 10px 8px;
+  border: none !important;
+}
+#changelist table thead th a,
+#changelist table thead th a:hover { color: #e2e8f0 !important; }
+#changelist tbody tr:hover td { background: #eff6ff !important; }
+#changelist tbody tr { border-bottom: 1px solid #f1f5f9; }
+#changelist tbody td { padding: 8px !important; font-size: 13px; }
+#changelist .action-checkbox-column { width: 20px; }
+
+/* ── Filtres latéraux ───────────────────────── */
+#changelist-filter { background: #f8fafc; border-left: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+#changelist-filter h2 {
+  background: var(--tbg-blue) !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 8px 12px !important;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+#changelist-filter h3 { font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .04em; margin-top: 12px; }
+#changelist-filter li.selected a { color: var(--tbg-blue) !important; font-weight: 700; }
+#changelist-filter a:hover { color: var(--tbg-blue) !important; }
+
+/* ── Actions ─────────────────────────────────── */
+.actions { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 12px; }
+.actions select { border-radius: 6px !important; border: 1.5px solid #d1d5db !important; font-size: 12px !important; }
+
+/* ── Messages flash ──────────────────────────── */
+ul.messagelist li {
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border-left: 4px solid;
+}
+ul.messagelist .success {
+  background: #ecfdf5 !important;
+  border-left-color: var(--tbg-green) !important;
+  color: #065f46 !important;
+}
+ul.messagelist .warning {
+  background: #fffbeb !important;
+  border-left-color: var(--tbg-amber) !important;
+  color: #78350f !important;
+}
+ul.messagelist .error {
+  background: #fef2f2 !important;
+  border-left-color: var(--tbg-red) !important;
+  color: #7f1d1d !important;
+}
+
+/* ── Dashboard — app cards ───────────────────── */
+#content-main .app-ads > table,
+#content-main .app-rubriques > table,
+#content-main .app-pubs > table,
+#content-main .app-users > table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  margin-bottom: 16px;
+}
+.model-annonce a,
+.model-articleinfo a,
+.model-articlepromo a,
+.model-articlenouveaute a,
+.model-publicite a,
+.model-user a {
+  color: var(--tbg-blue) !important;
+}
+
+/* ── Pagination ───────────────────────────────── */
+.paginator { font-size: 12px; }
+.paginator a.this-page {
+  background: var(--tbg-blue) !important;
+  color: #fff !important;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+/* ── Submit row ──────────────────────────────── */
+.submit-row {
+  background: #f8fafc !important;
+  border-top: 1px solid #e5e7eb !important;
+  padding: 12px 16px !important;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── Search ──────────────────────────────────── */
+#searchbar {
+  border: 1.5px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+}
+#searchbar:focus {
+  border-color: var(--tbg-blue) !important;
+  box-shadow: 0 0 0 3px rgba(26,108,241,.12) !important;
+  outline: none !important;
+}
+input[type=submit]#changelist-search-submit {
+  border-radius: 6px !important;
+}
+
+/* ── Inline groups ───────────────────────────── */
+.inline-group .tabular tr.form-row:hover td { background: #f0f9ff; }
+
+/* ── Colonne photo dans les listes ───────────── */
+.field-photo_thumb img { border: 1px solid #e5e7eb; }
+</style>
+{% endblock %}
