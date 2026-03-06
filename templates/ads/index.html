@@ -36,7 +36,7 @@
                   {% for a in infos_home %}
                   <div class="cat-carousel__item">
                     <div class="info-card" onclick="this.classList.toggle('open')">
-                      {% if a.photo %}<img src="{{ a.photo }}" alt="{{ a.titre }}" class="info-card__photo" loading="lazy">{% endif %}
+                      {% if a.photo %}<img src="{{ a.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
                       <span class="info-card__badge">📰 Info</span>
                       <div class="info-card__title">{{ a.titre }}</div>
                       <div class="info-card__preview">{{ a.contenu }}</div>
@@ -85,7 +85,7 @@
                   {% for n in nouveautes_home %}
                   <div class="cat-carousel__item">
                     <div class="nouv-card" onclick="this.classList.toggle('open')">
-                      {% if n.photo %}<img src="{{ n.photo }}" alt="{{ n.titre }}" class="info-card__photo" loading="lazy">{% endif %}
+                      {% if n.photo %}<img src="{{ n.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
                       <span class="nouv-card__badge">🚀 Nouveauté</span>
                       <div class="nouv-card__title">{{ n.titre }}</div>
                       <div class="nouv-card__preview">{{ n.contenu }}</div>
@@ -139,7 +139,7 @@
                 {% for p in promos_home %}
                 <div class="cat-carousel__item">
                   <div class="promo-card" onclick="this.classList.toggle('open')">
-                    {% if p.photo %}<img src="{{ p.photo }}" alt="{{ p.titre }}" class="info-card__photo" loading="lazy">{% endif %}
+                    {% if p.photo %}<img src="{{ p.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
                     <span class="promo-card__badge">💰 Promo</span>
                     <div class="promo-card__title">{{ p.titre }}</div>
                     <div class="promo-card__preview">{{ p.contenu }}</div>
