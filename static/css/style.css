@@ -1395,7 +1395,12 @@ img.loaded     { opacity: 1; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   box-shadow: 0 -4px 16px rgba(0,0,0,.18);
+}
+.bottom-nav__item--deposer span {
+  text-align: center;
+  width: 100%;
 }
 .bottom-nav__item--deposer:active { opacity: .85; }
 
