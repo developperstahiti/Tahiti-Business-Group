@@ -576,15 +576,16 @@ main {
 /* ── Ads grid ─────────────────────────────────────────────────── */
 .ads-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  /* min(200px, 45%) → sur 320px donne 144px → 2 colonnes auto
+     sur 640px donne 200px → 3 colonnes, sur 1024px → 5 colonnes
+     Aucun breakpoint nécessaire : le navigateur calcule tout */
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 45%), 1fr));
+  gap: clamp(6px, 1.5vw, 16px);
 }
 .ads-grid--5 {
-  grid-template-columns: repeat(5, 1fr);
-}
-@media (max-width: 640px) {
-  .ads-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .ads-grid--5 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  /* Même logique, items légèrement plus petits */
+  grid-template-columns: repeat(auto-fill, minmax(min(180px, 45%), 1fr));
+  gap: clamp(6px, 1.5vw, 16px);
 }
 
 /* ── Category Carousel ────────────────────────────────────────── */
@@ -1305,14 +1306,13 @@ img.loaded     { opacity: 1; }
   .search-bar__input { font-size: 16px; }
 }
 
-/* ── Ad cards: tighter on small screens ─────────────────────── */
-@media (max-width: 640px) {
-  .ad-card__body { padding: 8px 10px 10px; }
-  .ad-card__title { font-size: 12px; }
-  .ad-card__price { font-size: 14px; }
-  .ad-card__meta  { font-size: 10px; gap: 6px; margin-top: 4px; }
-  .btn-contact-card { font-size: 11px; padding: 5px 0; }
-}
+/* ── Ad cards: fluid text — clamp(min, fluide, max) ─────────── */
+/* Aucun breakpoint : taille calculée en continu selon la largeur  */
+.ad-card__body    { padding: clamp(5px, 1.5vw, 10px) clamp(7px, 2vw, 12px); }
+.ad-card__title   { font-size: clamp(10px, 2.8vw, 13px); }
+.ad-card__price   { font-size: clamp(12px, 3.2vw, 15px); }
+.ad-card__meta    { font-size: clamp(8px, 2vw, 11px); gap: clamp(4px, 1vw, 8px); margin-top: clamp(2px, 0.5vw, 5px); }
+.btn-contact-card { font-size: clamp(10px, 2.2vw, 12px); }
 
 /* ── Header search: compact on very small screens ────────────── */
 @media (max-width: 480px) {
@@ -2161,16 +2161,6 @@ img.loaded     { opacity: 1; }
 /* ── TABLETTE (641px → 1024px) ────────────────────────────────── */
 @media (min-width: 641px) and (max-width: 1024px) {
 
-  /* Grille annonces : 3 colonnes au lieu de auto-fill trop généreux */
-  .ads-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-  .ads-grid--5 {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-
   /* Carousels : 3 items visibles sur tablette */
   .cat-carousel__item {
     flex: 0 0 calc(33.333% - 8px);
@@ -2517,142 +2507,57 @@ img.loaded     { opacity: 1; }
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE AVANCÉ — tous les appareils
    Breakpoints couverts :
-     ≤375px  → très petits téléphones (iPhone SE 1ère gen, Moto E)
-     ≤413px  → petits Android (Galaxy A, Pixel 4a)
-     ≤480px  → téléphones moyens
-     ≤640px  → grands téléphones / phablets portrait
-     641-768 → tablettes portrait / grands téléphones paysage
-     769-1024→ tablettes paysage
+   Approche fluide : clamp() + min() + vw/% — 0 breakpoint pixel pour
+   les tailles de texte, grilles et espacements.
+   Seuls les comportements de layout (sidebar, nav, billboard)
+   nécessitent encore des breakpoints discrets.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── TRÈS PETITS TÉLÉPHONES (≤375px) ─────────────────────────── */
-@media (max-width: 375px) {
-  /* Header : logo encore plus compact, moins de gap */
-  header .flex.items-center.h-16 { height: 52px; gap: 4px; padding-left: 8px; padding-right: 8px; }
-  header .logo-header { max-width: 64px; }
-  header .search-bar__btn { padding: 0 8px; font-size: 13px; }
-  /* Annule le ml-4 mr-2 Tailwind du lien logo */
-  header a.flex-shrink-0 { margin-left: 0 !important; margin-right: 4px !important; }
-
-  /* Grille annonces : 2 colonnes avec gap minimal */
-  .ads-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-  .ads-grid--5 { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-
-  /* Cards annonces : texte réduit pour tenir dans 2 colonnes */
-  .ad-card__body { padding: 5px 7px 7px; }
-  .ad-card__title { font-size: 10px; -webkit-line-clamp: 2; }
-  .ad-card__price { font-size: 12px; margin-top: 2px; }
-  .ad-card__meta  { font-size: 8px; gap: 4px; }
-  .btn-contact-card { font-size: 10px; padding: 4px 0; }
-
-  /* Carousel : items légèrement plus étroits pour montrer le bord du suivant */
-  .cat-carousel__item { width: calc(50vw - 14px) !important; }
-
-  /* Bottom nav : icônes et labels plus petits */
-  .bottom-nav { height: 54px; }
-  .bottom-nav__item { height: 54px; font-size: 9px; }
-  .bottom-nav__item svg,
-  .bottom-nav__item .text-xl { font-size: 18px; }
-
-  /* Padding général du contenu */
-  .max-w-7xl.mx-auto.px-4 { padding-left: 8px; padding-right: 8px; }
-
-  /* Fil d'ariane : encore plus petit */
-  nav.text-xs.text-gray-400.mb-6 { font-size: 10px; }
-
-  /* Section vendeur : avatar compact */
-  .w-14.h-14.bg-blue-600 { width: 38px; height: 38px; font-size: 0.85rem; }
+/* ── HEADER FLUIDE — logo & hauteur s'adaptent en continu ────── */
+@media (max-width: 767px) {
+  /* Logo : clamp(64px → scale → 96px) selon la largeur */
+  header .logo-header { max-width: clamp(64px, 20vw, 96px); }
+  /* Annule le ml-4 Tailwind du lien logo sur très petits écrans */
+  header a.flex-shrink-0 { margin-left: clamp(0px, 2vw, 16px) !important; margin-right: clamp(2px, 1vw, 8px) !important; }
+  /* Padding horizontal du container header */
+  header .flex.items-center.h-16 { padding-left: clamp(8px, 3vw, 16px); padding-right: clamp(8px, 3vw, 16px); }
 }
 
-/* ── PETITS TÉLÉPHONES (376px–413px) ─────────────────────────── */
-@media (min-width: 376px) and (max-width: 413px) {
-  /* Header : logo légèrement plus petit */
-  header .logo-header { max-width: 80px; }
-  header .flex.items-center.h-16 { gap: 6px; padding-left: 10px; padding-right: 10px; }
-
-  /* Grille annonces : gap légèrement réduit */
-  .ads-grid { gap: 8px; }
-  .ads-grid--5 { gap: 8px; }
-
-  /* Cards annonces */
-  .ad-card__title { font-size: 11px; }
-  .ad-card__price { font-size: 13px; }
-  .ad-card__meta  { font-size: 9px; }
+/* ── CONTENU GÉNÉRAL — padding horizontal fluide ─────────────── */
+@media (max-width: 1024px) {
+  .max-w-7xl.mx-auto.px-4 {
+    padding-left: clamp(8px, 3vw, 16px);
+    padding-right: clamp(8px, 3vw, 16px);
+  }
 }
 
-/* ── TÉLÉPHONES MOYENS (414px–480px) ─────────────────────────── */
-@media (min-width: 414px) and (max-width: 480px) {
-  /* Carousel : montrer légèrement le suivant (2.1 items) */
-  .cat-carousel__item { width: calc(50vw - 20px) !important; }
-
-  /* Grille annonces */
-  .ads-grid { gap: 10px; }
+/* ── CAROUSEL MOBILE — items fluides selon vw ────────────────── */
+/* Sur mobile : 2 items visibles, taille = (100vw - padding) / 2 */
+@media (max-width: 640px) {
+  .cat-carousel__item {
+    flex: 0 0 auto !important;
+    /* clamp : min 140px, idéalement 46vw, max 240px → toujours 2 items */
+    width: clamp(140px, 46vw, 240px) !important;
+  }
 }
 
-/* ── GRANDS TÉLÉPHONES (481px–640px) ─────────────────────────── */
-@media (min-width: 481px) and (max-width: 640px) {
-  /* Grille : 2 colonnes avec gap normal */
-  .ads-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .ads-grid--5 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-
-  /* Carousel : 2.5 items visibles (on voit le bord du 3ème) */
-  .cat-carousel__item { width: calc(45vw - 16px) !important; }
-
-  /* Cards : taille intermédiaire */
-  .ad-card__title { font-size: 12px; }
-  .ad-card__price { font-size: 14px; }
-}
-
-/* ── TABLETTES PORTRAIT & PHABLETS PAYSAGE (641px–768px) ─────── */
-@media (min-width: 641px) and (max-width: 768px) {
-  /* Grille : 3 colonnes */
-  .ads-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .ads-grid--5 { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-  /* Carousel : 3 items visibles */
-  .cat-carousel__item { width: calc(33.333% - 9px) !important; }
-
-  /* Bottom nav toujours visible, légèrement plus grand */
-  .bottom-nav { height: 62px; }
-  .bottom-nav__item { height: 62px; }
-
-  /* Header : hauteur normale */
-  header .flex.items-center.h-16 { height: 60px; }
-}
-
-/* ── TABLETTES PAYSAGE (769px–1024px) ────────────────────────── */
+/* ── TABLETTES PAYSAGE (≥769px) — bottom-nav masquée ─────────── */
 @media (min-width: 769px) and (max-width: 1024px) {
-  /* Grille : 3 colonnes, gap généreux */
-  .ads-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .ads-grid--5 { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-
-  /* Carousel : 4 items visibles */
-  .cat-carousel__item { flex: 0 0 calc(25% - 9px) !important; width: auto !important; }
-
-  /* Bottom nav masquée sur tablette paysage */
   .bottom-nav { display: none !important; }
   body { padding-bottom: 0 !important; }
 }
 
-/* ── ORIENTATIONS PAYSAGE — téléphones couchés ───────────────── */
+/* ── TÉLÉPHONE PAYSAGE — billboard & header compacts ─────────── */
 @media (max-width: 767px) and (orientation: landscape) {
-  /* Billboard fixe trop haut en paysage : réduit à 56px */
   #layout-billboard { height: 56px !important; }
-  #layout-billboard .pub-bg-fixed { height: 56px !important; }
+  #layout-billboard .pub-bg-fixed     { height: 56px !important; }
   #layout-billboard .pub-bg-fixed-img { height: 56px !important; }
-  #layout-billboard .pub-bg-fixed-link { height: 56px !important; }
+  #layout-billboard .pub-bg-fixed-link{ height: 56px !important; }
   #layout-row { margin-top: 56px; }
   #main-frame header { top: 56px; }
-
-  /* Header : hauteur réduite en paysage */
   header .flex.items-center.h-16 { height: 48px; }
-
-  /* Bottom nav : plus basse en paysage (clavier peut apparaître) */
   .bottom-nav { height: 50px; }
-  .bottom-nav__item { height: 50px; font-size: 9px; }
-
-  /* Grille : 3 colonnes en paysage téléphone */
-  .ads-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .bottom-nav__item { height: 50px; }
 }
 
 /* ── Arial — page détail annonce ─────────────────────────────── */
