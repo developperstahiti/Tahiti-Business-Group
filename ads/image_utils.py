@@ -45,7 +45,10 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
             's3', region_name=region,
             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        ).put_object(Bucket=bucket, Key=key, Body=buf, ContentType='image/webp')
+        ).put_object(
+            Bucket=bucket, Key=key, Body=buf,
+            ContentType='image/webp', ACL='public-read',
+        )
         return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
 
     upload_dir = os.path.join(django_settings.MEDIA_ROOT, folder)
