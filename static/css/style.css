@@ -827,11 +827,10 @@ main {
 
 /* ── Info Card ────────────────────────────────────────────────── */
 .info-card__photo {
-  width: calc(100% + 32px);
-  margin: -14px -16px 12px;
-  height: 130px;
+  width: calc(100% + 36px);
+  margin: -15px -18px 12px;
+  height: 140px;
   object-fit: cover;
-  border-radius: 8px 8px 0 0;
   display: block;
 }
 .info-card {
