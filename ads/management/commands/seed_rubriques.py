@@ -1,258 +1,247 @@
 """
 Management command : python manage.py seed_rubriques
-Cree des articles Promo, Info et Nouveaute factices pour tester le rendu.
+Supprime toutes les rubriques existantes et cree 9 vrais articles avec photos.
 """
+import io
+import ssl
+import urllib.request
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+
 from rubriques.models import ArticlePromo, ArticleInfo, ArticleNouveaute
+from ads.image_utils import save_webp
 
 User = get_user_model()
-SEED_TAG = '[SEED]'
 
-PROMOS = [
-    {
-        'titre': '-25% sur l\'electromenager — Carrefour Papeete',
-        'contenu': (
-            'Jusqu\'au 31 mars, profitez de -25% sur toute la gamme electromenager : '
-            'refrigerateurs, lave-linges, cuisinieres, micro-ondes... Offre valable en magasin '
-            'et sur carrefour.pf. Non cumulable avec d\'autres promotions en cours. '
-            'Stocks limites, dans la limite des stocks disponibles.'
-        ),
-        'lien': 'https://www.carrefour.pf',
-    },
-    {
-        'titre': 'Hi-Fi Store : iPhones reconditionnés Grade A a partir de 45 000 XPF',
-        'contenu': (
-            'Retrouvez chez Hi-Fi Store Punaauia une large selection d\'iPhones et Samsung '
-            'reconditionnés Grade A et B certifies. Garantie 6 mois incluse. '
-            'Possibilite de reprise de votre ancien appareil avec estimation sur place. '
-            'Ouvert du lundi au samedi de 8h a 18h. Contactez-nous au 89 XX XX XX.'
-        ),
-        'lien': '',
-    },
-    {
-        'titre': 'Shell Tahiti : 1 plein = 1 lavage auto gratuit',
-        'contenu': (
-            'Pour tout plein d\'au moins 5 000 XPF realise dans les stations Shell de Papeete, '
-            'Punaauia ou Faa\'a, beneficiez d\'un bon de lavage auto gratuit valeur 1 500 XPF. '
-            'Offre valable du 1er au 30 mars 2025. Un bon par vehicule et par passage. '
-            'Non valable avec les cartes professionnelles Fleet.'
-        ),
-        'lien': '',
-    },
-    {
-        'titre': 'Bricorama Pirae : -30% peinture Dulux Valentine & Tollens',
-        'contenu': (
-            'Grande promo peinture chez Bricorama Pirae. Toute la gamme Dulux Valentine et Tollens '
-            'a -30% : peintures interieures, exterieures, sous-couches, vernis et lasures. '
-            'Disponible en magasin uniquement. Des conseillers sont disponibles pour vous aider '
-            'a choisir couleurs et finitions. Valable jusqu\'au stock epuise.'
-        ),
-        'lien': '',
-    },
-    {
-        'titre': 'Pacific Automobile : financement 0% sur 24 mois — Toyota & Mitsubishi',
-        'contenu': (
-            'Pacific Automobile vous offre un financement a 0% d\'interets sur 24 mois pour '
-            'tout achat d\'un vehicule neuf Toyota ou Mitsubishi neuf. Offre reservee aux '
-            'dossiers acceptes, sous reserve de l\'accord du partenaire bancaire Ofina. '
-            'Valable jusqu\'au 15 avril 2025. Renseignez-vous en concession a Faa\'a.'
-        ),
-        'lien': '',
-    },
-    {
-        'titre': 'Fenua Sport : chaussures running Nike & Asics a -20%',
-        'contenu': (
-            'Pour les passionnes de course a pied : chaussures Nike Air Zoom, Asics Gel-Nimbus '
-            'et Brooks Ghost a -20% tout le mois de mars. Aussi en promo : tenues de sport, '
-            'montres GPS Garmin Forerunner et accessoires fitness. '
-            'Profitez-en pour preparer le Tahiti Nui Trail en mai !'
-        ),
-        'lien': '',
-    },
-    {
-        'titre': 'Air Tahiti Nui : vols PPT-LAX des 89 000 XPF TTC',
-        'contenu': (
-            'Vols Papeete vers Los Angeles des 89 000 XPF TTC et vers Paris des 129 000 XPF TTC. '
-            'Reservation avant le 31 mars 2025, voyage jusqu\'au 30 juin 2025. '
-            'Tarifs incluant les bagages en soute (1 x 23 kg), taxes et surcharges. '
-            'Modification possible avec frais. Connectez-vous sur airtahitinui.com.'
-        ),
-        'lien': 'https://www.airtahitinui.com',
-    },
-    {
-        'titre': 'MANA Fibre : 50% offerts le premier mois — code MANATBG',
-        'contenu': (
-            'Passez a la fibre MANA et beneficiez de 50% de reduction sur votre premiere '
-            'mensualite. Offre valable pour tout nouveau client fibre, sur presentation du '
-            'code promo MANATBG2025 au moment de la souscription. '
-            'Installation gratuite si souscription avant le 30 avril 2025. '
-            'Debit garanti jusqu\'a 100 Mb/s en download.'
-        ),
-        'lien': 'https://www.mana.pf',
-    },
-    {
-        'titre': 'Tama\'a Maitai : menu dejeuner complet a 1 500 XPF',
-        'contenu': (
-            'Tous les midis en semaine, le restaurant Tama\'a Maitai a Papeete vous propose '
-            'un menu dejeuner complet a 1 500 XPF : entree + plat du jour tahitien (poisson '
-            'cru, maa tinito, chow mein...) + dessert maison + jus de fruit frais. '
-            'Sur reservation au 87 XX XX XX ou en walk-in selon disponibilites. '
-            'Parking gratuit pour les clients.'
-        ),
-        'lien': '',
-    },
-    {
-        'titre': 'Avis Polynesia : -15% location voitures Moorea avec MOOREAAVIS15',
-        'contenu': (
-            'Visitez Moorea en toute liberte avec AVIS Polynesie. Profitez de -15% sur toutes '
-            'les locations de vehicules a Moorea en reservant en ligne avec le code MOOREAAVIS15. '
-            'Valable pour tout sejour du 15 mars au 30 juin 2025. '
-            'Kilometrage illimite inclus, assurance CDW disponible en supplement. '
-            'Retrait et restitution a la gare maritime de Vaiare.'
-        ),
-        'lien': '',
-    },
-]
 
+def _download(url):
+    """Telecharge une image et retourne les bytes, ou None si echec."""
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        return urllib.request.urlopen(req, context=ctx, timeout=15).read()
+    except Exception:
+        return None
+
+
+def _attach(article, img_url, prefix):
+    """Telecharge img_url, convertit en WebP, et attache a l'article."""
+    data = _download(img_url)
+    if not data:
+        return
+    fobj = InMemoryUploadedFile(
+        io.BytesIO(data), 'photo', 'img.jpg', 'image/jpeg', len(data), None
+    )
+    url = save_webp(fobj, 'rubriques', f'{prefix}_{article.pk}')
+    article.photo = url
+    article.save()
+    return url
+
+
+# ── Donnees ──────────────────────────────────────────────────────────
 
 INFOS = [
     {
-        'titre': 'Le port de Papeete modernise ses installations pour 2025',
+        'titre': "Le tourisme en Polynesie depasse les 300 000 visiteurs en 2025",
         'contenu': (
-            'Le Port Autonome de Papeete annonce un vaste programme de modernisation de ses quais '
-            'et terminaux pour 2025-2026. Les travaux, finances par l\'Etat et la Polynesie francaise, '
-            'visent a doubler la capacite d\'accueil des navires de croisiere et a ameliorer '
-            'les conditions de travail des dockers. La premiere phase demarrera en avril 2025.'
+            "La Polynesie francaise a accueilli plus de 300 000 touristes en 2025, "
+            "un record historique pour le territoire. Selon les chiffres du Service du tourisme, "
+            "cette hausse de 12% par rapport a 2024 s'explique par le renforcement des liaisons "
+            "aeriennes et la visibilite accrue de la destination apres les Jeux Olympiques de "
+            "Paris 2024, dont les epreuves de surf se sont tenues a Teahupo'o.\n\n"
+            "Les iles Sous-le-Vent (Bora Bora, Raiatea, Huahine) restent les plus visitees, "
+            "suivies de Tahiti et Moorea. Le secteur represente desormais pres de 15% du PIB "
+            "du territoire. Les autorites souhaitent developper un tourisme durable et mieux "
+            "repartir les flux sur l'ensemble des archipels."
         ),
-        'source': '',
+        'img': 'https://images.unsplash.com/photo-1589197331516-4d84b72ebde3?w=800&q=80',
     },
     {
-        'titre': 'Nouvelle ligne aerienne Papeete — Bora Bora ouverte par Air Moana',
+        'titre': "Air Tahiti Nui renforce ses liaisons vers le Japon et la Nouvelle-Zelande",
         'contenu': (
-            'Air Moana lance une nouvelle liaison directe entre Faa\'a et Bora Bora avec '
-            'trois rotations quotidiennes. Les tarifs debutent a 8 500 XPF l\'aller simple. '
-            'Cette ouverture devrait renforcer le tourisme local et faciliter les deplacements '
-            'des residents des iles Sous-le-Vent. Reservations disponibles sur airmoana.pf.'
+            "La compagnie aerienne Air Tahiti Nui a annonce l'ouverture de deux nouvelles "
+            "frequences hebdomadaires vers Tokyo-Narita et Auckland a compter de juin 2026. "
+            "Cette decision repond a une demande croissante des voyageurs asiatiques et "
+            "oceaniens pour la destination polynesienne.\n\n"
+            "Avec sa flotte de Boeing 787-9 Dreamliner, la compagnie dessert deja Paris, "
+            "Los Angeles, Seattle et Auckland. Ces nouvelles liaisons permettront de diversifier "
+            "la clientele touristique et de renforcer les echanges commerciaux avec la zone "
+            "Asie-Pacifique. Des tarifs promotionnels seront proposes pour les premiers vols."
         ),
-        'source': '',
+        'img': 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800&q=80',
     },
     {
-        'titre': 'Salon de l\'Emploi de Polynésie : 200 postes a pourvoir en mai',
+        'titre': "Papeete : le marche municipal fait peau neuve apres 18 mois de travaux",
         'contenu': (
-            'Le Salon de l\'Emploi et de la Formation se tiendra le 15 mai 2025 a la Maison '
-            'de la Culture de Papeete. Plus de 50 entreprises locales y proposeront quelque '
-            '200 postes dans les secteurs du tourisme, du BTP, de la sante et du numerique. '
-            'Entree gratuite sur inscription sur le site du Sefi.'
+            "Le celebre Marche de Papeete a rouvert ses portes apres un chantier de renovation "
+            "de 18 mois. Les travaux, finances par le Pays et la commune pour un montant de "
+            "1,2 milliard de francs CFP, ont permis de moderniser les installations tout en "
+            "preservant le caractere authentique du lieu.\n\n"
+            "Les 200 commercants retrouvent des etals renoves, une meilleure ventilation "
+            "naturelle, et un espace restauration agrandi au premier etage. Le marche, qui "
+            "existe depuis 1847, reste un incontournable pour les locaux comme pour les "
+            "touristes, avec ses fleurs de tiare, son poisson cru et son artisanat local."
         ),
-        'source': '',
+        'img': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80',
     },
 ]
 
 NOUVEAUTES = [
     {
-        'titre': 'Tahiti Fresh Market : livraison de fruits et legumes locaux a domicile',
+        'titre': "Ouverture de Mana Hub, premier espace de coworking premium a Papeete",
         'contenu': (
-            'La startup Tahiti Fresh Market lance son service de livraison de paniers de fruits '
-            'et legumes 100% locaux directement chez vous. Paniers disponibles a partir de '
-            '2 500 XPF, livraison le lendemain sur Papeete, Punaauia et Pirae. '
-            'Commandes en ligne sur tahitifreshmarket.pf ou via WhatsApp au 87 XX XX XX.'
+            "Mana Hub ouvre ses portes au coeur de Papeete, dans le quartier du front de mer. "
+            "Cet espace de coworking de 400 m2 propose des bureaux partages, des salles de "
+            "reunion equipees, et un espace detente avec vue sur le port.\n\n"
+            "Concu pour les freelances, startups et tele-travailleurs, Mana Hub offre une "
+            "connexion fibre optique haut debit, un service d'impression 3D, et un programme "
+            "de networking mensuel. Les tarifs demarrent a 15 000 XPF/mois pour un poste fixe. "
+            "L'espace accueille deja une vingtaine de professionnels du numerique, du design "
+            "et du conseil."
         ),
-        'lien': '',
+        'img': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
     },
     {
-        'titre': 'FenuaPay : paiement mobile sans contact entre particuliers lance en Polynesie',
+        'titre': "Hina Brewing Co. : la premiere brasserie artisanale 100% polynesienne",
         'contenu': (
-            'La fintech polynesienne FenuaPay vient de lancer son application de paiement '
-            'mobile entre particuliers et commerces. Virement instantane, sans frais jusqu\'a '
-            '10 000 XPF par mois, compatible iOS et Android. Deja accepte dans une cinquantaine '
-            'de commerces partenaires sur Tahiti et Moorea. Telechargement gratuit.'
+            "Hina Brewing Co. lance sa gamme de bieres artisanales brassees a Tahiti avec des "
+            "ingredients locaux. La jeune brasserie, fondee par deux entrepreneurs de Punaauia, "
+            "propose trois references : une blonde legere au fruit de la passion, une IPA aux "
+            "agrumes de Moorea, et une stout au cacao de Raiatea.\n\n"
+            "Disponibles dans une trentaine de restaurants et magasins de Tahiti, ces bieres "
+            "se demarquent par leur identite polynesienne affirmee. La brasserie prevoit "
+            "d'ouvrir un taproom avec terrasse d'ici fin 2026. Une demarche eco-responsable "
+            "est au coeur du projet : bouteilles consignees, draches donnees aux eleveurs locaux."
         ),
-        'lien': '',
+        'img': 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=800&q=80',
     },
     {
-        'titre': 'Espace Coworking Fare Hana ouvre ses portes a Papeete Centre',
+        'titre': "FenUA Express : nouveau service de livraison a domicile sur Tahiti",
         'contenu': (
-            'Fare Hana, le nouvel espace de coworking au coeur de Papeete, propose 40 postes '
-            'de travail, 3 salles de reunion equipees et un espace detente avec vue sur le '
-            'lagon. Formules demi-journee (1 500 XPF), journee (2 500 XPF) ou abonnement '
-            'mensuel (18 000 XPF). Ouvert du lundi au vendredi de 7h a 19h.'
+            "FenUA Express lance son service de livraison a domicile couvrant toute l'ile de "
+            "Tahiti. Commandez en ligne et recevez vos courses, repas ou colis en moins de "
+            "2 heures. Le service fonctionne 7 jours sur 7, de 8h a 21h.\n\n"
+            "L'application mobile (iOS et Android) permet de suivre sa livraison en temps reel. "
+            "Les commercants locaux peuvent s'inscrire comme partenaires pour proposer leurs "
+            "produits sur la plateforme. FenUA Express emploie deja 25 livreurs en scooter "
+            "electrique et prevoit de s'etendre a Moorea debut 2027."
         ),
-        'lien': '',
+        'img': 'https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&q=80',
+    },
+]
+
+PROMOS = [
+    {
+        'titre': "-30% sur les bungalows sur pilotis a Moorea jusqu'au 30 juin",
+        'contenu': (
+            "La Pension Teavaro de Moorea propose une offre exceptionnelle : -30% sur ses "
+            "bungalows sur pilotis pour tout sejour de 3 nuits minimum reserve avant le "
+            "30 juin 2026. Petit-dejeuner polynesien inclus.\n\n"
+            "Situee sur la baie de Cook avec vue directe sur le mont Rotui, la pension offre "
+            "un cadre idyllique avec acces direct au lagon. Activites incluses : kayak, "
+            "palmes-masque-tuba, et excursion dauphins. Tarif a partir de 18 000 XPF/nuit "
+            "au lieu de 26 000 XPF. Reservation par telephone au 87 56 78 90 ou par email."
+        ),
+        'img': 'https://images.unsplash.com/photo-1544550581-5f7ceaf7f992?w=800&q=80',
+    },
+    {
+        'titre': "Cours de surf a Teahupo'o : pack decouverte a 5 000 XPF",
+        'contenu': (
+            "Teahupo'o Surf School propose un pack decouverte exceptionnel : 2 heures de "
+            "cours collectif + location de planche pour seulement 5 000 XPF (au lieu de "
+            "8 500 XPF). Offre valable tous les samedis matins jusqu'en septembre 2026.\n\n"
+            "Les cours sont encadres par des moniteurs diplomes et adaptes a tous les niveaux, "
+            "du debutant complet au surfeur intermediaire. Le spot choisi offre des conditions "
+            "ideales pour l'apprentissage : vagues regulieres et fond sableux. Combinaison "
+            "et lycra fournis. Inscriptions sur place ou au 87 12 34 56."
+        ),
+        'img': 'https://images.unsplash.com/photo-1455729552865-3658a5d39692?w=800&q=80',
+    },
+    {
+        'titre': "Plongee a Rangiroa : bapteme offert pour tout sejour de 5 jours",
+        'contenu': (
+            "Le centre de plongee Blue Lagoon Diving de Rangiroa offre un bapteme de plongee "
+            "gratuit pour toute reservation d'un sejour plongee de 5 jours ou plus. Explorez "
+            "la passe de Tiputa, celebre pour ses requins, dauphins et raies manta.\n\n"
+            "Le centre, certifie PADI 5 etoiles, propose des sorties quotidiennes encadrees "
+            "par des moniteurs francophones et anglophones. Materiel recent Aqualung inclus. "
+            "L'offre est valable jusqu'au 31 decembre 2026 et cumulable avec les tarifs groupe "
+            "(a partir de 4 plongeurs). Renseignements : contact@bluelagoondiving.pf"
+        ),
+        'img': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
     },
 ]
 
 
 class Command(BaseCommand):
-    help = 'Cree des articles Promo/Info/Nouveaute factices pour le rendu du site'
+    help = 'Supprime toutes les rubriques et cree 9 vrais articles avec photos'
 
     def add_arguments(self, parser):
         parser.add_argument('--reset', action='store_true',
-                            help='Supprime les articles [SEED] existants avant recreation')
+                            help='(legacy) Meme effet que sans flag : reset complet')
 
     def handle(self, *args, **options):
-        if options['reset']:
-            dp, _ = ArticlePromo.objects.filter(titre__startswith=SEED_TAG).delete()
-            di, _ = ArticleInfo.objects.filter(titre__startswith=SEED_TAG).delete()
-            dn, _ = ArticleNouveaute.objects.filter(titre__startswith=SEED_TAG).delete()
-            self.stdout.write(self.style.WARNING(
-                f'  {dp} promos, {di} infos, {dn} nouveautes [SEED] supprimees.'
-            ))
+        # Supprimer toutes les rubriques
+        d1 = ArticleInfo.objects.all().delete()
+        d2 = ArticleNouveaute.objects.all().delete()
+        d3 = ArticlePromo.objects.all().delete()
+        self.stdout.write(self.style.WARNING(
+            f"Supprime: {d1[0]} infos, {d2[0]} nouveautes, {d3[0]} promos"
+        ))
 
-        seed_email = 'seed@tbg.pf'
-        user, created = User.objects.get_or_create(
-            email=seed_email,
-            defaults={'nom': 'Vendeur TBG', 'role': 'pro', 'is_active': True},
+        # Trouver un admin ou pro user
+        user = (
+            User.objects.filter(role='admin').first()
+            or User.objects.filter(role='pro').first()
         )
-        if created:
-            user.set_password('seed_password_tbg_2025')
-            user.save()
-
-        total_promos = 0
-        for p in PROMOS:
-            titre_seed = f"{SEED_TAG} {p['titre']}"
-            if ArticlePromo.objects.filter(titre=titre_seed).exists():
-                continue
-            ArticlePromo.objects.create(
-                pro_user=user,
-                titre=titre_seed,
-                contenu=p['contenu'],
-                lien_promo=p['lien'],
-                statut='valide',
+        if not user:
+            user, _ = User.objects.get_or_create(
+                email='seed@tbg.pf',
+                defaults={'nom': 'TBG Admin', 'role': 'pro', 'is_active': True},
             )
-            total_promos += 1
+            if _:
+                user.set_password('seed_tbg_2026')
+                user.save()
 
-        total_infos = 0
-        for i in INFOS:
-            titre_seed = f"{SEED_TAG} {i['titre']}"
-            if ArticleInfo.objects.filter(titre=titre_seed).exists():
-                continue
-            ArticleInfo.objects.create(
+        # Creer les infos
+        for data in INFOS:
+            article = ArticleInfo.objects.create(
                 auteur=user,
-                titre=titre_seed,
-                contenu=i['contenu'],
-                source_media=i['source'],
+                titre=data['titre'],
+                contenu=data['contenu'],
                 statut='valide',
             )
-            total_infos += 1
+            url = _attach(article, data['img'], 'info')
+            self.stdout.write(f"  Info: {article.titre[:50]}... photo={'OK' if url else 'FAIL'}")
 
-        total_nouv = 0
-        for n in NOUVEAUTES:
-            titre_seed = f"{SEED_TAG} {n['titre']}"
-            if ArticleNouveaute.objects.filter(titre=titre_seed).exists():
-                continue
-            ArticleNouveaute.objects.create(
+        # Creer les nouveautes
+        for data in NOUVEAUTES:
+            article = ArticleNouveaute.objects.create(
                 pro_user=user,
-                titre=titre_seed,
-                contenu=n['contenu'],
-                lien_redirection=n['lien'],
+                titre=data['titre'],
+                contenu=data['contenu'],
                 statut='valide',
             )
-            total_nouv += 1
+            url = _attach(article, data['img'], 'nouv')
+            self.stdout.write(f"  Nouv: {article.titre[:50]}... photo={'OK' if url else 'FAIL'}")
+
+        # Creer les promos
+        for data in PROMOS:
+            article = ArticlePromo.objects.create(
+                pro_user=user,
+                titre=data['titre'],
+                contenu=data['contenu'],
+                statut='valide',
+            )
+            url = _attach(article, data['img'], 'promo')
+            self.stdout.write(f"  Promo: {article.titre[:50]}... photo={'OK' if url else 'FAIL'}")
 
         self.stdout.write(self.style.SUCCESS(
-            f'\n[OK] {total_promos} promos, {total_infos} infos, {total_nouv} nouveautes creees.'
+            f"\n[OK] {ArticleInfo.objects.count()} infos, "
+            f"{ArticleNouveaute.objects.count()} nouveautes, "
+            f"{ArticlePromo.objects.count()} promos creees avec photos."
         ))
-        self.stdout.write(
-            '   Pour les supprimer : python manage.py seed_rubriques --reset\n'
-        )
