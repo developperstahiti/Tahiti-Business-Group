@@ -594,7 +594,7 @@ main {
 }
 .cat-carousel {
   overflow: hidden;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
 }
 .cat-carousel__track {
   display: flex;
@@ -2429,8 +2429,8 @@ img.loaded     { opacity: 1; }
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    /* Capture uniquement le geste horizontal → le vertical défile la page */
-    touch-action: pan-x;
+    /* Autorise scroll horizontal ET vertical (ne bloque pas le scroll page) */
+    touch-action: pan-x pan-y;
   }
   .cat-carousel::-webkit-scrollbar { display: none; }
   .cat-carousel__item {
