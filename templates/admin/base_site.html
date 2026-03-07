@@ -21,6 +21,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
+  /* Override Django default dark variables */
+  --primary: #1a6cf1;
+  --accent: #1a6cf1;
+  --secondary: #f9fafb;
+  --primary-fg: #fff;
+  --body-fg: #374151;
+  --body-bg: #f9fafb;
+  --body-quiet-color: #6b7280;
+  --body-loud-color: #111827;
+  --header-color: #111827;
+  --header-branding-color: #111827;
+  --header-bg: #fff;
+  --header-link-color: #6b7280;
+  --breadcrumbs-fg: #6b7280;
+  --breadcrumbs-link-fg: #1a6cf1;
+  --breadcrumbs-bg: #fff;
+  --link-fg: #1a6cf1;
+  --link-hover-color: #1558c8;
+  --link-selected-fg: #1558c8;
+  --hairline-color: #e5e7eb;
+  --border-color: #e5e7eb;
+  --error-fg: #ef4444;
+  --message-success-bg: #ecfdf5;
+  --message-warning-bg: #fffbeb;
+  --message-error-bg: #fef2f2;
+  --darkened-bg: #f3f4f6;
+  --selected-bg: #eff6ff;
+  --selected-row: #eff6ff;
+  --button-fg: #fff;
+  --button-bg: #1a6cf1;
+  --button-hover-bg: #1558c8;
+  --default-button-bg: #1a6cf1;
+  --default-button-hover-bg: #1558c8;
+  --close-button-bg: #6b7280;
+  --close-button-hover-bg: #374151;
+  --delete-button-bg: #ef4444;
+  --delete-button-hover-bg: #dc2626;
+  --object-tools-fg: #374151;
+  --object-tools-bg: #fff;
+  --object-tools-hover-bg: #eff6ff;
+
+  /* TBG custom vars */
   --tbg-blue:    #1a6cf1;
   --tbg-blue-h:  #1558c8;
   --tbg-blue-bg: #eff6ff;
@@ -480,26 +522,129 @@ ul.messagelist .error {
 }
 
 /* ── Nav sidebar ─────────────────────────────── */
-#nav-sidebar {
-  background: #fff;
-  border-right: 1px solid var(--tbg-gray-200);
+nav.sidebar, #nav-sidebar,
+[id="nav-sidebar"] {
+  background: #fff !important;
+  border-right: 1px solid var(--tbg-gray-200) !important;
 }
-#nav-sidebar .module h2 {
-  background: transparent !important;
-  border-bottom: 1px solid var(--tbg-gray-200);
+#nav-sidebar .module,
+nav.sidebar .module {
+  background: #fff !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-#nav-sidebar th a {
+#nav-sidebar .module h2,
+nav.sidebar .module h2 {
+  background: #fff !important;
   color: var(--tbg-gray-900) !important;
-  font-weight: 600;
-  font-size: 13px;
+  border-bottom: 1px solid var(--tbg-gray-200) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+  padding: 14px 16px 10px !important;
 }
-#nav-sidebar th a:hover { color: var(--tbg-blue) !important; }
-#nav-sidebar td a {
+#nav-sidebar th,
+nav.sidebar th {
+  background: transparent !important;
+  padding: 6px 16px !important;
+}
+#nav-sidebar th a,
+nav.sidebar th a {
+  color: var(--tbg-gray-900) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  text-decoration: none !important;
+}
+#nav-sidebar th a:hover,
+nav.sidebar th a:hover { color: var(--tbg-blue) !important; }
+#nav-sidebar td,
+nav.sidebar td {
+  background: transparent !important;
+  padding: 3px 16px !important;
+}
+#nav-sidebar td a,
+nav.sidebar td a {
   color: var(--tbg-gray-500) !important;
-  font-size: 12px;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
 }
-#nav-sidebar td a:hover { color: var(--tbg-blue) !important; }
-#nav-sidebar .current-app a { color: var(--tbg-blue) !important; }
+#nav-sidebar td a:hover,
+nav.sidebar td a:hover { color: var(--tbg-blue) !important; }
+#nav-sidebar .current-app th a,
+nav.sidebar .current-app th a { color: var(--tbg-blue) !important; }
+#nav-sidebar table,
+nav.sidebar table {
+  background: #fff !important;
+}
+#nav-sidebar tr,
+nav.sidebar tr {
+  background: #fff !important;
+  border: none !important;
+}
+
+/* Toggle nav button */
+#toggle-nav-sidebar {
+  background: #fff !important;
+  border-right: 1px solid var(--tbg-gray-200) !important;
+  color: var(--tbg-gray-500) !important;
+}
+#toggle-nav-sidebar:hover { color: var(--tbg-blue) !important; }
+
+/* ── Changelist extras ───────────────────────── */
+#changelist-form { background: transparent; }
+#changelist .results { background: #fff; }
+#changelist table th,
+#result_list th {
+  background: var(--tbg-gray-50) !important;
+  color: var(--tbg-gray-700) !important;
+  border-bottom: 1px solid var(--tbg-gray-200) !important;
+}
+#changelist table th a,
+#result_list th a {
+  color: var(--tbg-gray-700) !important;
+}
+#changelist table th a:hover,
+#result_list th a:hover {
+  color: var(--tbg-blue) !important;
+}
+#changelist table td,
+#result_list td {
+  background: #fff !important;
+  color: var(--tbg-gray-700) !important;
+}
+#changelist table tr:hover td,
+#result_list tr:hover td {
+  background: var(--tbg-blue-bg) !important;
+}
+/* Status badges in list */
+.badge, img[src*="icon-yes"], img[src*="icon-no"] { border-radius: 4px; }
+
+/* ── Dark mode prevention ────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #1a6cf1;
+    --secondary: #f9fafb;
+    --body-fg: #374151;
+    --body-bg: #f9fafb;
+    --header-bg: #fff;
+    --header-color: #111827;
+    --breadcrumbs-bg: #fff;
+    --darkened-bg: #f3f4f6;
+    --selected-bg: #eff6ff;
+    --selected-row: #eff6ff;
+    --hairline-color: #e5e7eb;
+    --border-color: #e5e7eb;
+  }
+  body, #container, #content, #content-main,
+  .module, fieldset, #nav-sidebar, nav.sidebar,
+  #changelist, #changelist table td,
+  .submit-row, .actions, #changelist-filter {
+    background-color: initial !important;
+    color: initial !important;
+  }
+}
 
 /* ── Login page ──────────────────────────────── */
 .login #header { background: #fff !important; }
