@@ -35,7 +35,7 @@
                 <div class="cat-carousel__track">
                   {% for a in infos_home %}
                   <div class="cat-carousel__item">
-                    <div class="info-card" onclick="this.classList.toggle('open')">
+                    <div class="info-card" data-href="{% url 'info_detail' a.pk %}" onclick="handleCardClick(this,event)">
                       {% if a.photo %}<img src="{{ a.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
                       <span class="info-card__badge">📰 Info</span>
                       <div class="info-card__title">{{ a.titre }}</div>
@@ -84,7 +84,7 @@
                 <div class="cat-carousel__track">
                   {% for n in nouveautes_home %}
                   <div class="cat-carousel__item">
-                    <div class="nouv-card" onclick="this.classList.toggle('open')">
+                    <div class="nouv-card" data-href="{% url 'nouveaute_detail' n.pk %}" onclick="handleCardClick(this,event)">
                       {% if n.photo %}<img src="{{ n.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
                       <span class="nouv-card__badge">🚀 Nouveauté</span>
                       <div class="nouv-card__title">{{ n.titre }}</div>
@@ -138,7 +138,7 @@
               <div class="cat-carousel__track">
                 {% for p in promos_home %}
                 <div class="cat-carousel__item">
-                  <div class="promo-card" onclick="this.classList.toggle('open')">
+                  <div class="promo-card" data-href="{% url 'promo_detail' p.pk %}" onclick="handleCardClick(this,event)">
                     {% if p.photo %}<img src="{{ p.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
                     <span class="promo-card__badge">💰 Promo</span>
                     <div class="promo-card__title">{{ p.titre }}</div>
@@ -352,6 +352,29 @@
 </div>
 
 <script>
+/* ─── Rubrique cards: mobile → navigate, desktop → expand ─── */
+/* Track touch movement to distinguish taps from swipes */
+var _touchStartX = 0, _touchStartY = 0, _touchMoved = false;
+document.addEventListener('touchstart', function(e) {
+  _touchStartX = e.touches[0].clientX;
+  _touchStartY = e.touches[0].clientY;
+  _touchMoved = false;
+}, { passive: true });
+document.addEventListener('touchmove', function(e) {
+  var dx = Math.abs(e.touches[0].clientX - _touchStartX);
+  var dy = Math.abs(e.touches[0].clientY - _touchStartY);
+  if (dx > 8 || dy > 8) _touchMoved = true;
+}, { passive: true });
+
+function handleCardClick(card, e) {
+  if (_touchMoved) return; /* ignore swipes */
+  if (window.innerWidth <= 768 && card.dataset.href) {
+    window.location.href = card.dataset.href;
+  } else {
+    card.classList.toggle('open');
+  }
+}
+
 /* ─── Carousel : mobile (scroll-snap + scrollLeft) vs desktop (transform) ─── */
 /* Les .mobile-pub-inject sont display:none sur desktop → on les exclut du JS  */
 (function () {

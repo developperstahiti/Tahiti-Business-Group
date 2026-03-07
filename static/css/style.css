@@ -149,10 +149,12 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
               border-color .25s;
   cursor: pointer;
 }
-.ad-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--primary);
+@media (hover: hover) {
+  .ad-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+  }
 }
 .ad-card__img {
   width: 100%;
@@ -594,7 +596,6 @@ main {
 }
 .cat-carousel {
   overflow: hidden;
-  touch-action: pan-x pan-y;
 }
 .cat-carousel__track {
   display: flex;
@@ -727,13 +728,14 @@ main {
   border-radius: var(--radius);
   padding: 0;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  user-select: none;
+  transition: box-shadow 0.2s, border-color 0.2s;
   overflow: hidden;
 }
-.promo-card:not(.open):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.2);
+@media (hover: hover) {
+  .promo-card:not(.open):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(245, 158, 11, 0.2);
+  }
 }
 .promo-card.open {
   border-color: #f59e0b;
@@ -849,8 +851,7 @@ main {
   border-radius: 10px;
   padding: 0;
   cursor: pointer;
-  transition: transform .2s, box-shadow .2s;
-  user-select: none;
+  transition: box-shadow .2s;
   overflow: hidden;
 }
 .info-card__badge,
@@ -863,14 +864,15 @@ main {
 }
 .info-card__badge { margin-top: 12px; }
 .info-card__hint  { padding-bottom: 14px; }
-.info-card:not(.open):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.18);
+@media (hover: hover) {
+  .info-card:not(.open):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.18);
+  }
 }
 .info-card.open {
   border-color: #0ea5e9;
   box-shadow: 0 10px 32px rgba(14, 165, 233, 0.22);
-  transform: scale(1.02);
   z-index: 5;
 }
 .info-card__badge {
@@ -909,18 +911,18 @@ main {
   border-radius: 10px;
   padding: 0;
   cursor: pointer;
-  transition: transform .2s, box-shadow .2s;
-  user-select: none;
+  transition: box-shadow .2s;
   overflow: hidden;
 }
-.nouv-card:not(.open):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.18);
+@media (hover: hover) {
+  .nouv-card:not(.open):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.18);
+  }
 }
 .nouv-card.open {
   border-color: #10b981;
   box-shadow: 0 10px 32px rgba(16, 185, 129, 0.22);
-  transform: scale(1.02);
   z-index: 5;
 }
 .nouv-card__badge {
@@ -1188,7 +1190,7 @@ img.loaded     { opacity: 1; }
   color: inherit;
   flex: 1;
 }
-.ad-card__link:hover .ad-card__img { transform: scale(1.04); }
+@media (hover: hover) { .ad-card__link:hover .ad-card__img { transform: scale(1.04); } }
 
 /* ── Contacter button on cards ───────────────────────────────── */
 .btn-contact-card {
@@ -2452,10 +2454,10 @@ img.loaded     { opacity: 1; }
   /* padding-top : overflow-x:scroll force overflow-y:auto par le navigateur */
   /* → sans padding, le haut des cartes arrondies est rogné                  */
   .cat-carousel {
-    overflow-x: scroll !important;
-    overflow-y: visible !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     padding-top: 4px;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     /* Autorise scroll horizontal ET vertical (ne bloque pas le scroll page) */
@@ -2504,7 +2506,7 @@ img.loaded     { opacity: 1; }
     position: relative;
     transition: transform .2s, box-shadow .2s;
   }
-  .mobile-pub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+  @media (hover: hover) { .mobile-pub-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.12); } }
 
   /* Badge "Sponsorisé" superposé à l'image */
   .mobile-pub-card__badge {
