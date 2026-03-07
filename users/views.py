@@ -8,6 +8,7 @@ from django.core import signing
 from django.conf import settings as django_settings
 from .forms import LoginForm, RegisterForm, ProfileForm
 from ads.models import Annonce, Message
+from ads.image_utils import save_webp
 
 _LOGIN_MAX_ATTEMPTS = 5
 _LOGIN_LOCKOUT_SEC  = 15 * 60  # 15 minutes
@@ -124,7 +125,13 @@ def logout_view(request):
 def mon_compte(request):
     form = ProfileForm(request.POST or None, request.FILES or None, instance=request.user)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        user = form.save(commit=False)
+        avatar_file = request.FILES.get('avatar')
+        if avatar_file:
+            url = save_webp(avatar_file, 'avatars', f'user_{user.pk}', max_size=(400, 400))
+            user.avatar_url = url
+            user.avatar = None  # on n'utilise plus l'ImageField
+        user.save()
         messages.success(request, "Profil mis à jour avec succès.")
         return redirect('mon_compte')
 

@@ -35,6 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     numero_tahiti = models.CharField(max_length=50, blank=True, default='', help_text="Numéro Tahiti ISPF (obligatoire pour les pros)")
     abonnement_promo_actif = models.BooleanField(default=False, help_text="Accès payant à la section Promos")
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar_url = models.URLField(max_length=500, blank=True, default='')
     email_verified = models.BooleanField(default=True)  # True pour les comptes existants
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
