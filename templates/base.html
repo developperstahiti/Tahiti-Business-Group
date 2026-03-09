@@ -158,9 +158,13 @@
         <!-- Compte (masqué mobile, déjà dans bottom nav) -->
         <div class="cat-nav-item user-menu hidden sm:block">
           <button class="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
+            {% if user.avatar_url %}
+            <img src="{{ user.avatar_url }}" alt="" class="w-7 h-7 rounded-full object-cover flex-shrink-0">
+            {% else %}
             <div class="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0">
               {{ user.nom|first|upper|default:user.email|first|upper }}
             </div>
+            {% endif %}
             <span class="hidden md:block text-gray-700 max-w-24 truncate">{{ user.nom|default:user.email|truncatechars:14 }}</span>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
@@ -622,9 +626,13 @@
 
   {% if user.is_authenticated %}
   <a href="{% url 'mon_compte' %}" class="bottom-nav__item">
+    {% if user.avatar_url %}
+    <img src="{{ user.avatar_url }}" alt="" class="w-6 h-6 rounded-full object-cover">
+    {% else %}
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
     </svg>
+    {% endif %}
     <span>Compte</span>
   </a>
   {% else %}
