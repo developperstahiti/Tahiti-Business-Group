@@ -1590,6 +1590,56 @@ img.loaded     { opacity: 1; }
   color: var(--text-hint);
 }
 
+/* ── Accordéon sous-catégories (slide menu mobile) ─── */
+.slide-accordion__toggle {
+  justify-content: flex-start;
+  position: relative;
+}
+.slide-accordion__chevron {
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: transform .25s ease;
+}
+.slide-accordion__toggle.open .slide-accordion__chevron {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+.slide-accordion__toggle.open {
+  color: var(--primary);
+  background: #eff6ff;
+}
+.slide-accordion__panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s ease;
+  background: #f9fafb;
+}
+.slide-sub-link {
+  display: block;
+  padding: 11px 20px 11px 62px;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-sub);
+  text-decoration: none;
+  transition: background .12s, color .12s;
+  border-bottom: 1px solid #f3f4f6;
+  -webkit-tap-highlight-color: transparent;
+}
+.slide-sub-link:first-child {
+  font-weight: 600;
+  color: var(--primary);
+}
+.slide-sub-link:last-child {
+  border-bottom: none;
+}
+.slide-sub-link:hover,
+.slide-sub-link:active {
+  background: #e0f2fe;
+  color: var(--primary);
+}
 
 /* ── Override Tailwind : fonds colorés → gris très clair ─────────── */
 .bg-blue-50, .bg-blue-100,

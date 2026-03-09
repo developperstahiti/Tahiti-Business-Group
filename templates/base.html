@@ -390,22 +390,103 @@
     </button>
   </div>
   <div class="slide-menu__body">
-    <!-- Même ordre que le menu desktop -->
-    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon">💰</span> Promo</a>
-    {% if user.is_pro %}
-    <a href="{% url 'deposer_promo' %}" class="slide-cat-link" style="padding-left:2.5rem;font-size:.85em;color:#059669"><span class="slide-cat-icon">➕</span> Déposer une promo</a>
-    {% endif %}
-    <a href="{% url 'page_info' %}" class="slide-cat-link"><span class="slide-cat-icon">📰</span> Info</a>
-    <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="slide-cat-link"><span class="slide-cat-icon">🏠</span> Immobilier</a>
-    <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="slide-cat-link"><span class="slide-cat-icon">🚗</span> Véhicule</a>
-    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon">🚀</span> Nouveauté</a>
-    {% if user.is_pro %}
-    <a href="{% url 'deposer_nouveaute' %}" class="slide-cat-link" style="padding-left:2.5rem;font-size:.85em;color:#059669"><span class="slide-cat-icon">➕</span> Publier une nouveauté</a>
-    {% endif %}
-    <a href="{% url 'liste_annonces' %}?categorie=emploi" class="slide-cat-link"><span class="slide-cat-icon">💼</span> Emploi</a>
-    <a href="{% url 'liste_annonces' %}?categorie=electronique" class="slide-cat-link"><span class="slide-cat-icon">📱</span> Électronique</a>
-    <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-cat-link"><span class="slide-cat-icon">🔧</span> Services</a>
-    <a href="{% url 'liste_annonces' %}?categorie=autres" class="slide-cat-link"><span class="slide-cat-icon">📦</span> Autres</a>
+    <!-- Rubriques -->
+    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon">💰</span> Promos & Rubriques</a>
+
+    <!-- Catégories avec sous-catégories en accordéon -->
+    <div class="slide-accordion">
+      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
+        <span class="slide-cat-icon">🚗</span> Véhicules
+        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="slide-accordion__panel">
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="slide-sub-link">Tout Véhicules</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-4x4" class="slide-sub-link">Voitures / 4 roues</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-2roues" class="slide-sub-link">2 roues (scooters/motos)</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux" class="slide-sub-link">Bateaux & jet-skis</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires" class="slide-sub-link">Utilitaires & camions</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces" class="slide-sub-link">Pièces auto & accessoires</a>
+      </div>
+    </div>
+
+    <div class="slide-accordion">
+      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
+        <span class="slide-cat-icon">🏠</span> Immobilier
+        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="slide-accordion__panel">
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="slide-sub-link">Tout Immobilier</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements" class="slide-sub-link">Appartements & studios</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons" class="slide-sub-link">Maisons & villas</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains" class="slide-sub-link">Terrains & lots</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-bureaux" class="slide-sub-link">Bureaux & commerces</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-saisonnieres" class="slide-sub-link">Saisonnières</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-parkings" class="slide-sub-link">Parkings & garages</a>
+      </div>
+    </div>
+
+    <div class="slide-accordion">
+      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
+        <span class="slide-cat-icon">📱</span> Électronique
+        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="slide-accordion__panel">
+        <a href="{% url 'liste_annonces' %}?categorie=electronique" class="slide-sub-link">Tout Électronique</a>
+        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-telephones" class="slide-sub-link">Téléphones & accessoires</a>
+        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-ordinateurs" class="slide-sub-link">Ordinateurs & tablettes</a>
+        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-pc" class="slide-sub-link">PC & Informatique</a>
+        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-tv" class="slide-sub-link">TV & Audio</a>
+        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-jeux" class="slide-sub-link">Jeux vidéo</a>
+        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-electromenager" class="slide-sub-link">Électroménager</a>
+      </div>
+    </div>
+
+    <div class="slide-accordion">
+      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
+        <span class="slide-cat-icon">💼</span> Emploi
+        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="slide-accordion__panel">
+        <a href="{% url 'liste_annonces' %}?categorie=emploi" class="slide-sub-link">Tout Emploi</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-commerciaux" class="slide-sub-link">Commerciaux</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-informatique" class="slide-sub-link">Informatique & Dév</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-hotellerie" class="slide-sub-link">Hôtellerie & Resto</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-btp" class="slide-sub-link">BTP & Construction</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-services" class="slide-sub-link">Services à la personne</a>
+      </div>
+    </div>
+
+    <div class="slide-accordion">
+      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
+        <span class="slide-cat-icon">🔧</span> Services
+        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="slide-accordion__panel">
+        <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-sub-link">Tout Services</a>
+        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-travaux" class="slide-sub-link">Travaux & BTP</a>
+        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-cours" class="slide-sub-link">Cours & Formation</a>
+        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-transport" class="slide-sub-link">Transport</a>
+        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-sante" class="slide-sub-link">Santé & Beauté</a>
+        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-jardinage" class="slide-sub-link">Jardinage</a>
+      </div>
+    </div>
+
+    <div class="slide-accordion">
+      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
+        <span class="slide-cat-icon">📦</span> Autres
+        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="slide-accordion__panel">
+        <a href="{% url 'liste_annonces' %}?categorie=autres" class="slide-sub-link">Tout Autres</a>
+        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-meubles" class="slide-sub-link">Meubles & Déco</a>
+        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-vetements" class="slide-sub-link">Vêtements & Mode</a>
+        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-sport" class="slide-sub-link">Sport & Loisirs</a>
+        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-puericulture" class="slide-sub-link">Puériculture</a>
+        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-jeux" class="slide-sub-link">Jeux & Jouets</a>
+        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-divers" class="slide-sub-link">Divers</a>
+      </div>
+    </div>
+
     {% if user.is_staff %}
     <div class="slide-menu__sep"></div>
     <a href="{% url 'moderation_dashboard' %}" class="slide-cat-link slide-cat-link--admin"><span class="slide-cat-icon">🛡️</span> Modération</a>
@@ -602,6 +683,21 @@ function closeCatMenu() {
   _frameScrollTarget().style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCatMenu(); });
+
+// ── Accordéon sous-catégories dans le slide menu ─────────────────────
+function toggleSlideAccordion(btn) {
+  var panel = btn.nextElementSibling;
+  var isOpen = btn.classList.contains('open');
+  // Fermer tous les autres panneaux
+  document.querySelectorAll('.slide-accordion__toggle.open').forEach(function(b) {
+    b.classList.remove('open');
+    b.nextElementSibling.style.maxHeight = null;
+  });
+  if (!isOpen) {
+    btn.classList.add('open');
+    panel.style.maxHeight = panel.scrollHeight + 'px';
+  }
+}
 </script>
 
 <script>
