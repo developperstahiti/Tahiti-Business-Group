@@ -2095,7 +2095,7 @@ img.loaded     { opacity: 1; }
   #main-frame::-webkit-scrollbar       { width: 5px; }
   #main-frame::-webkit-scrollbar-track { background: transparent; }
   /* Nav catégories : réduire le padding pour que tous les items tiennent */
-  #main-frame .cat-nav-link { padding: 0 9px; }
+  #main-frame .cat-nav-link { padding: 0 5px; font-size: 0.82rem; }
   #main-frame::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 
   /* ── Sidebar droite ─────────────────────────────────────────── */
