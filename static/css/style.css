@@ -148,6 +148,7 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
               box-shadow .25s cubic-bezier(.4,0,.2,1),
               border-color .25s;
   cursor: pointer;
+  opacity: 1 !important;
 }
 @media (hover: hover) {
   .ad-card:hover {
@@ -1080,7 +1081,7 @@ main {
 a, button { transition: color .15s, background .15s, border-color .15s, box-shadow .15s; }
 
 /* ── Lazy image ───────────────────────────────────────────────── */
-img[data-src] { opacity: 0; transition: opacity .4s; }
+img[data-src] { transition: opacity .4s; }
 img.loaded     { opacity: 1; }
 
 /* ── Mobile CTA sticky ────────────────────────────────────────── */
