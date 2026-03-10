@@ -23,7 +23,7 @@
     }
   </script>
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ STATIC_VERSION }}">
   {% block extra_css %}{% endblock %}
   {% block extra_head %}{% endblock %}
   <link rel="icon" type="image/svg+xml" href="{% static 'img/logo-tbg.svg' %}">
@@ -648,7 +648,7 @@
 </nav>
 
 {% load static %}
-<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/main.js' %}?v={{ STATIC_VERSION }}"></script>
 {% block extra_js %}{% endblock %}
 
 <!-- ═══ CONTACT MODAL ═══ -->

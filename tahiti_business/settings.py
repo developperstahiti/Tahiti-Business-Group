@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 import dj_database_url
 
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'pubs.context_processors.sidebar_pubs',
                 'pubs.context_processors.admin_stats',
+                'tahiti_business.context_processors.static_version',
             ],
         },
     },
@@ -108,6 +110,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Version hash pour cache-busting (généré au démarrage = unique par déploiement)
+STATIC_VERSION = str(int(time.time()))
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
