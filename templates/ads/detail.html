@@ -41,7 +41,7 @@
       </div>
       {% else %}
       <div class="bg-white border border-gray-200 rounded-2xl h-64 flex items-center justify-center text-7xl shadow-sm">
-        {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'occasion' %}🏷️{% elif annonce.categorie == 'emploi' %}💼{% elif annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
+        {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'occasion' %}📦{% elif annonce.categorie == 'emploi' %}💼{% elif annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
       </div>
       {% endif %}
 
@@ -53,7 +53,7 @@
         </div>
         <div class="text-3xl font-black text-blue-600 mb-5">{{ annonce.get_prix_display_label }}</div>
         <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
-          <span class="flex items-center gap-1.5">🏷️ {{ annonce.get_categorie_display }}</span>
+          <span class="flex items-center gap-1.5">📦 {{ annonce.get_categorie_display }}</span>
           <span class="flex items-center gap-1.5">📍 {{ annonce.localisation }}</span>
           <span class="flex items-center gap-1.5">👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
           <span class="flex items-center gap-1.5">📅 {{ annonce.created_at|date:"d/m/Y" }}</span>

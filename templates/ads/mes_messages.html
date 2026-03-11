@@ -23,7 +23,7 @@
         <img src="{{ conv.annonce.get_main_photo }}" class="w-16 h-16 object-cover rounded-xl border border-gray-200" alt="" loading="lazy">
         {% else %}
         <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-2xl">
-          {% if conv.annonce.categorie == 'vehicules' %}🚗{% elif conv.annonce.categorie == 'immobilier' %}🏠{% elif conv.annonce.categorie == 'occasion' %}🏷️{% elif conv.annonce.categorie == 'emploi' %}💼{% elif conv.annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
+          {% if conv.annonce.categorie == 'vehicules' %}🚗{% elif conv.annonce.categorie == 'immobilier' %}🏠{% elif conv.annonce.categorie == 'occasion' %}📦{% elif conv.annonce.categorie == 'emploi' %}💼{% elif conv.annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
         </div>
         {% endif %}
       </div>

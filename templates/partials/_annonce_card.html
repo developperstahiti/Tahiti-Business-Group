@@ -9,7 +9,7 @@
         class="annonce-card__img lazy w-full h-full absolute inset-0">
       {% else %}
       <div class="w-full h-full absolute inset-0 flex items-center justify-center text-4xl bg-gray-100">
-        {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'occasion' %}🏷️{% elif annonce.categorie == 'emploi' %}💼{% elif annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
+        {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'occasion' %}📦{% elif annonce.categorie == 'emploi' %}💼{% elif annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
       </div>
       {% endif %}
       {% if annonce.boost %}
