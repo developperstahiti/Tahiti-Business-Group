@@ -62,8 +62,8 @@ function initAutoDismissMessages() {
 // ── Card entrance animation (CSS-only, no IntersectionObserver) ─
 function initCardAnimations() {
   // Animation pure CSS pour éviter le bug opacity:0 avec #main-frame
-  var cards = document.querySelectorAll('.ad-card');
-  cards.forEach(function(card) { card.classList.add('ad-card--visible'); });
+  var cards = document.querySelectorAll('.annonce-card');
+  cards.forEach(function(card) { card.classList.add('annonce-card--visible'); });
 }
 
 // ── Photo gallery ──────────────────────────────────────────────

@@ -287,7 +287,7 @@ function previewAvatar(input) {
     // Parser le HTML pour extraire les annonces
     var parser = new DOMParser();
     var doc = parser.parseFromString(html, 'text/html');
-    var cards = doc.querySelectorAll('.ad-card');
+    var cards = doc.querySelectorAll('.annonce-card');
     if (!cards.length) {
       // Fallback: afficher un lien
       container.innerHTML =
