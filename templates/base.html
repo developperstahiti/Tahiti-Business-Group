@@ -307,23 +307,29 @@
         </div>
       </div>
 
-      <!-- 7. Électronique -->
+      <!-- 7. Occasion (fusion Électronique + Autres) -->
       <div class="cat-nav-item">
-        <a href="{% url 'liste_annonces' %}?categorie=electronique" class="cat-nav-link">
-          📱 Électronique
+        <a href="{% url 'liste_annonces' %}?categorie=occasion" class="cat-nav-link">
+          🏷️ Occasion
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </a>
-        <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Électronique</div>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-telephones">Téléphones &amp; accessoires</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-ordinateurs">Ordinateurs &amp; tablettes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-pc">PC &amp; Informatique</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-tv">TV &amp; Audio</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-jeux">Jeux vidéo</a>
-          <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-electromenager">Électroménager</a>
+        <div class="cat-dropdown cat-dropdown--right">
+          <div class="cat-dropdown__header">Occasion</div>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion">Toutes</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-telephones">Téléphones &amp; accessoires</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-ordinateurs">Ordinateurs &amp; tablettes</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-pc">PC &amp; Informatique</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-tv">TV &amp; Audio</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-video">Jeux vidéo</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-electromenager">Électroménager</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-meubles">Meubles &amp; Déco</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-vetements">Vêtements &amp; Mode</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-sport">Sport &amp; Loisirs</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-puericulture">Puériculture</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-jouets">Jeux &amp; Jouets</a>
+          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-divers">Divers</a>
         </div>
       </div>
 
@@ -343,25 +349,6 @@
           <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-transport">Transport</a>
           <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-sante">Santé &amp; Beauté</a>
           <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-jardinage">Jardinage</a>
-        </div>
-      </div>
-
-      <!-- 9. Autres -->
-      <div class="cat-nav-item">
-        <a href="{% url 'liste_annonces' %}?categorie=autres" class="cat-nav-link">
-          📦 Autres
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </a>
-        <div class="cat-dropdown cat-dropdown--right">
-          <div class="cat-dropdown__header">Vente privée &amp; Autres</div>
-          <a href="{% url 'liste_annonces' %}?categorie=autres">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-meubles">Meubles &amp; Déco</a>
-          <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-vetements">Vêtements &amp; Mode</a>
-          <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-sport">Sport &amp; Loisirs</a>
-          <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-puericulture">Puériculture</a>
-          <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-jeux">Jeux &amp; Jouets</a>
         </div>
       </div>
 
@@ -428,17 +415,23 @@
 
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">📱</span> Électronique
+        <span class="slide-cat-icon">🏷️</span> Occasion
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
-        <a href="{% url 'liste_annonces' %}?categorie=electronique" class="slide-sub-link">Tout Électronique</a>
-        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-telephones" class="slide-sub-link">Téléphones & accessoires</a>
-        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-ordinateurs" class="slide-sub-link">Ordinateurs & tablettes</a>
-        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-pc" class="slide-sub-link">PC & Informatique</a>
-        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-tv" class="slide-sub-link">TV & Audio</a>
-        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-jeux" class="slide-sub-link">Jeux vidéo</a>
-        <a href="{% url 'liste_annonces' %}?categorie=electronique&sous_cat=elec-electromenager" class="slide-sub-link">Électroménager</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion" class="slide-sub-link">Tout Occasion</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-telephones" class="slide-sub-link">Téléphones & accessoires</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-ordinateurs" class="slide-sub-link">Ordinateurs & tablettes</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-pc" class="slide-sub-link">PC & Informatique</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-tv" class="slide-sub-link">TV & Audio</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-video" class="slide-sub-link">Jeux vidéo</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-electromenager" class="slide-sub-link">Électroménager</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-meubles" class="slide-sub-link">Meubles & Déco</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-vetements" class="slide-sub-link">Vêtements & Mode</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-sport" class="slide-sub-link">Sport & Loisirs</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-puericulture" class="slide-sub-link">Puériculture</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-jouets" class="slide-sub-link">Jeux & Jouets</a>
+        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-divers" class="slide-sub-link">Divers</a>
       </div>
     </div>
 
@@ -469,22 +462,6 @@
         <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-transport" class="slide-sub-link">Transport</a>
         <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-sante" class="slide-sub-link">Santé & Beauté</a>
         <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-jardinage" class="slide-sub-link">Jardinage</a>
-      </div>
-    </div>
-
-    <div class="slide-accordion">
-      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">📦</span> Autres
-        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="slide-accordion__panel">
-        <a href="{% url 'liste_annonces' %}?categorie=autres" class="slide-sub-link">Tout Autres</a>
-        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-meubles" class="slide-sub-link">Meubles & Déco</a>
-        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-vetements" class="slide-sub-link">Vêtements & Mode</a>
-        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-sport" class="slide-sub-link">Sport & Loisirs</a>
-        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-puericulture" class="slide-sub-link">Puériculture</a>
-        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-jeux" class="slide-sub-link">Jeux & Jouets</a>
-        <a href="{% url 'liste_annonces' %}?categorie=autres&sous_cat=autres-divers" class="slide-sub-link">Divers</a>
       </div>
     </div>
 
@@ -545,10 +522,9 @@
         <ul class="space-y-1.5 text-sm text-gray-500">
           <li><a href="{% url 'liste_annonces' %}?categorie=vehicules" class="hover:text-blue-600 transition">🚗 Véhicules</a></li>
           <li><a href="{% url 'liste_annonces' %}?categorie=immobilier" class="hover:text-blue-600 transition">🏠 Immobilier</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=electronique" class="hover:text-blue-600 transition">📱 Électronique</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=occasion" class="hover:text-blue-600 transition">🏷️ Occasion</a></li>
           <li><a href="{% url 'liste_annonces' %}?categorie=emploi" class="hover:text-blue-600 transition">💼 Emploi</a></li>
           <li><a href="{% url 'liste_annonces' %}?categorie=services" class="hover:text-blue-600 transition">🔧 Services</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=autres" class="hover:text-blue-600 transition">📦 Autres</a></li>
         </ul>
       </div>
 

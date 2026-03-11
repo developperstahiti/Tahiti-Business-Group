@@ -44,13 +44,13 @@ CATEGORY_MAP = {
     '12': 'vehicules', '13': 'vehicules',
     '58': 'vehicules', '59': 'vehicules', '60': 'vehicules',
     # Électronique / Bonnes affaires
-    '15': 'autres',      '16': 'autres',
-    '17': 'electronique', '18': 'electronique',
-    '19': 'electronique', '20': 'electronique',
-    '21': 'autres',      '22': 'autres',      '23': 'autres',
-    '24': 'autres',      '25': 'autres',      '26': 'autres',
-    '51': 'autres',      '52': 'autres',      '53': 'autres',
-    '54': 'autres',
+    '15': 'occasion',      '16': 'occasion',
+    '17': 'occasion', '18': 'occasion',
+    '19': 'occasion', '20': 'occasion',
+    '21': 'occasion',      '22': 'occasion',      '23': 'occasion',
+    '24': 'occasion',      '25': 'occasion',      '26': 'occasion',
+    '51': 'occasion',      '52': 'occasion',      '53': 'occasion',
+    '54': 'occasion',
     # Emploi
     '28': 'emploi', '29': 'emploi', '30': 'emploi', '31': 'emploi',
     # Services
@@ -65,12 +65,12 @@ TARGET_CATS = [
     ('11', 'vehicules'),    # Vends bateau
     ('1',  'immobilier'),   # Vends appartement
     ('2',  'immobilier'),   # Vends maison
-    ('17', 'electronique'), # Informatique
-    ('19', 'electronique'), # TV, Hi-fi
-    ('20', 'electronique'), # Téléphonie
+    ('17', 'occasion'), # Informatique
+    ('19', 'occasion'), # TV, Hi-fi
+    ('20', 'occasion'), # Téléphonie
     ('28', 'emploi'),       # Offres emploi
     ('36', 'services'),     # Prestataires divers
-    ('15', 'autres'),       # Meubles & Electroménager
+    ('15', 'occasion'),       # Meubles & Electroménager
 ]
 
 IMPORT_USER_EMAIL = 'import@tbg.pf'

@@ -67,7 +67,7 @@ DEMO_ANNONCES = [
             'trempé. Autonomie excellente (batterie à 98%). Boîte d\'origine, câble USB-C '
             'et adaptateur inclus. Débloqué tous opérateurs.'
         ),
-        'prix': 120000, 'categorie': 'electronique', 'sous_categorie': 'elec-telephones',
+        'prix': 120000, 'categorie': 'occasion', 'sous_categorie': 'occasion-telephones',
         'localisation': "Faa'a",
         'photos': [_photo('iphone-titanium'), _photo('smartphone-desk')],
     },
@@ -108,7 +108,7 @@ DEMO_ANNONCES = [
             'tâche. Vendu car déménagement. À enlever à Pirae — camion de déménagement '
             'possible à prix coûtant.'
         ),
-        'prix': 45000, 'categorie': 'autres', 'sous_categorie': 'autres-meubles',
+        'prix': 45000, 'categorie': 'occasion', 'sous_categorie': 'occasion-meubles',
         'localisation': 'Pirae',
         'photos': [_photo('black-sofa'), _photo('living-room')],
     },
@@ -166,7 +166,7 @@ DEMO_ANNONCES = [
             'Utilisé uniquement en bureautique, aucune rayure. Chargeur MagSafe 96W, '
             'câble USB-C, boîte d\'origine. Vendu car changement de poste (fourni par employeur).'
         ),
-        'prix': 290000, 'categorie': 'electronique', 'sous_categorie': 'elec-ordinateurs',
+        'prix': 290000, 'categorie': 'occasion', 'sous_categorie': 'occasion-ordinateurs',
         'localisation': 'Punaauia',
         'photos': [_photo('macbook-pro-desk'), _photo('laptop-minimal')],
     },
@@ -195,7 +195,7 @@ DEMO_ANNONCES = [
             'Livré avec leash 9\' et housse de transport. Vendeur passionné, '
             'renseignements par WhatsApp uniquement.'
         ),
-        'prix': 55000, 'categorie': 'autres', 'sous_categorie': 'autres-sport',
+        'prix': 55000, 'categorie': 'occasion', 'sous_categorie': 'occasion-sport',
         'localisation': 'Mahina',
         'photos': [_photo('longboard-surf'), _photo('surfboard-ocean')],
     },
@@ -243,7 +243,7 @@ DEMO_ANNONCES = [
             'Démontage et transport à la charge de l\'acheteur. '
             'Idéal pour pièce de 30–40m².'
         ),
-        'prix': 90000, 'categorie': 'electronique', 'sous_categorie': 'elec-electromenager',
+        'prix': 90000, 'categorie': 'occasion', 'sous_categorie': 'occasion-electromenager',
         'localisation': 'Papeete',
         'photos': [_photo('aircon-split'), _photo('modern-interior-cool')],
     },
@@ -288,7 +288,7 @@ DEMO_ANNONCES = [
             'Fixation murale Samsung offerte. Vente cause achat TV OLED. '
             'À enlever à Raiatea, possibilité envoi maritime inter-îles.'
         ),
-        'prix': 85000, 'categorie': 'electronique', 'sous_categorie': 'elec-tv',
+        'prix': 85000, 'categorie': 'occasion', 'sous_categorie': 'occasion-tv',
         'localisation': 'Raiatea',
         'photos': [_photo('samsung-qled-tv'), _photo('living-room-tv')],
     },
@@ -304,7 +304,7 @@ DEMO_ANNONCES = [
             'Également disponible : pareu coordonné pour homme (offert si achat ensemble). '
             'Nettoyage à sec recommandé. Photos supplémentaires sur demande.'
         ),
-        'prix': 12000, 'categorie': 'autres', 'sous_categorie': 'autres-vetements',
+        'prix': 12000, 'categorie': 'occasion', 'sous_categorie': 'occasion-vetements',
         'localisation': 'Tahaa',
         'photos': [_photo('polynesian-dress'), _photo('traditional-fabric')],
     },
@@ -318,7 +318,7 @@ DEMO_ANNONCES = [
             'Notice et garantie constructeur. Bugaboo coûte 180 000 XPF neuf. '
             'Vente cause enfant trop grand. À venir chercher à Tahaa.'
         ),
-        'prix': 78000, 'categorie': 'autres', 'sous_categorie': 'autres-puericulture',
+        'prix': 78000, 'categorie': 'occasion', 'sous_categorie': 'occasion-puericulture',
         'localisation': 'Tahaa',
         'photos': [_photo('bugaboo-stroller'), _photo('baby-carriage')],
     },

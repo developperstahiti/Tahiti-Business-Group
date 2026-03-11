@@ -17,10 +17,10 @@ def _p(seed):
 CAT_PHOTOS = {
     'vehicules':    [_p('car1'), _p('suv2'), _p('truck3'), _p('road4')],
     'immobilier':   [_p('house1'), _p('villa2'), _p('room3'), _p('building4')],
-    'electronique': [_p('phone1'), _p('laptop2'), _p('tech3'), _p('gadget4')],
+    'occasion': [_p('phone1'), _p('laptop2'), _p('tech3'), _p('gadget4')],
     'emploi':       [_p('office1'), _p('work2'), _p('meeting3'), _p('desk4')],
     'services':     [_p('tools1'), _p('repair2'), _p('service3'), _p('help4')],
-    'autres':       [_p('market1'), _p('sport2'), _p('furniture3'), _p('goods4')],
+    'occasion':       [_p('market1'), _p('sport2'), _p('furniture3'), _p('goods4')],
 }
 
 LOCALISATIONS = [
@@ -128,7 +128,7 @@ DATA = {
          'prix': 25000, 'prix_label': '25 000 XPF/mois', 'sous': 'immo-parkings'},
     ],
 
-    'electronique': [
+    'occasion': [
         {'titre': 'iPhone 15 Pro 256Go — état parfait, noir',
          'desc': 'Acheté en décembre 2024, encore sous garantie Apple. Toujours avec coque et protection d\'écran. Boîte d\'origine.',
          'prix': 145000, 'sous': 'elec-telephones'},
@@ -272,7 +272,7 @@ DATA = {
          'prix': 0, 'prix_label': 'Sur devis', 'sous': 'services-travaux'},
     ],
 
-    'autres': [
+    'occasion': [
         {'titre': 'Canapé d\'angle cuir noir 5 places — excellent état',
          'desc': 'Canapé convertible, méridienne gauche, coffre de rangement. 2 ans d\'utilisation. Non fumeur.',
          'prix': 85000, 'sous': 'autres-meubles'},
@@ -363,7 +363,7 @@ class Command(BaseCommand):
                 if Annonce.objects.filter(titre=titre_seed).exists():
                     continue
 
-                photos_pool = CAT_PHOTOS.get(categorie, CAT_PHOTOS['autres'])
+                photos_pool = CAT_PHOTOS.get(categorie, CAT_PHOTOS['occasion'])
                 nb = random.randint(1, 3)
                 photos = [photos_pool[j % len(photos_pool)] for j in range(i, i + nb)]
 

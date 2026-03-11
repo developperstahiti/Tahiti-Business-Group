@@ -4,10 +4,9 @@ from django.conf import settings
 CATEGORIES = [
     ('vehicules',    'Véhicules'),
     ('immobilier',   'Immobilier'),
-    ('electronique', 'Électronique'),
+    ('occasion',     'Occasion'),
     ('emploi',       'Emploi'),
     ('services',     'Services'),
-    ('autres',       'Autres'),
 ]
 
 STATUTS = [
@@ -40,13 +39,19 @@ SOUS_CATEGORIES = {
         ('immo-saisonnieres', 'Saisonnières (Arue/Papeete)'),
         ('immo-parkings',     'Parkings & garages'),
     ],
-    'electronique': [
-        ('elec-telephones',     'Téléphones & accessoires'),
-        ('elec-ordinateurs',    'Ordinateurs & tablettes'),
-        ('elec-pc',             'PC & Informatique'),
-        ('elec-tv',             'TV & Audio'),
-        ('elec-jeux',           'Jeux vidéo'),
-        ('elec-electromenager', 'Électroménager'),
+    'occasion': [
+        ('occasion-telephones',     'Téléphones & accessoires'),
+        ('occasion-ordinateurs',    'Ordinateurs & tablettes'),
+        ('occasion-pc',             'PC & Informatique'),
+        ('occasion-tv',             'TV & Audio'),
+        ('occasion-jeux-video',     'Jeux vidéo'),
+        ('occasion-electromenager', 'Électroménager'),
+        ('occasion-meubles',        'Meubles & Déco'),
+        ('occasion-vetements',      'Vêtements & Mode'),
+        ('occasion-sport',          'Sport & Loisirs'),
+        ('occasion-puericulture',   'Puériculture'),
+        ('occasion-jeux-jouets',    'Jeux & Jouets'),
+        ('occasion-divers',         'Divers'),
     ],
     'emploi': [
         ('emploi-commerciaux',  'Commerciaux'),
@@ -61,14 +66,6 @@ SOUS_CATEGORIES = {
         ('services-transport', 'Transport'),
         ('services-sante',     'Santé & Beauté'),
         ('services-jardinage', 'Jardinage'),
-    ],
-    'autres': [
-        ('autres-meubles',      'Meubles & Déco'),
-        ('autres-vetements',    'Vêtements & Mode'),
-        ('autres-sport',        'Sport & Loisirs'),
-        ('autres-puericulture', 'Puériculture'),
-        ('autres-jeux',         'Jeux & Jouets'),
-        ('autres-divers',       'Divers'),
     ],
 }
 

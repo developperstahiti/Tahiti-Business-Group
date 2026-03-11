@@ -132,7 +132,7 @@
               <img src="{{ annonce.get_main_photo }}" class="w-full h-full object-cover" loading="lazy">
               {% else %}
               <div class="w-full h-full flex items-center justify-center text-sm">
-                {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'electronique' %}📱{% else %}📦{% endif %}
+                {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'occasion' %}🏷️{% else %}📦{% endif %}
               </div>
               {% endif %}
             </div>

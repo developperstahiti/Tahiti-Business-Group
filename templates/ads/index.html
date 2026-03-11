@@ -132,7 +132,7 @@
       <div class="mb-10">
         <div class="over-img flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-            {% if cat_data.code == 'vehicules' %}🚗{% elif cat_data.code == 'immobilier' %}🏠{% elif cat_data.code == 'electronique' %}📱{% elif cat_data.code == 'emploi' %}💼{% elif cat_data.code == 'services' %}🔧{% else %}📦{% endif %}
+            {% if cat_data.code == 'vehicules' %}🚗{% elif cat_data.code == 'immobilier' %}🏠{% elif cat_data.code == 'occasion' %}🏷️{% elif cat_data.code == 'emploi' %}💼{% elif cat_data.code == 'services' %}🔧{% else %}📦{% endif %}
             {{ cat_data.label }}
           </h2>
           <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition">Voir tout →</a>
@@ -144,7 +144,7 @@
             <div class="cat-label-card__img-wrap" style="font-size:3rem">
               {% if cat_data.code == 'vehicules' %}🚗
               {% elif cat_data.code == 'immobilier' %}🏠
-              {% elif cat_data.code == 'electronique' %}📱
+              {% elif cat_data.code == 'occasion' %}🏷️
               {% elif cat_data.code == 'emploi' %}💼
               {% elif cat_data.code == 'services' %}🔧
               {% else %}📦{% endif %}
