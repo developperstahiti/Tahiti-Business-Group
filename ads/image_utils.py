@@ -47,7 +47,7 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
         ).put_object(
             Bucket=bucket, Key=key, Body=buf,
-            ContentType='image/webp', ACL='public-read',
+            ContentType='image/webp',
         )
         return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
 
