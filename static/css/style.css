@@ -361,9 +361,9 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   pointer-events: auto;
 }
 
-/* Espaceur = hauteur du rectangle pub (contenu démarre juste en dessous) */
+/* Espaceur < hauteur pub → le contenu chevauche le bas du billboard */
 .pub-spacer {
-  height: 180px;
+  height: 120px;
   position: relative;
   z-index: 2;
   pointer-events: none;
