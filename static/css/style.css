@@ -642,7 +642,6 @@ main {
 .cat-carousel__btn--next { right: -15px; }
 @media (max-width: 640px) {
   /* Carousel : exactement 2 items visibles + flèches */
-  .cat-carousel         { overflow: hidden; }
   .cat-carousel__item   { flex: 0 0 calc(50% - 6px) !important; }
   .cat-carousel__btn    { display: flex !important; width: 26px; height: 26px; font-size: 14px; }
   .cat-carousel__btn--prev { left: 2px !important; }

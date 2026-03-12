@@ -17,8 +17,10 @@ class AnnonceForm(forms.ModelForm):
                 'class': 'form-input'
             }),
             'prix_label': forms.TextInput(attrs={
-                'placeholder': 'Ex: 15 000 XPF, Gratuit, À débattre',
-                'class': 'form-input'
+                'placeholder': 'Rempli automatiquement',
+                'class': 'form-input',
+                'readonly': 'readonly',
+                'style': 'background-color: #f3f4f6; color: #9ca3af; cursor: not-allowed;',
             }),
             'localisation': forms.TextInput(attrs={
                 'placeholder': 'Ex: Papeete, Faa\'a, Moorea...',

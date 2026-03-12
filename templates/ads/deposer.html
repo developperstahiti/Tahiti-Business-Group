@@ -67,7 +67,7 @@
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Affichage prix</label>
                 {{ form.prix_label }}
-                <p class="text-xs text-gray-400 mt-1">Ex : "À débattre", "15 000 XPF"</p>
+                <p class="text-xs text-gray-400 mt-1">Rempli automatiquement avec le prix</p>
               </div>
             </div>
 
@@ -808,10 +808,7 @@ document.addEventListener('DOMContentLoaded', function() { boostUpdate(0); });
   const prixInput = document.getElementById('id_prix');
   const labelInput = document.getElementById('id_prix_label');
   if (!prixInput || !labelInput) return;
-  let userEditedLabel = false;
-  labelInput.addEventListener('input', () => { userEditedLabel = labelInput.value.trim() !== ''; });
   prixInput.addEventListener('input', () => {
-    if (userEditedLabel) return;
     const v = parseInt(prixInput.value) || 0;
     labelInput.value = v > 0 ? v.toLocaleString('fr-FR').replace(/\u202F/g, ' ') + ' XPF' : '';
   });
