@@ -91,7 +91,8 @@
                 <input type="file" id="photoInput" name="photos" multiple accept="image/*"
                   class="hidden" onchange="previewPhotos(this)">
               </div>
-              <div id="photoPreview" class="flex gap-2 flex-wrap mt-3"></div>
+              <div id="photoPreview" class="flex gap-3 flex-wrap mt-3"></div>
+              <p id="photoHint" class="text-xs text-gray-400 mt-1.5 hidden">Glissez les miniatures pour changer l'ordre • La 1re photo sera la couverture</p>
             </div>
 
             <!-- ── Module Boost ───────────────────────────────────────── -->
@@ -731,27 +732,71 @@ if (sousCatSel) {
   sousCatSel.addEventListener('change', () => { renderSpecs(sousCatSel.value); });
 }
 
+// ─── Gestion photos avec drag & drop upload + réordonnancement ───────────────
+var _photoFiles = []; // stocke les fichiers sélectionnés
+
 function previewPhotos(input) {
+  if (!input.files) return;
+  Array.from(input.files).forEach(f => {
+    if (_photoFiles.length < 5) _photoFiles.push(f);
+  });
+  _renderPhotoPreviews();
+}
+
+function _renderPhotoPreviews() {
   const preview = document.getElementById('photoPreview');
   preview.innerHTML = '';
-  if (!input.files) return;
-  Array.from(input.files).slice(0, 5).forEach(file => {
+  _photoFiles.forEach((file, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-thumb relative';
+    wrap.draggable = true;
+    wrap.dataset.idx = idx;
+    const img = document.createElement('img');
+    img.className = 'w-20 h-20 object-cover rounded-xl border-2 border-gray-200 shadow-sm cursor-grab';
     const reader = new FileReader();
-    reader.onload = e => {
-      const wrap = document.createElement('div');
-      wrap.className = 'relative';
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.className = 'w-20 h-16 object-cover rounded-lg border border-gray-200 shadow-sm';
-      const badge = document.createElement('div');
-      badge.className = 'absolute -top-1 -right-1 bg-emerald-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold';
-      badge.textContent = '✓';
-      wrap.appendChild(img);
-      wrap.appendChild(badge);
-      preview.appendChild(wrap);
-    };
+    reader.onload = e => { img.src = e.target.result; };
     reader.readAsDataURL(file);
+    // Badge numéro
+    const num = document.createElement('div');
+    num.className = 'absolute -top-1.5 -left-1.5 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black';
+    num.textContent = idx + 1;
+    // Bouton supprimer
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black transition';
+    del.textContent = '✕';
+    del.onclick = () => { _photoFiles.splice(idx, 1); _renderPhotoPreviews(); };
+    wrap.appendChild(img);
+    wrap.appendChild(num);
+    wrap.appendChild(del);
+    // Drag events pour réordonnancement
+    wrap.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', idx); wrap.style.opacity = '0.4'; });
+    wrap.addEventListener('dragend', () => { wrap.style.opacity = '1'; });
+    wrap.addEventListener('dragover', e => { e.preventDefault(); wrap.classList.add('ring-2', 'ring-blue-400'); });
+    wrap.addEventListener('dragleave', () => { wrap.classList.remove('ring-2', 'ring-blue-400'); });
+    wrap.addEventListener('drop', e => {
+      e.preventDefault();
+      wrap.classList.remove('ring-2', 'ring-blue-400');
+      const from = parseInt(e.dataTransfer.getData('text/plain'));
+      const to = idx;
+      if (from !== to) {
+        const item = _photoFiles.splice(from, 1)[0];
+        _photoFiles.splice(to, 0, item);
+        _renderPhotoPreviews();
+      }
+    });
+    preview.appendChild(wrap);
   });
+  // Sync les fichiers dans l'input pour le submit
+  _syncPhotoInput();
+}
+
+function _syncPhotoInput() {
+  const dt = new DataTransfer();
+  _photoFiles.forEach(f => dt.items.add(f));
+  document.getElementById('photoInput').files = dt.files;
+  const hint = document.getElementById('photoHint');
+  if (hint) hint.classList.toggle('hidden', _photoFiles.length < 2);
 }
 
 // ─── Boost Slider ─────────────────────────────────────────────────────────────
@@ -814,19 +859,20 @@ document.addEventListener('DOMContentLoaded', function() { boostUpdate(0); });
   });
 })();
 
-// Drag & drop
+// Drag & drop upload sur la dropzone
 const dz = document.getElementById('dropzone');
 if (dz) {
   ['dragover','dragenter'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dz-over'); });
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('dz-over'); });
   });
   ['dragleave','drop'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dz-over'); });
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove('dz-over'); });
   });
   dz.addEventListener('drop', e => {
-    const input = document.getElementById('photoInput');
-    input.files = e.dataTransfer.files;
-    previewPhotos(input);
+    Array.from(e.dataTransfer.files).forEach(f => {
+      if (_photoFiles.length < 5 && f.type.startsWith('image/')) _photoFiles.push(f);
+    });
+    _renderPhotoPreviews();
   });
 }
 </script>

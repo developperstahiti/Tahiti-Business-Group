@@ -75,29 +75,27 @@
                 placeholder="Décrivez votre article ou service...">{{ annonce.description }}</textarea>
             </div>
 
-            <!-- ── Photos actuelles ── -->
+            <!-- ── Photos actuelles (réordonnables par drag & drop) ── -->
             {% if annonce.photos %}
             <div>
               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">
                 Photos actuelles ({{ annonce.photos|length }}/5)
-                <span class="text-gray-400 font-normal normal-case ml-1">— survolez pour supprimer</span>
+                <span class="text-gray-400 font-normal normal-case ml-1">— glissez pour réordonner, cliquez ✕ pour supprimer</span>
               </label>
-              <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="currentPhotos">
+              <div class="flex gap-3 flex-wrap" id="currentPhotos">
                 {% for photo in annonce.photos %}
-                <div class="relative group photo-item" data-url="{{ photo }}">
+                <div class="relative photo-item" draggable="true" data-url="{{ photo }}" style="cursor:grab">
                   <img src="{{ photo }}" alt="Photo {{ forloop.counter }}"
-                    class="w-full aspect-square object-cover rounded-xl border-2 border-transparent transition-all group-hover:border-red-400 group-hover:opacity-70">
-                  <label class="absolute inset-0 flex items-center justify-center cursor-pointer rounded-xl">
-                    <input type="checkbox" name="delete_photos" value="{{ photo }}"
-                      class="hidden photo-delete-cb" data-idx="{{ forloop.counter0 }}">
-                    <div class="delete-overlay hidden group-hover:flex absolute inset-0 items-center justify-center bg-red-500/80 rounded-xl text-white font-black text-xl">✕</div>
-                  </label>
-                  <!-- Badge "À supprimer" quand coché -->
-                  <div class="delete-badge hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black">✕</div>
+                    class="w-20 h-20 object-cover rounded-xl border-2 border-gray-200 shadow-sm transition-all">
+                  <div class="absolute -top-1.5 -left-1.5 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black photo-num">{{ forloop.counter }}</div>
+                  <button type="button" class="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black transition photo-del-btn">✕</button>
+                  <input type="hidden" name="photo_order" value="{{ photo }}">
                 </div>
                 {% endfor %}
               </div>
-              <p class="text-xs text-gray-400 mt-1.5">Cliquez sur une photo pour la marquer à supprimer (rouge = sera supprimée)</p>
+              <p class="text-xs text-gray-400 mt-1.5">La 1re photo sera la couverture de l'annonce</p>
+              <!-- Inputs cachés pour les suppressions -->
+              <div id="deleteInputs"></div>
             </div>
             {% endif %}
 
@@ -179,68 +177,107 @@ const catElEdit = document.getElementById('id_categorie');
 togglePrix(catElEdit.value);
 catElEdit.addEventListener('change', function() { togglePrix(this.value); });
 
-// ── Gestion suppression photos ─────────────────────────────────
-document.querySelectorAll('.photo-delete-cb').forEach(cb => {
-  const item   = cb.closest('.photo-item');
-  const badge  = item.querySelector('.delete-badge');
-  const img    = item.querySelector('img');
-  const overlay = item.querySelector('.delete-overlay');
+// ── Drag & drop réordonnancement photos existantes ────────────
+(function() {
+  const container = document.getElementById('currentPhotos');
+  if (!container) return;
+  var dragItem = null;
 
-  item.addEventListener('click', (e) => {
-    // Ne pas déclencher si on clique sur le label lui-même (évite double toggle)
-    cb.checked = !cb.checked;
-    if (cb.checked) {
-      img.classList.add('opacity-40', 'border-red-500');
-      badge.classList.remove('hidden');
-      badge.classList.add('flex');
-      overlay.classList.add('flex');
-      overlay.classList.remove('hidden');
-    } else {
-      img.classList.remove('opacity-40', 'border-red-500');
-      badge.classList.add('hidden');
-      badge.classList.remove('flex');
-      overlay.classList.remove('flex');
-      overlay.classList.add('hidden');
-    }
+  function refreshNums() {
+    container.querySelectorAll('.photo-item').forEach((el, i) => {
+      el.querySelector('.photo-num').textContent = i + 1;
+    });
+  }
+
+  container.querySelectorAll('.photo-item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragItem = item;
+      item.style.opacity = '0.4';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => { item.style.opacity = '1'; dragItem = null; });
+    item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('ring-2', 'ring-blue-400'); });
+    item.addEventListener('dragleave', () => { item.classList.remove('ring-2', 'ring-blue-400'); });
+    item.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      item.classList.remove('ring-2', 'ring-blue-400');
+      if (dragItem && dragItem !== item) {
+        const allItems = Array.from(container.querySelectorAll('.photo-item'));
+        const fromIdx = allItems.indexOf(dragItem);
+        const toIdx = allItems.indexOf(item);
+        if (fromIdx < toIdx) item.after(dragItem);
+        else item.before(dragItem);
+        refreshNums();
+      }
+    });
+
+    // Bouton supprimer
+    item.querySelector('.photo-del-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const url = item.dataset.url;
+      // Ajouter un input caché pour la suppression
+      const inp = document.createElement('input');
+      inp.type = 'hidden'; inp.name = 'delete_photos'; inp.value = url;
+      document.getElementById('deleteInputs').appendChild(inp);
+      item.remove();
+      refreshNums();
+    });
   });
-});
+})();
 
-// ── Prévisualisation nouvelles photos ──────────────────────────
+// ── Nouvelles photos — upload + preview ──────────────────────────
+var _newFiles = [];
+
 function previewNewPhotos(input) {
-  const preview = document.getElementById('newPhotoPreview');
-  preview.innerHTML = '';
-  Array.from(input.files).slice(0, {{ remaining_slots }}).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const wrap = document.createElement('div');
-      wrap.className = 'relative';
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.className = 'w-20 h-16 object-cover rounded-xl border border-gray-200 shadow-sm';
-      const badge = document.createElement('div');
-      badge.className = 'absolute -top-1 -right-1 bg-emerald-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold';
-      badge.textContent = '+';
-      wrap.appendChild(img);
-      wrap.appendChild(badge);
-      preview.appendChild(wrap);
-    };
-    reader.readAsDataURL(file);
+  if (!input.files) return;
+  Array.from(input.files).forEach(f => {
+    if (_newFiles.length < {{ remaining_slots }} && f.type.startsWith('image/')) _newFiles.push(f);
   });
+  _renderNewPreviews();
 }
 
-// ── Drag & drop ────────────────────────────────────────────────
+function _renderNewPreviews() {
+  const preview = document.getElementById('newPhotoPreview');
+  preview.innerHTML = '';
+  _newFiles.forEach((file, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'relative';
+    const img = document.createElement('img');
+    img.className = 'w-20 h-20 object-cover rounded-xl border border-gray-200 shadow-sm';
+    const reader = new FileReader();
+    reader.onload = e => { img.src = e.target.result; };
+    reader.readAsDataURL(file);
+    const badge = document.createElement('div');
+    badge.className = 'absolute -top-1 -left-1 bg-emerald-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold';
+    badge.textContent = '+';
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black transition';
+    del.textContent = '✕';
+    del.onclick = () => { _newFiles.splice(idx, 1); _renderNewPreviews(); };
+    wrap.appendChild(img); wrap.appendChild(badge); wrap.appendChild(del);
+    preview.appendChild(wrap);
+  });
+  // Sync input
+  const dt = new DataTransfer();
+  _newFiles.forEach(f => dt.items.add(f));
+  document.getElementById('photoInput').files = dt.files;
+}
+
+// ── Drag & drop upload ────────────────────────────────────────
 const dz = document.getElementById('dropzone');
 if (dz) {
   ['dragover', 'dragenter'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('border-blue-500', 'bg-blue-50'); });
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('border-blue-500', 'bg-blue-50'); });
   });
   ['dragleave', 'drop'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('border-blue-500', 'bg-blue-50'); });
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove('border-blue-500', 'bg-blue-50'); });
   });
   dz.addEventListener('drop', e => {
-    const input = document.getElementById('photoInput');
-    input.files = e.dataTransfer.files;
-    previewNewPhotos(input);
+    Array.from(e.dataTransfer.files).forEach(f => {
+      if (_newFiles.length < {{ remaining_slots }} && f.type.startsWith('image/')) _newFiles.push(f);
+    });
+    _renderNewPreviews();
   });
 }
 </script>

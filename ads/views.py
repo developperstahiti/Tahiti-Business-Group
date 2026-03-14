@@ -361,6 +361,16 @@ def edit_annonce(request, pk):
             except Exception:
                 pass
 
+        # Réordonner les photos existantes selon l'ordre envoyé
+        photo_order = request.POST.getlist('photo_order')
+        if photo_order:
+            ordered = [url for url in photo_order if url in current]
+            # Ajouter les photos pas dans l'ordre (sécurité)
+            for url in current:
+                if url not in ordered:
+                    ordered.append(url)
+            current = ordered
+
         # Ajouter nouvelles photos (max 5 total)
         for photo_file in request.FILES.getlist('photos'):
             if len(current) >= 5:
