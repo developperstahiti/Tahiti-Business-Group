@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Paiement sécurisé — {{ pub.titre }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+
+  <!-- Récapitulatif -->
+  <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-5 text-white">
+      <h1 class="text-lg font-black">Paiement sécurisé</h1>
+      <p class="text-blue-200 text-sm mt-1">Finalisez votre achat de publicité</p>
+    </div>
+
+    <div class="p-6">
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+        <div class="text-xs text-blue-600 font-medium">Récapitulatif de votre commande</div>
+        <div class="flex items-center justify-between mt-2">
+          <div>
+            <div class="text-sm font-bold text-blue-900">{{ pub.titre }}</div>
+            <div class="text-sm text-blue-700">{{ pub.get_emplacement_display }}</div>
+            <div class="text-xs text-blue-500 mt-1">Durée : {{ pub.duree_semaines }} semaine{{ pub.duree_semaines|pluralize }}</div>
+          </div>
+          <div class="text-2xl font-extrabold text-blue-800">{{ pub.prix|stringformat:"d" }} XPF</div>
+        </div>
+      </div>
+
+      <!-- Formulaire embarqué PayZen -->
+      <div id="paymentContainer">
+        <div class="kr-embedded" kr-form-token="{{ form_token }}">
+          <div class="kr-pan"></div>
+          <div class="kr-expiry"></div>
+          <div class="kr-security-code"></div>
+          <button class="kr-payment-button"></button>
+          <div class="kr-form-error"></div>
+        </div>
+      </div>
+
+      <!-- Message de chargement -->
+      <div id="paymentLoading" class="text-center py-8">
+        <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-gray-500 text-sm">Chargement du formulaire de paiement...</p>
+      </div>
+
+      <!-- Message de succès (caché par défaut) -->
+      <div id="paymentSuccess" class="hidden text-center py-8">
+        <div class="text-5xl mb-4">&#10004;</div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Paiement accepté !</h2>
+        <p class="text-gray-500 text-sm mb-6">Votre publicité va être activée. Redirection en cours...</p>
+        <svg class="animate-spin h-6 w-6 text-emerald-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+
+      <!-- Message d'erreur (caché par défaut) -->
+      <div id="paymentError" class="hidden text-center py-8">
+        <div class="text-5xl mb-4">&#10060;</div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Paiement refusé</h2>
+        <p class="text-gray-500 text-sm mb-6" id="paymentErrorMsg">Le paiement n'a pas abouti.</p>
+        <a href="{% url 'deposer_pub' %}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl transition">
+          Réessayer
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-xs text-gray-400 text-center">Paiement sécurisé par <strong>PayZen by OSB</strong></p>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://static.osb.pf/static/js/krypton-client/V4.0/ext/classic-reset.css">
+<link rel="stylesheet" href="https://static.osb.pf/static/js/krypton-client/V4.0/ext/classic.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://static.osb.pf/static/js/krypton-client/V4.0/ext/classic.js"
+        kr-public-key="{{ public_key }}"
+        kr-post-url-success="/pubs/paiement/{{ pub.pk }}/valider/"
+        kr-language="fr-FR">
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Masquer le chargement quand le formulaire est prêt
+  var checkReady = setInterval(function() {
+    var form = document.querySelector('.kr-embedded');
+    if (form && form.children.length > 0) {
+      var loading = document.getElementById('paymentLoading');
+      if (loading) loading.classList.add('hidden');
+      clearInterval(checkReady);
+    }
+  }, 300);
+
+  // Timeout : masquer le chargement après 10s quoi qu'il arrive
+  setTimeout(function() {
+    var loading = document.getElementById('paymentLoading');
+    if (loading) loading.classList.add('hidden');
+    clearInterval(checkReady);
+  }, 10000);
+});
+
+// Callback après soumission du formulaire
+if (typeof KR !== 'undefined') {
+  KR.onFormReady(function() {
+    document.getElementById('paymentLoading').classList.add('hidden');
+  });
+}
+</script>
+{% endblock %}

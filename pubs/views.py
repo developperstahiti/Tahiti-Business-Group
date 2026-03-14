@@ -1,11 +1,12 @@
 import json
+import logging
 import uuid
 from datetime import date, timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import (
@@ -13,7 +14,12 @@ from .models import (
     PRIX_PAR_EMPLACEMENT, DISCOUNT_PAR_DUREE, calculer_prix,
 )
 from .forms import PubliciteForm, DemandePubliciteForm, DepotPubliciteForm
-from .payzen import build_payzen_form, verify_signature
+from .payzen import (
+    build_payzen_form, verify_signature,
+    create_embedded_form_token, verify_rest_signature,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def _staff_required(request):
@@ -171,7 +177,7 @@ def deposer_pub(request):
 
 
 def initier_paiement(request, pk):
-    """Construit et affiche le formulaire de redirection PayZen."""
+    """Affiche le formulaire de paiement embarqué PayZen."""
     pub = get_object_or_404(Publicite, pk=pk, payment_status='pending')
 
     # Vérifier que c'est bien l'utilisateur qui a créé cette pub
@@ -179,29 +185,59 @@ def initier_paiement(request, pk):
         messages.error(request, "Accès non autorisé.")
         return redirect('deposer_pub')
 
-    form_data, payment_url = build_payzen_form(pub, request)
+    try:
+        form_token, public_key = create_embedded_form_token(pub, request)
+    except RuntimeError:
+        # Fallback : redirection classique si l'API REST échoue
+        logger.exception("Embedded form token creation failed, falling back to redirect")
+        form_data, payment_url = build_payzen_form(pub, request)
+        return render(request, 'pubs/payzen_redirect.html', {
+            'form_data':   form_data,
+            'payment_url': payment_url,
+            'pub':         pub,
+        })
 
-    return render(request, 'pubs/payzen_redirect.html', {
-        'form_data':   form_data,
-        'payment_url': payment_url,
-        'pub':         pub,
+    return render(request, 'pubs/paiement_embarque.html', {
+        'pub':        pub,
+        'form_token': form_token,
+        'public_key': public_key,
     })
 
 
 @csrf_exempt
 def retour_paiement(request):
-    """Page de retour après paiement (navigateur de l'acheteur)."""
+    """Page de retour après paiement (navigateur de l'acheteur).
+
+    Gère les retours de l'API Formulaire (vads_*) et de l'API REST (succes/echec URLs).
+    """
     data = request.POST if request.method == 'POST' else request.GET
 
+    # Retour API Formulaire (redirection)
     order_id = data.get('vads_order_id', '')
     result   = data.get('vads_result', '')
     status   = data.get('vads_trans_status', '')
 
-    success = (result == '00' and status in ('AUTHORISED', 'CAPTURED'))
-
     pub = None
+
     if order_id:
+        success = (result == '00' and status in ('AUTHORISED', 'CAPTURED'))
         pub = Publicite.objects.filter(payment_ref=order_id).first()
+    else:
+        # Retour formulaire embarqué : détecter via l'URL
+        path = request.path
+        if 'succes' in path:
+            success = True
+            # Récupérer la pub depuis la session
+            pk = request.session.get('pub_pending_pk')
+            if pk:
+                pub = Publicite.objects.filter(pk=pk, payment_status='paid').first()
+        elif 'echec' in path:
+            success = False
+            pk = request.session.get('pub_pending_pk')
+            if pk:
+                pub = Publicite.objects.filter(pk=pk).first()
+        else:
+            success = False
 
     return render(request, 'pubs/paiement_resultat.html', {
         'success': success,
@@ -247,3 +283,101 @@ def ipn_paiement(request):
         pub.save()
 
     return HttpResponse('OK', status=200)
+
+
+@csrf_exempt
+def ipn_paiement_rest(request):
+    """IPN pour le formulaire embarqué (API REST V4).
+
+    PayZen envoie un POST avec kr-hash et kr-answer.
+    """
+    if request.method != 'POST':
+        return HttpResponse('Method not allowed', status=405)
+
+    kr_answer = request.POST.get('kr-answer', '')
+    kr_hash = request.POST.get('kr-hash', '')
+
+    if not kr_answer or not kr_hash:
+        return HttpResponse('Missing kr-answer or kr-hash', status=400)
+
+    # Vérifier la signature
+    if not verify_rest_signature(kr_answer, kr_hash):
+        logger.warning("IPN REST: invalid signature")
+        return HttpResponse('Invalid signature', status=400)
+
+    try:
+        answer = json.loads(kr_answer)
+    except json.JSONDecodeError:
+        return HttpResponse('Invalid JSON', status=400)
+
+    order_id = answer.get('orderDetails', {}).get('orderId', '')
+    status = answer.get('orderStatus', '')
+    trans_id = answer.get('transactions', [{}])[0].get('uuid', '') if answer.get('transactions') else ''
+
+    try:
+        pub = Publicite.objects.get(payment_ref=order_id)
+    except Publicite.DoesNotExist:
+        return HttpResponse('Order not found', status=404)
+
+    if status == 'PAID':
+        pub.payment_status = 'paid'
+        pub.payment_trans_id = trans_id
+        pub.actif = True
+        pub.date_debut = date.today()
+        pub.date_fin = date.today() + timedelta(weeks=pub.duree_semaines)
+        pub.save()
+    elif status in ('UNPAID', 'REFUSED'):
+        pub.payment_status = 'failed'
+        pub.payment_trans_id = trans_id
+        pub.save()
+
+    return HttpResponse('OK', status=200)
+
+
+@csrf_exempt
+def paiement_valide_js(request, pk):
+    """Endpoint appelé par le SDK PayZen après paiement (kr-post-url-success).
+
+    Vérifie la signature kr-hash/kr-answer, active la pub,
+    puis redirige vers la page de résultat.
+    """
+    if request.method != 'POST':
+        return redirect('deposer_pub')
+
+    kr_answer = request.POST.get('kr-answer', '')
+    kr_hash = request.POST.get('kr-hash', '')
+
+    if not kr_answer or not kr_hash:
+        messages.error(request, "Données de paiement manquantes.")
+        return redirect('deposer_pub')
+
+    if not verify_rest_signature(kr_answer, kr_hash):
+        logger.warning("paiement_valide_js: invalid signature for pub %s", pk)
+        messages.error(request, "Signature de paiement invalide.")
+        return redirect('deposer_pub')
+
+    try:
+        answer = json.loads(kr_answer)
+    except json.JSONDecodeError:
+        messages.error(request, "Données de paiement invalides.")
+        return redirect('deposer_pub')
+
+    pub = get_object_or_404(Publicite, pk=pk)
+
+    order_status = answer.get('orderStatus', '')
+    trans_id = answer.get('transactions', [{}])[0].get('uuid', '') if answer.get('transactions') else ''
+
+    if order_status == 'PAID' and pub.payment_status == 'pending':
+        pub.payment_status = 'paid'
+        pub.payment_trans_id = trans_id
+        pub.actif = True
+        pub.date_debut = date.today()
+        pub.date_fin = date.today() + timedelta(weeks=pub.duree_semaines)
+        pub.save()
+
+    # Afficher la page de résultat
+    success = (pub.payment_status == 'paid')
+    return render(request, 'pubs/paiement_resultat.html', {
+        'success': success,
+        'pub': pub,
+    })

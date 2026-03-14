@@ -155,3 +155,11 @@ PAYZEN_KEY_TEST    = os.environ.get('PAYZEN_KEY_TEST', 'orbUKNKhPpTWksht')
 PAYZEN_KEY_PROD    = os.environ.get('PAYZEN_KEY_PROD', '2HPQKAx96ruZucN9')
 PAYZEN_MODE        = os.environ.get('PAYZEN_MODE', 'TEST')   # TEST ou PRODUCTION
 PAYZEN_PAYMENT_URL = os.environ.get('PAYZEN_PAYMENT_URL', 'https://secure.osb.pf/vads-payment/')
+
+# Clés API REST PayZen (formulaire embarqué)
+PAYZEN_REST_API_PASSWORD_TEST = os.environ.get('PAYZEN_REST_API_PASSWORD_TEST', 'testpassword_x3lqAvA5DPddQ037rKXC9oFnd4SrOcUSGj20vhbfrpNBe')
+PAYZEN_REST_API_PASSWORD_PROD = os.environ.get('PAYZEN_REST_API_PASSWORD_PROD', 'prodpassword_WiQnQw5CypnJEUHVQ3rvCloRH8Tndx57WJ3fisdc1kVzB')
+PAYZEN_PUBLIC_KEY_TEST = os.environ.get('PAYZEN_PUBLIC_KEY_TEST', '27418282:testpublickey_CPggUehLPGYSAHsX8tj0BRNH1Jc4UEa3k58Y2ocU07CFa')
+PAYZEN_PUBLIC_KEY_PROD = os.environ.get('PAYZEN_PUBLIC_KEY_PROD', '27418282:publickey_H7m2Bm5E5Njcm61mWJ13jRnLRdRa6yqExj3Xok9rJ2HR8')
+PAYZEN_HMAC_KEY_TEST = os.environ.get('PAYZEN_HMAC_KEY_TEST', 'uApem93KeAKuAN7nWxImZvjcGpFy12KH3i3UONHW8b2lZ')
+PAYZEN_HMAC_KEY_PROD = os.environ.get('PAYZEN_HMAC_KEY_PROD', 'A1KdgKQfkatZ29qTLT35wfHi0dIaTfIkv8DKUxRK2IcMn')
