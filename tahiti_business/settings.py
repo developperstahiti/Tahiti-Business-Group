@@ -150,8 +150,8 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 AWS_S3_REGION_NAME     = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
 
 # ── PayZen by OSB (paiement en ligne) ─────────────────────────────────────────
-PAYZEN_SHOP_ID     = os.environ.get('PAYZEN_SHOP_ID', '')
-PAYZEN_KEY_TEST    = os.environ.get('PAYZEN_KEY_TEST', '')
-PAYZEN_KEY_PROD    = os.environ.get('PAYZEN_KEY_PROD', '')
+PAYZEN_SHOP_ID     = os.environ.get('PAYZEN_SHOP_ID', '27418282')
+PAYZEN_KEY_TEST    = os.environ.get('PAYZEN_KEY_TEST', 'orbUKNKhPpTWksht')
+PAYZEN_KEY_PROD    = os.environ.get('PAYZEN_KEY_PROD', '2HPQKAx96ruZucN9')
 PAYZEN_MODE        = os.environ.get('PAYZEN_MODE', 'TEST')   # TEST ou PRODUCTION
 PAYZEN_PAYMENT_URL = os.environ.get('PAYZEN_PAYMENT_URL', 'https://secure.osb.pf/vads-payment/')
