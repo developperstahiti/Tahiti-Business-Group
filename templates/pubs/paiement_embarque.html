@@ -74,12 +74,12 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://secure.osb.pf/static/js/krypton-client/V4.0/ext/classic-reset.css">
-<link rel="stylesheet" href="https://secure.osb.pf/static/js/krypton-client/V4.0/ext/classic.css">
+<link rel="stylesheet" href="https://static.osb.pf/static/js/krypton-client/V4.0/ext/classic-reset.css">
+<link rel="stylesheet" href="https://static.osb.pf/static/js/krypton-client/V4.0/ext/classic.css">
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://secure.osb.pf/static/js/krypton-client/V4.0/ext/classic.js"
+<script src="https://static.osb.pf/static/js/krypton-client/V4.0/stable/kr-payment-form.min.js"
         kr-public-key="{{ public_key }}"
         kr-post-url-success="/pubs/paiement/{{ pub.pk }}/valider/"
         kr-language="fr-FR">
