@@ -2,6 +2,6 @@
 builder = "DOCKERFILE"
 
 [deploy]
-startCommand = "sh -c 'python manage.py migrate --noinput && python manage.py create_admin || true && python manage.py clear_demo_data || true && python manage.py seed_real_annonces || true && python manage.py seed_rubriques || true && gunicorn tahiti_business.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120'"
+startCommand = "sh -c 'python manage.py migrate --noinput && python manage.py create_admin || true && gunicorn tahiti_business.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120'"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
