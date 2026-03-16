@@ -1,8 +1,9 @@
+import os
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.static import serve
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from ads.views import sitemap_xml
 
 handler404 = 'ads.views.custom_404'
@@ -29,6 +30,15 @@ urlpatterns = [
     path('rubriques/', include('rubriques.urls')),
     path('robots.txt', robots_txt),
     path('sitemap.xml', sitemap_xml),
+    path('sw.js', lambda r: FileResponse(
+        open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'sw.js'), 'rb'),
+        content_type='application/javascript',
+        headers={'Service-Worker-Allowed': '/'},
+    )),
+    path('manifest.json', lambda r: FileResponse(
+        open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'manifest.json'), 'rb'),
+        content_type='application/manifest+json',
+    )),
 ]
 
 # Serve media files in all environments (DEBUG=True and DEBUG=False)
