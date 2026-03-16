@@ -327,24 +327,23 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   top: 108px;   /* juste sous le header sticky (zone1 64px + zone2 44px) */
   left: 0;
   width: 100vw;
-  height: 180px; /* hauteur rectangle billboard desktop */
+  height: auto;
+  max-height: 300px;
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
   box-shadow: 0 6px 32px rgba(0,0,0,.22);
+  background: #000;
 }
 .pub-bg-fixed-link {
   display: block;
   width: 100%;
-  height: 100%;
   text-decoration: none;
   pointer-events: auto;
 }
 .pub-bg-fixed-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+  height: auto;
   display: block;
 }
 .pub-bg-fixed-empty {
@@ -371,12 +370,12 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
 
 /* Responsive billboard */
 @media (max-width: 767px) {
-  .pub-bg-fixed { height: 200px; }
-  .pub-spacer   { height: 200px; }
+  .pub-bg-fixed { height: auto; max-height: 200px; }
+  .pub-spacer   { display: none; }
 }
 @media (max-width: 479px) {
-  .pub-bg-fixed { height: 140px; }
-  .pub-spacer   { height: 140px; }
+  .pub-bg-fixed { height: auto; max-height: 140px; }
+  .pub-spacer   { display: none; }
 }
 
 /* Bulles blanches pour textes lisibles sur fond billboard ───────── */
@@ -2187,7 +2186,7 @@ img.loaded     { opacity: 1; }
   #layout-billboard {
     display: block;
     flex-shrink: 0;
-    height: 190px;
+    height: auto;
     overflow: hidden;
     border-radius: 0 0 14px 14px;
     box-shadow: 0 8px 32px rgba(0,0,0,.18);
@@ -2197,9 +2196,14 @@ img.loaded     { opacity: 1; }
     top: auto !important;
     left: auto !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
     z-index: auto !important;
     box-shadow: none !important;
+  }
+  #layout-billboard .pub-bg-fixed-img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
   }
   .pub-bg-fixed-empty { gap: 6px; }
 
@@ -2408,7 +2412,7 @@ img.loaded     { opacity: 1; }
   /* ── Billboard : bandeau pub au-dessus du contenu ──────────── */
   #layout-billboard {
     display: block;
-    height: 80px;
+    height: auto;
     overflow: hidden;
   }
   #layout-billboard .pub-bg-fixed {
@@ -2416,13 +2420,18 @@ img.loaded     { opacity: 1; }
     top: auto !important;
     left: auto !important;
     width: 100% !important;
-    height: 80px !important;
+    height: auto !important;
     z-index: auto !important;
     box-shadow: none !important;
     pointer-events: auto !important;
   }
+  #layout-billboard .pub-bg-fixed-img {
+    width: 100% !important;
+    height: auto !important;
+  }
   #layout-billboard .pub-bg-fixed-empty {
     gap: 3px;
+    min-height: 80px;
   }
   /* Spacer inutile sur mobile (billboard n'est plus en position:fixed) */
   .pub-spacer { display: none; }
@@ -2636,8 +2645,8 @@ img.loaded     { opacity: 1; }
     box-shadow: none !important;
     pointer-events: auto !important;
   }
-  /* Image pub : couvre la hauteur */
-  #layout-billboard .pub-bg-fixed-img  { width: 100% !important; height: 80px !important; object-fit: cover; }
+  /* Image/vidéo pub : s'adapte à la hauteur */
+  #layout-billboard .pub-bg-fixed-img  { width: 100% !important; height: 80px !important; object-fit: contain; }
   #layout-billboard .pub-bg-fixed-link { height: 80px !important; }
   /* État vide : 3 lignes centrées dans 80px, gap compact */
   #layout-billboard .pub-bg-fixed-empty {
@@ -2830,7 +2839,7 @@ img.loaded     { opacity: 1; }
 @media (max-width: 767px) and (orientation: landscape) {
   #layout-billboard { height: 56px !important; }
   #layout-billboard .pub-bg-fixed     { height: 56px !important; }
-  #layout-billboard .pub-bg-fixed-img { height: 56px !important; }
+  #layout-billboard .pub-bg-fixed-img { height: 56px !important; object-fit: contain !important; }
   #layout-billboard .pub-bg-fixed-link{ height: 56px !important; }
   #layout-billboard + #layout-row { margin-top: 56px; }
   #layout-billboard + #layout-row #main-frame header { top: 56px; }
