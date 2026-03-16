@@ -53,7 +53,11 @@
 <div class="pub-bg-fixed">
   {% if pub_billboard %}
   <a href="{{ pub_billboard.lien }}" target="_blank" rel="noopener sponsored" class="pub-bg-fixed-link">
+    {% if pub_billboard.is_video %}
+    <video src="{{ pub_billboard.get_video }}" class="pub-bg-fixed-img" autoplay muted loop playsinline></video>
+    {% else %}
     <img src="{{ pub_billboard.get_image }}" alt="{{ pub_billboard.titre }}" class="pub-bg-fixed-img">
+    {% endif %}
   </a>
   {% else %}
   <a href="{% url 'tarifs_pubs' %}" class="pub-bg-fixed-empty">

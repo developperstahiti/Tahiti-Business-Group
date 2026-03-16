@@ -85,6 +85,8 @@ class Publicite(models.Model):
     description  = models.CharField(max_length=300, blank=True)
     image        = models.ImageField(upload_to='pubs/', blank=True, null=True)
     image_url    = models.URLField(blank=True, help_text="URL externe si pas d'upload")
+    video        = models.FileField(upload_to='pubs/videos/', blank=True, null=True)
+    video_url    = models.URLField(blank=True, help_text="URL externe d'une vidéo")
     lien         = models.URLField(blank=True)
     emplacement  = models.CharField(max_length=20, choices=EMPLACEMENTS)
     prix         = models.IntegerField(default=0)
@@ -230,6 +232,27 @@ class Publicite(models.Model):
         if self.image:
             return self.image.url
         return self.image_url or None
+
+    def get_video(self):
+        if self.video:
+            return self.video.url
+        return self.video_url or None
+
+    def is_video(self):
+        """Retourne True si le média principal est une vidéo."""
+        return bool(self.video or self.video_url)
+
+    def get_media(self):
+        """Retourne (type, url) — type = 'video' ou 'image'."""
+        if self.video:
+            return ('video', self.video.url)
+        if self.video_url:
+            return ('video', self.video_url)
+        if self.image:
+            return ('image', self.image.url)
+        if self.image_url:
+            return ('image', self.image_url)
+        return (None, None)
 
 
 class DemandePublicite(models.Model):

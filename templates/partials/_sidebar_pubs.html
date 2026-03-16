@@ -6,16 +6,15 @@
     <div class="pub-slot {% if pub_haut %}filled{% endif %} overflow-hidden">
       {% if pub_haut %}
         {% if pub_haut.lien %}<a href="{{ pub_haut.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% with img=pub_haut.get_image %}
-        {% if img %}
-          <img src="{{ img }}" alt="{{ pub_haut.titre }}" class="w-full h-auto block" loading="lazy">
+        {% if pub_haut.is_video %}
+          <video src="{{ pub_haut.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+        {% elif pub_haut.get_image %}
+          <img src="{{ pub_haut.get_image }}" alt="{{ pub_haut.titre }}" class="w-full h-auto block" loading="lazy">
         {% else %}
           <div class="h-40 bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col items-center justify-center text-center p-4">
             <div class="font-bold text-gray-800">{{ pub_haut.titre }}</div>
-            {% if pub_haut.description %}<div class="text-xs text-gray-500 mt-1">{{ pub_haut.description }}</div>{% endif %}
           </div>
         {% endif %}
-        {% endwith %}
         {% if pub_haut.lien %}</a>{% endif %}
       {% else %}
       <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
@@ -48,16 +47,15 @@
     <div class="pub-slot {% if pub_milieu %}filled{% endif %} overflow-hidden">
       {% if pub_milieu %}
         {% if pub_milieu.lien %}<a href="{{ pub_milieu.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% with img=pub_milieu.get_image %}
-        {% if img %}
-          <img src="{{ img }}" alt="{{ pub_milieu.titre }}" class="w-full h-auto block" loading="lazy">
+        {% if pub_milieu.is_video %}
+          <video src="{{ pub_milieu.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+        {% elif pub_milieu.get_image %}
+          <img src="{{ pub_milieu.get_image }}" alt="{{ pub_milieu.titre }}" class="w-full h-auto block" loading="lazy">
         {% else %}
           <div class="h-36 bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col items-center justify-center text-center p-4">
             <div class="font-bold text-gray-800">{{ pub_milieu.titre }}</div>
-            {% if pub_milieu.description %}<div class="text-xs text-gray-500 mt-1">{{ pub_milieu.description }}</div>{% endif %}
           </div>
         {% endif %}
-        {% endwith %}
         {% if pub_milieu.lien %}</a>{% endif %}
       {% else %}
       <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
@@ -79,15 +77,15 @@
     <div class="pub-slot {% if pub_bas %}filled{% endif %} overflow-hidden">
       {% if pub_bas %}
         {% if pub_bas.lien %}<a href="{{ pub_bas.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% with img=pub_bas.get_image %}
-        {% if img %}
-          <img src="{{ img }}" alt="{{ pub_bas.titre }}" class="w-full h-auto block" loading="lazy">
+        {% if pub_bas.is_video %}
+          <video src="{{ pub_bas.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+        {% elif pub_bas.get_image %}
+          <img src="{{ pub_bas.get_image }}" alt="{{ pub_bas.titre }}" class="w-full h-auto block" loading="lazy">
         {% else %}
           <div class="h-32 bg-gradient-to-br from-emerald-50 to-green-50 flex flex-col items-center justify-center text-center p-4">
             <div class="font-bold text-gray-800">{{ pub_bas.titre }}</div>
           </div>
         {% endif %}
-        {% endwith %}
         {% if pub_bas.lien %}</a>{% endif %}
       {% else %}
       <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">

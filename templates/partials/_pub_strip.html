@@ -3,9 +3,13 @@
   {% if current_strip %}
   <a href="{{ current_strip.lien }}" target="_blank" rel="noopener sponsored"
      class="pub-strip-img-wrap">
+    {% if current_strip.is_video %}
+    <video src="{{ current_strip.get_video }}" class="pub-strip-img" autoplay muted loop playsinline></video>
+    {% else %}
     <img src="{{ current_strip.get_image }}"
          alt="{{ current_strip.titre }}"
          class="pub-strip-img" loading="lazy">
+    {% endif %}
   </a>
   {% else %}
   <a href="{% url 'tarifs_pubs' %}" class="billboard-milieu-empty">

@@ -146,16 +146,21 @@ def deposer_pub(request):
 
         image_file = cd.get('image')
         image_url = cd.get('image_url', '').strip()
+        video_file = cd.get('video')
+        video_url = cd.get('video_url', '').strip()
 
-        # Vérifier qu'au moins une source d'image est fournie
-        if not image_file and not image_url:
-            form.add_error(None, "Veuillez uploader une image ou coller un lien d'image.")
+        # Vérifier qu'au moins une source média est fournie
+        has_media = image_file or image_url or video_file or video_url
+        if not has_media:
+            form.add_error(None, "Veuillez fournir une image ou une vidéo (upload ou lien).")
         else:
             # Créer la pub en attente de paiement
             pub = Publicite(
                 titre=cd['titre'],
                 image=image_file if image_file else None,
                 image_url=image_url if not image_file else '',
+                video=video_file if video_file else None,
+                video_url=video_url if not video_file else '',
                 lien=cd['lien'],
                 emplacement=cd['emplacement'],
                 prix=prix_total,

@@ -6,7 +6,8 @@ class PubliciteForm(forms.ModelForm):
     class Meta:
         model = Publicite
         fields = [
-            'titre', 'description', 'image', 'image_url', 'lien',
+            'titre', 'description', 'image', 'image_url',
+            'video', 'video_url', 'lien',
             'emplacement', 'actif',
             'client_nom', 'client_email', 'client_tel',
             'date_debut', 'date_fin',
@@ -15,6 +16,7 @@ class PubliciteForm(forms.ModelForm):
             'titre':        forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Nom de la publicité'}),
             'description':  forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Description courte (optionnel)'}),
             'image_url':    forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
+            'video_url':    forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...mp4'}),
             'lien':         forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
             'emplacement':  forms.Select(attrs={'class': 'form-input'}),
             'client_nom':   forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Nom du client'}),
@@ -57,6 +59,17 @@ class DepotPubliciteForm(forms.Form):
         label="Lien de l'image",
         required=False,
         widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://exemple.com/mon-image.jpg'}),
+    )
+    video = forms.FileField(
+        label='Vidéo publicitaire',
+        required=False,
+        help_text='MP4, WebM ou MOV. Max 50 Mo.',
+        widget=forms.ClearableFileInput(attrs={'accept': 'video/*'}),
+    )
+    video_url = forms.URLField(
+        label="Lien de la vidéo",
+        required=False,
+        widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://exemple.com/ma-video.mp4'}),
     )
     lien = forms.URLField(
         label='Lien de destination',
