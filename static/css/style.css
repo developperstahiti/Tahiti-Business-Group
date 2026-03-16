@@ -1250,9 +1250,7 @@ img.loaded     { opacity: 1; }
 @media (min-width: 769px) { .sticky-cta { display: none; } }
 /* -- Pub strip compacte (inter-catégories) -- */
 .pub-strip-img-wrap { display: block; border-radius: var(--radius); overflow: hidden; }
-.pub-strip-img { width: 100%; height: 72px; object-fit: cover; display: block; }
-@media (min-width: 640px)  { .pub-strip-img { height: 80px; } }
-@media (min-width: 1024px) { .pub-strip-img { height: 88px; } }
+.pub-strip-img { width: 100%; height: auto; display: block; }
 
 .billboard-milieu-empty {
   display: flex;
