@@ -2188,6 +2188,7 @@ img.loaded     { opacity: 1; }
     display: block;
     flex-shrink: 0;
     height: auto;
+    max-height: 180px;
     overflow: hidden;
     border-radius: 0 0 14px 14px;
     box-shadow: 0 8px 32px rgba(0,0,0,.18);
@@ -2203,8 +2204,9 @@ img.loaded     { opacity: 1; }
   }
   #layout-billboard .pub-bg-fixed-img {
     width: 100% !important;
-    height: auto !important;
-    object-fit: contain !important;
+    height: 180px !important;
+    object-fit: cover !important;
+    object-position: center !important;
   }
   .pub-bg-fixed-empty { gap: 6px; }
 
