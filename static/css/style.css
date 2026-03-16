@@ -1251,6 +1251,9 @@ img.loaded     { opacity: 1; }
 /* -- Pub strip compacte (inter-catégories) -- */
 .pub-strip-img-wrap { display: block; border-radius: var(--radius); overflow: hidden; }
 .pub-strip-img { width: 100%; height: auto; display: block; }
+@media (min-width: 1025px) {
+  .pub-strip-img-wrap { max-width: 80%; margin: 0 auto; }
+}
 
 .billboard-milieu-empty {
   display: flex;
@@ -2215,7 +2218,7 @@ img.loaded     { opacity: 1; }
   #layout-row {
     flex: 1;
     display: grid;
-    grid-template-columns: 160px 1fr 300px; /* spacer asymétrique → cadre ~960px à 1440px */
+    grid-template-columns: 160px 1fr 250px; /* spacer asymétrique → cadre plus large, sidebar compacte */
     column-gap: 10px;
     padding: 12px 10px 0; /* espace en haut par défaut (pages sans billboard) */
     position: relative;
