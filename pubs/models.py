@@ -228,19 +228,38 @@ class Publicite(models.Model):
         except Exception as e:
             return str(e)  # remonter l'erreur sans bloquer la sauvegarde
 
+    _VIDEO_EXTENSIONS = ('.mp4', '.webm', '.mov', '.avi', '.mkv', '.ogv')
+
+    def _is_video_url(self, url):
+        """Détecte si une URL pointe vers une vidéo (par extension)."""
+        if not url:
+            return False
+        path = url.split('?')[0].split('#')[0].lower()
+        return any(path.endswith(ext) for ext in self._VIDEO_EXTENSIONS)
+
     def get_image(self):
         if self.image:
             return self.image.url
-        return self.image_url or None
+        if self.image_url and not self._is_video_url(self.image_url):
+            return self.image_url
+        return None
 
     def get_video(self):
         if self.video:
             return self.video.url
-        return self.video_url or None
+        if self.video_url:
+            return self.video_url
+        # Fallback : URL vidéo stockée dans image_url
+        if self.image_url and self._is_video_url(self.image_url):
+            return self.image_url
+        return None
 
     def is_video(self):
         """Retourne True si le média principal est une vidéo."""
-        return bool(self.video or self.video_url)
+        if self.video or self.video_url:
+            return True
+        # Détecter une URL vidéo dans image_url
+        return self._is_video_url(self.image_url)
 
     def get_media(self):
         """Retourne (type, url) — type = 'video' ou 'image'."""
@@ -248,6 +267,8 @@ class Publicite(models.Model):
             return ('video', self.video.url)
         if self.video_url:
             return ('video', self.video_url)
+        if self.image_url and self._is_video_url(self.image_url):
+            return ('video', self.image_url)
         if self.image:
             return ('image', self.image.url)
         if self.image_url:
