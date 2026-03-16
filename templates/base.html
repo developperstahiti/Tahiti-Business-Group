@@ -848,7 +848,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
     function resize() {
       w = canvas.width = canvas.offsetWidth || 200;
       h = canvas.height = canvas.offsetHeight || 80;
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, w, h);
       build();
     }
@@ -888,7 +888,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 
     function frame() {
       // Fond semi-transparent pour effet de traînée
-      ctx.fillStyle = 'rgba(15,23,42,.2)';
+      ctx.fillStyle = 'rgba(0,0,0,.2)';
       ctx.fillRect(0, 0, w, h);
 
       // Dessiner toutes les particules en blanc — un seul fillStyle
