@@ -17,18 +17,10 @@
         {% endif %}
         {% if pub_haut.lien %}</a>{% endif %}
       {% else %}
-      <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
-        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Publicité</span>
-        <a href="{% url 'tarifs_pubs' %}" class="text-xs text-blue-500 hover:text-blue-700 font-medium transition">Réserver</a>
-      </div>
-      <div class="pub-empty">
+      <a href="{% url 'deposer_pub' %}?emplacement=haut" class="pub-empty block" style="min-height:180px">
         <canvas class="pub-space-canvas"></canvas>
-        <div class="pub-empty__icon">📢</div>
-        <div class="pub-empty__title">Votre pub ici</div>
-        <div class="pub-empty__price">40 000 XPF</div>
-        <div class="pub-empty__sub">Emplacement premium · /mois</div>
-        <a href="{% url 'demande_pub' %}" class="pub-empty__cta">Réserver maintenant</a>
-      </div>
+        <div class="pub-empty__price" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.5)">40 000 XPF/mois — Cliquez pour réserver</div>
+      </a>
       {% endif %}
     </div>
 
@@ -58,18 +50,10 @@
         {% endif %}
         {% if pub_milieu.lien %}</a>{% endif %}
       {% else %}
-      <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
-        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Publicité</span>
-        <a href="{% url 'tarifs_pubs' %}" class="text-xs text-blue-500 hover:text-blue-700 font-medium transition">Réserver</a>
-      </div>
-      <div class="pub-empty" style="min-height:140px">
+      <a href="{% url 'deposer_pub' %}?emplacement=milieu" class="pub-empty block" style="min-height:160px">
         <canvas class="pub-space-canvas"></canvas>
-        <div class="pub-empty__icon">🎯</div>
-        <div class="pub-empty__title">Votre pub ici</div>
-        <div class="pub-empty__price">28 000 XPF</div>
-        <div class="pub-empty__sub">Position centrale · /mois</div>
-        <a href="{% url 'demande_pub' %}" class="pub-empty__cta">Réserver</a>
-      </div>
+        <div class="pub-empty__price" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.5)">28 000 XPF/mois — Cliquez pour réserver</div>
+      </a>
       {% endif %}
     </div>
 
@@ -88,18 +72,10 @@
         {% endif %}
         {% if pub_bas.lien %}</a>{% endif %}
       {% else %}
-      <div class="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
-        <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Publicité</span>
-        <a href="{% url 'tarifs_pubs' %}" class="text-xs text-blue-500 hover:text-blue-700 font-medium transition">Réserver</a>
-      </div>
-      <div class="pub-empty" style="min-height:120px">
+      <a href="{% url 'deposer_pub' %}?emplacement=bas" class="pub-empty block" style="min-height:140px">
         <canvas class="pub-space-canvas"></canvas>
-        <div class="pub-empty__icon">💼</div>
-        <div class="pub-empty__title">Votre pub ici</div>
-        <div class="pub-empty__price">20 000 XPF</div>
-        <div class="pub-empty__sub">Tarif accessible · /mois</div>
-        <a href="{% url 'demande_pub' %}" class="pub-empty__cta">Réserver</a>
-      </div>
+        <div class="pub-empty__price" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.5)">20 000 XPF/mois — Cliquez pour réserver</div>
+      </a>
       {% endif %}
     </div>
 

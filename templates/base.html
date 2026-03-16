@@ -60,11 +60,9 @@
     {% endif %}
   </a>
   {% else %}
-  <a href="{% url 'tarifs_pubs' %}" class="pub-bg-fixed-empty">
+  <a href="{% url 'deposer_pub' %}?emplacement=billboard" class="pub-bg-fixed-empty" style="position:relative;display:block;min-height:160px">
     <canvas class="pub-space-canvas"></canvas>
-    <div style="color:#fff;font-size:clamp(20px,4vw,48px);font-weight:900;letter-spacing:-.02em;text-align:center;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">📢 VOTRE PUB ICI</div>
-    <div style="color:#fff;font-size:clamp(14px,2.5vw,28px);font-weight:700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">100 000 XPF / mois</div>
-    <div style="color:#fff;font-size:clamp(12px,1.5vw,18px);font-weight:600;text-decoration:underline;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000">Réserver → 89 61 06 13</div>
+    <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;z-index:2;font-size:12px;color:rgba(255,255,255,.4)">100 000 XPF/mois — Cliquez pour réserver</div>
   </a>
   {% endif %}
 </div>
@@ -808,46 +806,162 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 {% endif %}
 
 <script>
-/* ── Animation fond spatial (étoiles) pour les emplacements pub vides ── */
+/* ── Animation particules textuelles pour les emplacements pub vides ── */
 (function () {
   'use strict';
-  function initStars(canvas) {
-    var ctx = canvas.getContext('2d');
-    var w, h, stars = [];
-    function resize() {
-      w = canvas.width  = canvas.offsetWidth  || 200;
-      h = canvas.height = canvas.offsetHeight || 80;
-      stars = [];
-      var n = Math.max(18, Math.floor(w * h / 550));
-      for (var i = 0; i < n; i++) {
-        stars.push({
-          x:       Math.random() * w,
-          y:       Math.random() * h,
-          r:       Math.random() * 1.3 + 0.2,
-          speed:   Math.random() * 0.38 + 0.07,
-          opacity: Math.random() * 0.65 + 0.25
-        });
+  var WORDS = ['Votre Pub', 'Ici', 'Et Maintenant'];
+  var COLORS = [
+    {r:26,g:108,b:241},   // bleu primary
+    {r:5,g:150,b:105},    // vert accent
+    {r:220,g:60,b:60},    // rouge
+    {r:255,g:180,b:0},    // doré
+  ];
+
+  function Particle(x, y, targetX, targetY, color) {
+    this.x = x;
+    this.y = y;
+    this.targetX = targetX;
+    this.targetY = targetY;
+    this.color = color;
+    this.vx = (Math.random() - 0.5) * 4;
+    this.vy = (Math.random() - 0.5) * 4;
+    this.radius = Math.random() * 1.5 + 0.5;
+    this.ease = Math.random() * 0.06 + 0.03;
+    this.friction = 0.88;
+    this.opacity = 0;
+  }
+
+  Particle.prototype.update = function () {
+    var dx = this.targetX - this.x;
+    var dy = this.targetY - this.y;
+    this.vx += dx * this.ease;
+    this.vy += dy * this.ease;
+    this.vx *= this.friction;
+    this.vy *= this.friction;
+    this.x += this.vx;
+    this.y += this.vy;
+    this.opacity += (1 - this.opacity) * 0.05;
+  };
+
+  Particle.prototype.draw = function (ctx) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 6.2832);
+    ctx.fillStyle = 'rgba(' + this.color.r + ',' + this.color.g + ',' + this.color.b + ',' + this.opacity + ')';
+    ctx.fill();
+  };
+
+  function getTextParticlePositions(text, w, h, density) {
+    var tmp = document.createElement('canvas');
+    tmp.width = w;
+    tmp.height = h;
+    var tctx = tmp.getContext('2d');
+
+    // Ajuster la taille de la police selon la largeur du canvas
+    var fontSize = Math.min(Math.floor(w / (text.length * 0.55)), Math.floor(h * 0.6));
+    fontSize = Math.max(14, Math.min(fontSize, 80));
+
+    tctx.fillStyle = '#000';
+    tctx.font = '900 ' + fontSize + 'px Arial, Helvetica, sans-serif';
+    tctx.textAlign = 'center';
+    tctx.textBaseline = 'middle';
+    tctx.fillText(text, w / 2, h / 2);
+
+    var data = tctx.getImageData(0, 0, w, h).data;
+    var positions = [];
+    var gap = density || 3;
+    for (var y = 0; y < h; y += gap) {
+      for (var x = 0; x < w; x += gap) {
+        if (data[(y * w + x) * 4 + 3] > 128) {
+          positions.push({x: x, y: y});
+        }
       }
     }
-    function frame() {
-      ctx.clearRect(0, 0, w, h);
-      for (var i = 0; i < stars.length; i++) {
-        var s = stars[i];
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, 6.2832);
-        ctx.fillStyle = 'rgba(255,255,255,' + s.opacity + ')';
-        ctx.fill();
-        s.y += s.speed;
-        if (s.y > h) { s.y = 0; s.x = Math.random() * w; }
+    return positions;
+  }
+
+  function initParticleText(canvas) {
+    var ctx = canvas.getContext('2d');
+    var w, h, particles = [], wordIndex = 0, frameCount = 0;
+    var FRAMES_PER_WORD = 300;
+    var colorIndex = 0;
+
+    function resize() {
+      w = canvas.width = canvas.offsetWidth || 200;
+      h = canvas.height = canvas.offsetHeight || 80;
+      buildWord();
+    }
+
+    function buildWord() {
+      var text = WORDS[wordIndex];
+      var color = COLORS[colorIndex];
+      var gap = w < 200 ? 4 : (w < 400 ? 3 : 2);
+      var positions = getTextParticlePositions(text, w, h, gap);
+
+      // Réutiliser les particules existantes ou en créer
+      var newParticles = [];
+      for (var i = 0; i < positions.length; i++) {
+        var p = positions[i];
+        if (i < particles.length) {
+          // Réassigner la cible
+          particles[i].targetX = p.x;
+          particles[i].targetY = p.y;
+          particles[i].color = color;
+          particles[i].opacity *= 0.5;
+          newParticles.push(particles[i]);
+        } else {
+          // Nouvelle particule depuis un bord aléatoire
+          var startX = Math.random() * w;
+          var startY = Math.random() < 0.5 ? -20 : h + 20;
+          newParticles.push(new Particle(startX, startY, p.x, p.y, color));
+        }
       }
+      // Particules en trop : les envoyer hors écran
+      for (var j = positions.length; j < particles.length; j++) {
+        particles[j].targetX = Math.random() * w;
+        particles[j].targetY = Math.random() < 0.5 ? -50 : h + 50;
+        particles[j].color = color;
+        newParticles.push(particles[j]);
+      }
+      particles = newParticles;
+      targetCount = positions.length;
+    }
+
+    var targetCount = 0; // nombre de particules "utiles" (celles qui forment le texte)
+
+    function frame() {
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.15)';
+      ctx.fillRect(0, 0, w, h);
+
+      for (var i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw(ctx);
+        // Supprimer les particules excédentaires qui sont hors écran
+        if (i >= targetCount && (particles[i].y < -60 || particles[i].y > h + 60)) {
+          particles.splice(i, 1);
+        }
+      }
+
+      frameCount++;
+      if (frameCount >= FRAMES_PER_WORD) {
+        frameCount = 0;
+        wordIndex = (wordIndex + 1) % WORDS.length;
+        colorIndex = (colorIndex + 1) % COLORS.length;
+        buildWord();
+      }
+
       requestAnimationFrame(frame);
     }
+
     resize();
+    // Fond initial
+    ctx.fillStyle = 'rgb(15, 23, 42)';
+    ctx.fillRect(0, 0, w, h);
     frame();
     window.addEventListener('resize', resize);
   }
+
   var canvases = document.querySelectorAll('.pub-space-canvas');
-  for (var i = 0; i < canvases.length; i++) { initStars(canvases[i]); }
+  for (var i = 0; i < canvases.length; i++) { initParticleText(canvases[i]); }
 })();
 </script>
 

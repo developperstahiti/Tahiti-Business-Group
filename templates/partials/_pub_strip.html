@@ -12,14 +12,9 @@
     {% endif %}
   </a>
   {% else %}
-  <a href="{% url 'tarifs_pubs' %}" class="billboard-milieu-empty">
+  <a href="{% url 'deposer_pub' %}" class="billboard-milieu-empty" style="position:relative;display:block;min-height:80px">
     <canvas class="pub-space-canvas"></canvas>
-    <div class="billboard-milieu-empty__inner">
-      <div class="billboard-milieu-empty__badge">PUBLICITE</div>
-      <div class="billboard-milieu-empty__title">VOTRE MARQUE ICI</div>
-      <div class="billboard-milieu-empty__price">32 000 XPF / mois</div>
-      <div class="billboard-milieu-empty__cta">Réserver → 89 61 06 13</div>
-    </div>
+    <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.4)">8 000 XPF/mois — Cliquez pour réserver</div>
   </a>
   {% endif %}
 </div>
