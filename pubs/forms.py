@@ -50,7 +50,13 @@ class DepotPubliciteForm(forms.Form):
     )
     image = forms.ImageField(
         label='Image publicitaire',
+        required=False,
         help_text='JPG, PNG ou WebP. Sera redimensionnée automatiquement.',
+    )
+    image_url = forms.URLField(
+        label="Lien de l'image",
+        required=False,
+        widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://exemple.com/mon-image.jpg'}),
     )
     lien = forms.URLField(
         label='Lien de destination',

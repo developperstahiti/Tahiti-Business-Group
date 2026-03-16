@@ -24,22 +24,54 @@
       <form method="post" enctype="multipart/form-data" class="space-y-6" id="depositForm">
         {% csrf_token %}
 
-        <!-- Image -->
+        <!-- Image : choix upload ou URL -->
         <div>
-          <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Image publicitaire *</label>
-          <div id="pubDropzone"
-            class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50"
-            onclick="document.getElementById('id_image').click()">
-            <div class="text-3xl mb-1">🖼️</div>
-            <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez votre image ici</div>
-            <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — sera redimensionnée automatiquement</div>
-            <input type="file" id="id_image" name="image" accept="image/*" class="hidden" onchange="previewPubImage(this)">
+          <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Image publicitaire *</label>
+          <!-- Tabs -->
+          <div class="flex gap-2 mb-3">
+            <button type="button" id="tabUpload" onclick="switchImageTab('upload')"
+              class="px-4 py-2 rounded-lg text-sm font-bold border-2 transition border-blue-500 bg-blue-50 text-blue-700">
+              Uploader une image
+            </button>
+            <button type="button" id="tabUrl" onclick="switchImageTab('url')"
+              class="px-4 py-2 rounded-lg text-sm font-bold border-2 transition border-gray-200 bg-white text-gray-500 hover:border-gray-300">
+              Coller un lien
+            </button>
           </div>
+          <!-- Upload zone -->
+          <div id="imageUploadZone">
+            <div id="pubDropzone"
+              class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50"
+              onclick="document.getElementById('id_image').click()">
+              <div class="text-3xl mb-1">🖼️</div>
+              <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez votre image ici</div>
+              <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — sera redimensionnée automatiquement</div>
+              <input type="file" id="id_image" name="image" accept="image/*" class="hidden" onchange="previewPubImage(this)">
+            </div>
+          </div>
+          <!-- URL zone -->
+          <div id="imageUrlZone" class="hidden">
+            <div class="flex gap-3 items-end">
+              <div class="flex-1">
+                <input type="url" id="id_image_url" name="image_url" class="form-input w-full"
+                  placeholder="https://exemple.com/mon-image.jpg" oninput="previewUrlImage(this.value)">
+              </div>
+              <button type="button" onclick="previewUrlImage(document.getElementById('id_image_url').value)"
+                class="px-4 py-2.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200 transition whitespace-nowrap">
+                Aperçu
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">Collez le lien direct vers votre image (JPG, PNG, WebP)</p>
+          </div>
+          <!-- Preview -->
           <div id="pubImagePreview" class="mt-3 hidden">
             <img id="pubPreviewImg" class="max-h-32 rounded-xl border border-gray-200 shadow-sm" alt="Aperçu">
           </div>
           {% if form.image.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.image.errors.0 }}</p>
+          {% endif %}
+          {% if form.image_url.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.image_url.errors.0 }}</p>
           {% endif %}
         </div>
 
@@ -207,7 +239,33 @@ document.querySelectorAll('.emp-card').forEach(function(card) {
 // Init
 updatePrix();
 
-// ── Preview image ──
+// ── Switch upload / URL ──
+function switchImageTab(tab) {
+  var uploadZone = document.getElementById('imageUploadZone');
+  var urlZone = document.getElementById('imageUrlZone');
+  var tabUpload = document.getElementById('tabUpload');
+  var tabUrl = document.getElementById('tabUrl');
+  var preview = document.getElementById('pubImagePreview');
+
+  if (tab === 'upload') {
+    uploadZone.classList.remove('hidden');
+    urlZone.classList.add('hidden');
+    tabUpload.className = 'px-4 py-2 rounded-lg text-sm font-bold border-2 transition border-blue-500 bg-blue-50 text-blue-700';
+    tabUrl.className = 'px-4 py-2 rounded-lg text-sm font-bold border-2 transition border-gray-200 bg-white text-gray-500 hover:border-gray-300';
+    // Vider l'URL si on switch
+    document.getElementById('id_image_url').value = '';
+  } else {
+    uploadZone.classList.add('hidden');
+    urlZone.classList.remove('hidden');
+    tabUrl.className = 'px-4 py-2 rounded-lg text-sm font-bold border-2 transition border-blue-500 bg-blue-50 text-blue-700';
+    tabUpload.className = 'px-4 py-2 rounded-lg text-sm font-bold border-2 transition border-gray-200 bg-white text-gray-500 hover:border-gray-300';
+    // Vider le fichier si on switch
+    document.getElementById('id_image').value = '';
+    preview.classList.add('hidden');
+  }
+}
+
+// ── Preview image (upload) ──
 function previewPubImage(input) {
   if (input.files && input.files[0]) {
     var reader = new FileReader();
@@ -217,6 +275,24 @@ function previewPubImage(input) {
     };
     reader.readAsDataURL(input.files[0]);
   }
+}
+
+// ── Preview image (URL) ──
+var _urlPreviewTimeout;
+function previewUrlImage(url) {
+  clearTimeout(_urlPreviewTimeout);
+  if (!url) { document.getElementById('pubImagePreview').classList.add('hidden'); return; }
+  _urlPreviewTimeout = setTimeout(function() {
+    var img = new Image();
+    img.onload = function() {
+      document.getElementById('pubPreviewImg').src = url;
+      document.getElementById('pubImagePreview').classList.remove('hidden');
+    };
+    img.onerror = function() {
+      document.getElementById('pubImagePreview').classList.add('hidden');
+    };
+    img.src = url;
+  }, 500);
 }
 
 // Drag & drop

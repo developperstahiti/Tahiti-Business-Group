@@ -144,26 +144,34 @@ def deposer_pub(request):
         duree = int(cd['duree'])
         prix_total = calculer_prix(cd['emplacement'], duree)
 
-        # Créer la pub en attente de paiement
-        pub = Publicite(
-            titre=cd['titre'],
-            image=cd['image'],
-            lien=cd['lien'],
-            emplacement=cd['emplacement'],
-            prix=prix_total,
-            actif=False,
-            client_nom=cd['client_nom'],
-            client_email=cd['client_email'],
-            client_tel=cd.get('client_tel', ''),
-            duree_semaines=duree,
-            payment_status='pending',
-            payment_ref=f"TBG{uuid.uuid4().hex[:8].upper()}",
-        )
-        pub.save()
+        image_file = cd.get('image')
+        image_url = cd.get('image_url', '').strip()
 
-        # Stocker l'ID en session pour vérification
-        request.session['pub_pending_pk'] = pub.pk
-        return redirect('initier_paiement', pk=pub.pk)
+        # Vérifier qu'au moins une source d'image est fournie
+        if not image_file and not image_url:
+            form.add_error(None, "Veuillez uploader une image ou coller un lien d'image.")
+        else:
+            # Créer la pub en attente de paiement
+            pub = Publicite(
+                titre=cd['titre'],
+                image=image_file if image_file else None,
+                image_url=image_url if not image_file else '',
+                lien=cd['lien'],
+                emplacement=cd['emplacement'],
+                prix=prix_total,
+                actif=False,
+                client_nom=cd['client_nom'],
+                client_email=cd['client_email'],
+                client_tel=cd.get('client_tel', ''),
+                duree_semaines=duree,
+                payment_status='pending',
+                payment_ref=f"TBG{uuid.uuid4().hex[:8].upper()}",
+            )
+            pub.save()
+
+            # Stocker l'ID en session pour vérification
+            request.session['pub_pending_pk'] = pub.pk
+            return redirect('initier_paiement', pk=pub.pk)
 
     # Données de prix pour le JS
     prix_json = json.dumps(PRIX_PAR_EMPLACEMENT)
