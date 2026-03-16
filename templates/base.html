@@ -806,162 +806,133 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 {% endif %}
 
 <script>
-/* ── Animation particules textuelles pour les emplacements pub vides ── */
+/* ── Animation particules textuelles — optimisée ── */
 (function () {
   'use strict';
   var WORDS = ['Votre Pub', 'Ici', 'Et Maintenant'];
-  var COLORS = [
-    {r:26,g:108,b:241},   // bleu primary
-    {r:5,g:150,b:105},    // vert accent
-    {r:220,g:60,b:60},    // rouge
-    {r:255,g:180,b:0},    // doré
-  ];
 
-  function Particle(x, y, targetX, targetY, color) {
-    this.x = x;
-    this.y = y;
-    this.targetX = targetX;
-    this.targetY = targetY;
-    this.color = color;
-    this.vx = (Math.random() - 0.5) * 4;
-    this.vy = (Math.random() - 0.5) * 4;
-    this.radius = Math.random() * 1.5 + 0.5;
-    this.ease = Math.random() * 0.06 + 0.03;
-    this.friction = 0.88;
-    this.opacity = 0;
-  }
+  // Cache des positions texte pour éviter de recalculer
+  var posCache = {};
 
-  Particle.prototype.update = function () {
-    var dx = this.targetX - this.x;
-    var dy = this.targetY - this.y;
-    this.vx += dx * this.ease;
-    this.vy += dy * this.ease;
-    this.vx *= this.friction;
-    this.vy *= this.friction;
-    this.x += this.vx;
-    this.y += this.vy;
-    this.opacity += (1 - this.opacity) * 0.05;
-  };
-
-  Particle.prototype.draw = function (ctx) {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 6.2832);
-    ctx.fillStyle = 'rgba(' + this.color.r + ',' + this.color.g + ',' + this.color.b + ',' + this.opacity + ')';
-    ctx.fill();
-  };
-
-  function getTextParticlePositions(text, w, h, density) {
-    var tmp = document.createElement('canvas');
-    tmp.width = w;
-    tmp.height = h;
-    var tctx = tmp.getContext('2d');
-
-    // Ajuster la taille de la police selon la largeur du canvas
-    var fontSize = Math.min(Math.floor(w / (text.length * 0.55)), Math.floor(h * 0.6));
-    fontSize = Math.max(14, Math.min(fontSize, 80));
-
-    tctx.fillStyle = '#000';
-    tctx.font = '900 ' + fontSize + 'px Arial, Helvetica, sans-serif';
-    tctx.textAlign = 'center';
-    tctx.textBaseline = 'middle';
-    tctx.fillText(text, w / 2, h / 2);
-
-    var data = tctx.getImageData(0, 0, w, h).data;
-    var positions = [];
-    var gap = density || 3;
+  function scanText(text, w, h, gap) {
+    var key = text + '_' + w + '_' + h + '_' + gap;
+    if (posCache[key]) return posCache[key];
+    var c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    var cx = c.getContext('2d');
+    var fs = Math.min(Math.floor(w / (text.length * 0.55)), Math.floor(h * 0.55));
+    fs = Math.max(12, Math.min(fs, 72));
+    cx.font = '900 ' + fs + 'px Arial,sans-serif';
+    cx.textAlign = 'center';
+    cx.textBaseline = 'middle';
+    cx.fillText(text, w / 2, h / 2);
+    var d = cx.getImageData(0, 0, w, h).data;
+    var pts = [];
     for (var y = 0; y < h; y += gap) {
       for (var x = 0; x < w; x += gap) {
-        if (data[(y * w + x) * 4 + 3] > 128) {
-          positions.push({x: x, y: y});
-        }
+        if (d[(y * w + x) * 4 + 3] > 128) pts.push(x, y);
       }
     }
-    return positions;
+    posCache[key] = pts;
+    return pts;
   }
 
-  function initParticleText(canvas) {
+  function initPT(canvas) {
     var ctx = canvas.getContext('2d');
-    var w, h, particles = [], wordIndex = 0, frameCount = 0;
-    var FRAMES_PER_WORD = 300;
-    var colorIndex = 0;
+    var w, h;
+    // Tableaux plats pour perf (x, y, tx, ty, vx, vy, opacity) — 7 valeurs par particule
+    var P = new Float32Array(0);
+    var count = 0, targetCount = 0;
+    var wordIdx = 0, fc = 0, FPW = 150; // 150 frames ≈ 2.5s par mot
 
     function resize() {
       w = canvas.width = canvas.offsetWidth || 200;
       h = canvas.height = canvas.offsetHeight || 80;
-      buildWord();
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, w, h);
+      build();
     }
 
-    function buildWord() {
-      var text = WORDS[wordIndex];
-      var color = COLORS[colorIndex];
-      var gap = w < 200 ? 4 : (w < 400 ? 3 : 2);
-      var positions = getTextParticlePositions(text, w, h, gap);
-
-      // Réutiliser les particules existantes ou en créer
-      var newParticles = [];
-      for (var i = 0; i < positions.length; i++) {
-        var p = positions[i];
-        if (i < particles.length) {
-          // Réassigner la cible
-          particles[i].targetX = p.x;
-          particles[i].targetY = p.y;
-          particles[i].color = color;
-          particles[i].opacity *= 0.5;
-          newParticles.push(particles[i]);
-        } else {
-          // Nouvelle particule depuis un bord aléatoire
-          var startX = Math.random() * w;
-          var startY = Math.random() < 0.5 ? -20 : h + 20;
-          newParticles.push(new Particle(startX, startY, p.x, p.y, color));
+    function build() {
+      var gap = w < 200 ? 5 : (w < 400 ? 4 : 3);
+      var pts = scanText(WORDS[wordIdx], w, h, gap);
+      var need = pts.length / 2;
+      // Agrandir le buffer si nécessaire
+      if (need > P.length / 7) {
+        var newP = new Float32Array(need * 7);
+        newP.set(P);
+        // Init nouvelles particules
+        for (var k = count * 7; k < need * 7; k += 7) {
+          newP[k]   = Math.random() * w;      // x
+          newP[k+1] = Math.random() < .5 ? -10 : h + 10; // y
+          newP[k+4] = 0; newP[k+5] = 0;       // vx, vy
+          newP[k+6] = 0;                       // opacity
         }
+        P = newP;
       }
-      // Particules en trop : les envoyer hors écran
-      for (var j = positions.length; j < particles.length; j++) {
-        particles[j].targetX = Math.random() * w;
-        particles[j].targetY = Math.random() < 0.5 ? -50 : h + 50;
-        particles[j].color = color;
-        newParticles.push(particles[j]);
+      // Assigner les cibles
+      for (var i = 0; i < need; i++) {
+        var o = i * 7;
+        P[o+2] = pts[i * 2];     // tx
+        P[o+3] = pts[i * 2 + 1]; // ty
       }
-      particles = newParticles;
-      targetCount = positions.length;
+      // Particules en trop → hors écran
+      for (var j = need; j < count; j++) {
+        var o2 = j * 7;
+        P[o2+2] = Math.random() * w;
+        P[o2+3] = Math.random() < .5 ? -40 : h + 40;
+      }
+      targetCount = need;
+      count = Math.max(count, need);
     }
-
-    var targetCount = 0; // nombre de particules "utiles" (celles qui forment le texte)
 
     function frame() {
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.15)';
+      // Fond semi-transparent pour effet de traînée
+      ctx.fillStyle = 'rgba(15,23,42,.2)';
       ctx.fillRect(0, 0, w, h);
 
-      for (var i = particles.length - 1; i >= 0; i--) {
-        particles[i].update();
-        particles[i].draw(ctx);
-        // Supprimer les particules excédentaires qui sont hors écran
-        if (i >= targetCount && (particles[i].y < -60 || particles[i].y > h + 60)) {
-          particles.splice(i, 1);
-        }
+      // Dessiner toutes les particules en blanc — un seul fillStyle
+      ctx.fillStyle = '#fff';
+      var alive = 0;
+      for (var i = 0; i < count; i++) {
+        var o = i * 7;
+        var dx = P[o+2] - P[o];
+        var dy = P[o+3] - P[o+1];
+        // Physique rapide : ease 0.1, friction 0.82
+        P[o+4] = (P[o+4] + dx * 0.1) * 0.82;
+        P[o+5] = (P[o+5] + dy * 0.1) * 0.82;
+        P[o]   += P[o+4];
+        P[o+1] += P[o+5];
+        // Opacity
+        if (P[o+6] < 1) P[o+6] += 0.08;
+        // Dessiner en rectangle 2x2 (beaucoup plus rapide que arc)
+        ctx.globalAlpha = P[o+6];
+        ctx.fillRect(P[o], P[o+1], 2, 2);
+        // Compter les particules encore visibles
+        if (i < targetCount || (P[o+1] > -50 && P[o+1] < h + 50)) alive++;
       }
+      ctx.globalAlpha = 1;
+      // Supprimer les particules mortes
+      count = Math.max(targetCount, alive > count ? count : targetCount);
 
-      frameCount++;
-      if (frameCount >= FRAMES_PER_WORD) {
-        frameCount = 0;
-        wordIndex = (wordIndex + 1) % WORDS.length;
-        colorIndex = (colorIndex + 1) % COLORS.length;
-        buildWord();
+      fc++;
+      if (fc >= FPW) {
+        fc = 0;
+        wordIdx = (wordIdx + 1) % WORDS.length;
+        // Baisser l'opacité pour la transition
+        for (var k = 0; k < count * 7; k += 7) P[k+6] *= 0.3;
+        build();
       }
-
       requestAnimationFrame(frame);
     }
 
     resize();
-    // Fond initial
-    ctx.fillStyle = 'rgb(15, 23, 42)';
-    ctx.fillRect(0, 0, w, h);
     frame();
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', function () { posCache = {}; resize(); });
   }
 
-  var canvases = document.querySelectorAll('.pub-space-canvas');
-  for (var i = 0; i < canvases.length; i++) { initParticleText(canvases[i]); }
+  var cc = document.querySelectorAll('.pub-space-canvas');
+  for (var i = 0; i < cc.length; i++) initPT(cc[i]);
 })();
 </script>
 
