@@ -69,9 +69,12 @@ def pub_supprimer(request, pk):
     if request.method == 'POST':
         if pub.image:
             pub.image.delete(save=False)
+        if pub.video:
+            pub.video.delete(save=False)
         pub.titre        = 'Emplacement disponible'
         pub.description  = ''
         pub.image_url    = ''
+        pub.video_url    = ''
         pub.lien         = ''
         pub.actif        = False
         pub.client_nom   = ''
@@ -80,8 +83,12 @@ def pub_supprimer(request, pk):
         pub.date_debut   = None
         pub.date_fin     = None
         pub.payment_status = 'none'
+        pub.payment_ref  = None
+        pub.payment_trans_id = ''
+        pub.duree_semaines = 4
+        pub.prix         = 0
         pub.save()
-        messages.success(request, "Slot libéré — l'emplacement est à nouveau disponible à la réservation.")
+        messages.success(request, "Slot libéré — toutes les infos ont été supprimées.")
     return redirect('admin_dashboard')
 
 
