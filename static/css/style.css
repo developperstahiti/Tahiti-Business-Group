@@ -2183,15 +2183,15 @@ img.loaded     { opacity: 1; }
     background: linear-gradient(to bottom, #d6e4ff 0%, #f5f6f8 90px);
   }
 
-  /* ── Billboard : bandeau pub pleine largeur ─────────────────── */
+  /* ── Billboard : bandeau pub centré, taille maîtrisée ────────── */
   #layout-billboard {
     display: block;
     flex-shrink: 0;
-    height: auto;
-    max-height: 180px;
+    max-width: 85%;
+    margin: 0 auto;
     overflow: hidden;
-    border-radius: 0 0 14px 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
   }
   #layout-billboard .pub-bg-fixed {
     position: static !important;
@@ -2201,12 +2201,16 @@ img.loaded     { opacity: 1; }
     height: auto !important;
     z-index: auto !important;
     box-shadow: none !important;
+    background: transparent !important;
+  }
+  #layout-billboard .pub-bg-fixed-link {
+    display: block;
+    width: 100%;
   }
   #layout-billboard .pub-bg-fixed-img {
     width: 100% !important;
-    height: 180px !important;
-    object-fit: cover !important;
-    object-position: center !important;
+    height: auto !important;
+    display: block !important;
   }
   .pub-bg-fixed-empty { gap: 6px; }
 
