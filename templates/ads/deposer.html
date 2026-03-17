@@ -449,12 +449,6 @@ function adaptPrix(cat, sousCat) {
   }
 }
 
-const catSelDep = document.getElementById('id_categorie');
-if (catSelDep) {
-  catSelDep.addEventListener('change', () => updateSousCatsDep(catSelDep.value));
-  updateSousCatsDep(catSelDep.value);
-}
-
 // ─── Formulaire adaptatif — définitions par sous-catégorie ───────────────────
 const SPECS_DEF = {
 
@@ -730,6 +724,13 @@ function renderSpecs(souscat) {
 const sousCatSel = document.getElementById('id_sous_categorie');
 if (sousCatSel) {
   sousCatSel.addEventListener('change', () => { renderSpecs(sousCatSel.value); });
+}
+
+// ─── Init catégorie (après SPECS_DEF + renderSpecs) ─────────────────────────
+const catSelDep = document.getElementById('id_categorie');
+if (catSelDep) {
+  catSelDep.addEventListener('change', () => updateSousCatsDep(catSelDep.value));
+  updateSousCatsDep(catSelDep.value);
 }
 
 // ─── Gestion photos avec drag & drop upload + réordonnancement ───────────────
