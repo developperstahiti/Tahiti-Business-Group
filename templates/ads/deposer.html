@@ -92,7 +92,6 @@
                   class="hidden" onchange="previewPhotos(this)">
               </div>
               <div id="photoPreview" class="flex gap-3 flex-wrap mt-3"></div>
-              <p id="photoHint" class="text-xs text-gray-400 mt-1.5 hidden">Glissez les miniatures pour changer l'ordre • La 1re photo sera la couverture</p>
             </div>
 
             <!-- ── Module Boost ───────────────────────────────────────── -->
@@ -796,8 +795,6 @@ function _syncPhotoInput() {
   const dt = new DataTransfer();
   _photoFiles.forEach(f => dt.items.add(f));
   document.getElementById('photoInput').files = dt.files;
-  const hint = document.getElementById('photoHint');
-  if (hint) hint.classList.toggle('hidden', _photoFiles.length < 2);
 }
 
 // ─── Boost Slider ─────────────────────────────────────────────────────────────
