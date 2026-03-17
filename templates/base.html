@@ -806,7 +806,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 {% endif %}
 
 <script>
-/* ── Animation particules textuelles — v3 ── */
+/* ── Animation particules spatiales — v4 ── */
 (function () {
   'use strict';
   var WORDS = ['Votre Pub', 'Ici', 'Et Maintenant'];
@@ -818,11 +818,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
     var c = document.createElement('canvas');
     c.width = w; c.height = h;
     var cx = c.getContext('2d');
-    // Chercher la taille max qui rentre dans le canvas (80% largeur, 40% hauteur)
     var fs = 10;
     for (var s = 80; s >= 10; s -= 2) {
       cx.font = '900 ' + s + 'px Arial,sans-serif';
-      if (cx.measureText(text).width < w * 0.85 && s < h * 0.45) { fs = s; break; }
+      if (cx.measureText(text).width < w * 0.85 && s < h * 0.4) { fs = s; break; }
     }
     cx.clearRect(0, 0, w, h);
     cx.font = '900 ' + fs + 'px Arial,sans-serif';
@@ -846,114 +845,147 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
     var ctx = canvas.getContext('2d');
     if (!ctx) return;
     var w, h, particles = [], wordIdx = 0;
-    var phase = 'forming';  // forming → holding → dissolving
+    var phase = 'floating'; // floating → gathering → holding → releasing
     var timer = 0;
-    var FORM_TIME  = 120;   // 2s pour former le texte
-    var HOLD_TIME  = 240;   // 4s texte affiché
-    var DISSOLVE_TIME = 90; // 1.5s dissolution
+    var FLOAT_TIME   = 90;   // 1.5s flottement libre
+    var GATHER_TIME  = 180;  // 3s rassemblement lent
+    var HOLD_TIME    = 240;  // 4s texte stable
+    var RELEASE_TIME = 120;  // 2s relâchement
 
     function resize() {
       w = canvas.width  = canvas.offsetWidth  || 200;
       h = canvas.height = canvas.offsetHeight || 100;
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, w, h);
-      initWord();
-    }
-
-    function initWord() {
-      var gap = w < 200 ? 5 : (w < 400 ? 4 : 3);
+      particles = [];
+      // Créer toutes les particules flottantes
+      var gap = w < 200 ? 6 : (w < 400 ? 5 : 4);
       var pts = scanText(WORDS[wordIdx], w, h, gap);
-      var need = pts.length / 2;
-
-      // Réutiliser les particules existantes, en ajouter si besoin
-      while (particles.length < need) {
-        var angle = Math.random() * Math.PI * 2;
-        var dist = Math.max(w, h) * 0.6 + Math.random() * 100;
+      var count = pts.length / 2;
+      for (var i = 0; i < count; i++) {
         particles.push({
-          x: w / 2 + Math.cos(angle) * dist,
-          y: h / 2 + Math.sin(angle) * dist,
-          tx: 0, ty: 0, vx: 0, vy: 0, alpha: 0, size: 1 + Math.random()
+          // Position de départ : éparpillées partout dans le canvas
+          x:  Math.random() * w,
+          y:  Math.random() * h,
+          // Cible texte
+          tx: pts[i * 2],
+          ty: pts[i * 2 + 1],
+          // Vitesse de flottement (lente, aléatoire)
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          // Drift : chaque particule a sa propre direction de flottement
+          driftX: (Math.random() - 0.5) * 0.3,
+          driftY: -0.1 - Math.random() * 0.3, // légère tendance vers le haut (spatial)
+          alpha: 0.1 + Math.random() * 0.4,
+          size:  0.5 + Math.random() * 1.5,
+          // Scintillement
+          twinkle: Math.random() * Math.PI * 2,
+          twinkleSpeed: 0.02 + Math.random() * 0.03
         });
       }
-
-      // Assigner les cibles
-      for (var i = 0; i < need; i++) {
-        var p = particles[i];
-        p.tx = pts[i * 2];
-        p.ty = pts[i * 2 + 1];
-        p.active = true;
-      }
-      // Particules en trop : cible = position aléatoire hors écran
-      for (var j = need; j < particles.length; j++) {
-        var ang = Math.random() * Math.PI * 2;
-        var d2 = Math.max(w, h) * 0.7 + Math.random() * 80;
-        particles[j].tx = w / 2 + Math.cos(ang) * d2;
-        particles[j].ty = h / 2 + Math.sin(ang) * d2;
-        particles[j].active = false;
-      }
-
-      phase = 'forming';
+      phase = 'floating';
       timer = 0;
     }
 
+    function setNewWord() {
+      wordIdx = (wordIdx + 1) % WORDS.length;
+      var gap = w < 200 ? 6 : (w < 400 ? 5 : 4);
+      var pts = scanText(WORDS[wordIdx], w, h, gap);
+      var need = pts.length / 2;
+      // Ajuster le nombre de particules
+      while (particles.length < need) {
+        particles.push({
+          x: Math.random() * w, y: Math.random() * h,
+          tx: 0, ty: 0,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          driftX: (Math.random() - 0.5) * 0.3,
+          driftY: -0.1 - Math.random() * 0.3,
+          alpha: 0.1 + Math.random() * 0.3,
+          size: 0.5 + Math.random() * 1.5,
+          twinkle: Math.random() * Math.PI * 2,
+          twinkleSpeed: 0.02 + Math.random() * 0.03
+        });
+      }
+      // Tronquer si trop
+      particles.length = need;
+      // Nouvelles cibles
+      for (var i = 0; i < need; i++) {
+        particles[i].tx = pts[i * 2];
+        particles[i].ty = pts[i * 2 + 1];
+      }
+    }
+
     function frame() {
-      // Fond noir complet (pas de traînée)
+      // Fond noir
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, w, h);
 
       timer++;
 
-      // Gestion des phases
-      if (phase === 'forming' && timer >= FORM_TIME) {
+      // Transitions de phase
+      if (phase === 'floating' && timer >= FLOAT_TIME) {
+        phase = 'gathering'; timer = 0;
+      } else if (phase === 'gathering' && timer >= GATHER_TIME) {
         phase = 'holding'; timer = 0;
       } else if (phase === 'holding' && timer >= HOLD_TIME) {
-        phase = 'dissolving'; timer = 0;
-        // Donner des cibles aléatoires hors écran pour la dissolution
-        for (var d = 0; d < particles.length; d++) {
-          var ang = Math.random() * Math.PI * 2;
-          var dist = Math.max(w, h) * 0.7 + Math.random() * 100;
-          particles[d].tx = w / 2 + Math.cos(ang) * dist;
-          particles[d].ty = h / 2 + Math.sin(ang) * dist;
-        }
-      } else if (phase === 'dissolving' && timer >= DISSOLVE_TIME) {
-        wordIdx = (wordIdx + 1) % WORDS.length;
-        initWord();
+        phase = 'releasing'; timer = 0;
+      } else if (phase === 'releasing' && timer >= RELEASE_TIME) {
+        setNewWord();
+        phase = 'floating'; timer = 0;
       }
 
-      // Paramètres physiques selon la phase
-      var ease = phase === 'forming' ? 0.04 : (phase === 'dissolving' ? 0.03 : 0.08);
-      var friction = 0.92;
+      var progress = 0;
+      if (phase === 'gathering') progress = timer / GATHER_TIME;
+      else if (phase === 'holding') progress = 1;
+      else if (phase === 'releasing') progress = 1 - timer / RELEASE_TIME;
+
+      // Ease in-out pour un mouvement naturel
+      var ease = progress * progress * (3 - 2 * progress);
 
       for (var i = 0; i < particles.length; i++) {
         var p = particles[i];
-        var dx = p.tx - p.x;
-        var dy = p.ty - p.y;
-        p.vx = (p.vx + dx * ease) * friction;
-        p.vy = (p.vy + dy * ease) * friction;
-        p.x += p.vx;
-        p.y += p.vy;
 
-        // Alpha
-        if (phase === 'dissolving') {
-          p.alpha *= 0.97;
-        } else if (p.active) {
-          if (p.alpha < 1) p.alpha += 0.02;
+        // Scintillement
+        p.twinkle += p.twinkleSpeed;
+        var twinkleAlpha = 0.5 + 0.5 * Math.sin(p.twinkle);
+
+        if (phase === 'floating' || phase === 'releasing') {
+          // Flottement libre — les particules dérivent doucement
+          p.x += p.driftX + (Math.random() - 0.5) * 0.2;
+          p.y += p.driftY + (Math.random() - 0.5) * 0.2;
+          // Rebouclage : si une particule sort, elle revient de l'autre côté
+          if (p.x < -5) p.x = w + 5;
+          if (p.x > w + 5) p.x = -5;
+          if (p.y < -5) p.y = h + 5;
+          if (p.y > h + 5) p.y = -5;
+          // Alpha doux en flottement
+          var targetA = 0.2 + twinkleAlpha * 0.4;
+          p.alpha += (targetA - p.alpha) * 0.05;
         } else {
-          p.alpha *= 0.96;
+          // Gathering / Holding — les particules se dirigent vers leur cible
+          var targetX = p.tx;
+          var targetY = p.ty;
+          // Interpolation douce vers la cible
+          p.x += (targetX - p.x) * ease * 0.08;
+          p.y += (targetY - p.y) * ease * 0.08;
+          // Légère vibration quand en position (holding)
+          if (phase === 'holding') {
+            p.x += (Math.random() - 0.5) * 0.3;
+            p.y += (Math.random() - 0.5) * 0.3;
+          }
+          // Alpha : monter vers 1 quand en formation
+          var targetA2 = 0.6 + twinkleAlpha * 0.4;
+          p.alpha += (targetA2 - p.alpha) * 0.04;
         }
 
-        if (p.alpha < 0.01) continue;
-
-        // Dessiner la particule avec un léger glow
-        ctx.globalAlpha = p.alpha * 0.3;
-        ctx.fillStyle = '#4488ff';
-        ctx.fillRect(p.x - 1, p.y - 1, p.size + 2, p.size + 2);
+        // Dessiner
         ctx.globalAlpha = p.alpha;
         ctx.fillStyle = '#fff';
-        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, 6.283);
+        ctx.fill();
       }
-      ctx.globalAlpha = 1;
 
+      ctx.globalAlpha = 1;
       requestAnimationFrame(frame);
     }
 
