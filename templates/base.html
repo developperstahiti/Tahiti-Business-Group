@@ -806,24 +806,29 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 {% endif %}
 
 <script>
-/* ── Animation particules textuelles — v2 ── */
+/* ── Animation particules textuelles — v3 ── */
 (function () {
   'use strict';
   var WORDS = ['Votre Pub', 'Ici', 'Et Maintenant'];
   var posCache = {};
 
   function scanText(text, w, h, gap) {
-    var key = text + '_' + w + '_' + h + '_' + gap;
+    var key = text + '|' + w + '|' + h + '|' + gap;
     if (posCache[key]) return posCache[key];
     var c = document.createElement('canvas');
     c.width = w; c.height = h;
     var cx = c.getContext('2d');
-    // Taille de police adaptée : on mesure pour que le texte tienne
-    var fs = Math.min(Math.floor(w / (text.length * 0.52)), Math.floor(h * 0.45));
-    fs = Math.max(10, Math.min(fs, 64));
+    // Chercher la taille max qui rentre dans le canvas (80% largeur, 40% hauteur)
+    var fs = 10;
+    for (var s = 80; s >= 10; s -= 2) {
+      cx.font = '900 ' + s + 'px Arial,sans-serif';
+      if (cx.measureText(text).width < w * 0.85 && s < h * 0.45) { fs = s; break; }
+    }
+    cx.clearRect(0, 0, w, h);
     cx.font = '900 ' + fs + 'px Arial,sans-serif';
     cx.textAlign = 'center';
     cx.textBaseline = 'middle';
+    cx.fillStyle = '#fff';
     cx.fillText(text, w / 2, h / 2);
     var d = cx.getImageData(0, 0, w, h).data;
     var pts = [];
@@ -836,97 +841,119 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
     return pts;
   }
 
-  function randSpawn(w, h) {
-    // Spawn depuis un bord aléatoire (haut, bas, gauche, droite)
-    var side = Math.random() * 4 | 0;
-    if (side === 0) return [Math.random() * w, -20];            // haut
-    if (side === 1) return [Math.random() * w, h + 20];         // bas
-    if (side === 2) return [-20, Math.random() * h];             // gauche
-    return [w + 20, Math.random() * h];                          // droite
-  }
-
   function initPT(canvas) {
-    if (!canvas.offsetWidth && !canvas.offsetHeight) return; // canvas caché
+    if (!canvas.offsetWidth && !canvas.offsetHeight) return;
     var ctx = canvas.getContext('2d');
-    var w, h;
-    // x, y, tx, ty, vx, vy, opacity — 7 valeurs par particule
-    var P = new Float32Array(0);
-    var count = 0, targetCount = 0;
-    var wordIdx = 0, fc = 0, FPW = 240; // ~4s par mot à 60fps
+    if (!ctx) return;
+    var w, h, particles = [], wordIdx = 0;
+    var phase = 'forming';  // forming → holding → dissolving
+    var timer = 0;
+    var FORM_TIME  = 120;   // 2s pour former le texte
+    var HOLD_TIME  = 240;   // 4s texte affiché
+    var DISSOLVE_TIME = 90; // 1.5s dissolution
 
     function resize() {
-      w = canvas.width = canvas.offsetWidth || 200;
-      h = canvas.height = canvas.offsetHeight || 80;
+      w = canvas.width  = canvas.offsetWidth  || 200;
+      h = canvas.height = canvas.offsetHeight || 100;
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, w, h);
-      build();
+      initWord();
     }
 
-    function build() {
+    function initWord() {
       var gap = w < 200 ? 5 : (w < 400 ? 4 : 3);
       var pts = scanText(WORDS[wordIdx], w, h, gap);
       var need = pts.length / 2;
-      if (need > P.length / 7) {
-        var newP = new Float32Array(need * 7);
-        newP.set(P);
-        for (var k = count * 7; k < need * 7; k += 7) {
-          var sp = randSpawn(w, h);
-          newP[k]   = sp[0];
-          newP[k+1] = sp[1];
-          newP[k+4] = 0; newP[k+5] = 0;
-          newP[k+6] = 0;
-        }
-        P = newP;
+
+      // Réutiliser les particules existantes, en ajouter si besoin
+      while (particles.length < need) {
+        var angle = Math.random() * Math.PI * 2;
+        var dist = Math.max(w, h) * 0.6 + Math.random() * 100;
+        particles.push({
+          x: w / 2 + Math.cos(angle) * dist,
+          y: h / 2 + Math.sin(angle) * dist,
+          tx: 0, ty: 0, vx: 0, vy: 0, alpha: 0, size: 1 + Math.random()
+        });
       }
+
+      // Assigner les cibles
       for (var i = 0; i < need; i++) {
-        var o = i * 7;
-        P[o+2] = pts[i * 2];
-        P[o+3] = pts[i * 2 + 1];
+        var p = particles[i];
+        p.tx = pts[i * 2];
+        p.ty = pts[i * 2 + 1];
+        p.active = true;
       }
-      // Particules en trop → s'envolent vers un bord aléatoire
-      for (var j = need; j < count; j++) {
-        var o2 = j * 7;
-        var sp2 = randSpawn(w, h);
-        P[o2+2] = sp2[0];
-        P[o2+3] = sp2[1];
+      // Particules en trop : cible = position aléatoire hors écran
+      for (var j = need; j < particles.length; j++) {
+        var ang = Math.random() * Math.PI * 2;
+        var d2 = Math.max(w, h) * 0.7 + Math.random() * 80;
+        particles[j].tx = w / 2 + Math.cos(ang) * d2;
+        particles[j].ty = h / 2 + Math.sin(ang) * d2;
+        particles[j].active = false;
       }
-      targetCount = need;
-      count = Math.max(count, need);
+
+      phase = 'forming';
+      timer = 0;
     }
 
     function frame() {
-      ctx.fillStyle = 'rgba(0,0,0,.15)';
+      // Fond noir complet (pas de traînée)
+      ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, w, h);
 
-      ctx.fillStyle = '#fff';
-      for (var i = 0; i < count; i++) {
-        var o = i * 7;
-        var dx = P[o+2] - P[o];
-        var dy = P[o+3] - P[o+1];
-        // Physique douce : ease 0.06, friction 0.88
-        P[o+4] = (P[o+4] + dx * 0.06) * 0.88;
-        P[o+5] = (P[o+5] + dy * 0.06) * 0.88;
-        P[o]   += P[o+4];
-        P[o+1] += P[o+5];
-        if (P[o+6] < 1) P[o+6] += 0.04;
-        ctx.globalAlpha = P[o+6];
-        ctx.fillRect(P[o], P[o+1], 2, 2);
+      timer++;
+
+      // Gestion des phases
+      if (phase === 'forming' && timer >= FORM_TIME) {
+        phase = 'holding'; timer = 0;
+      } else if (phase === 'holding' && timer >= HOLD_TIME) {
+        phase = 'dissolving'; timer = 0;
+        // Donner des cibles aléatoires hors écran pour la dissolution
+        for (var d = 0; d < particles.length; d++) {
+          var ang = Math.random() * Math.PI * 2;
+          var dist = Math.max(w, h) * 0.7 + Math.random() * 100;
+          particles[d].tx = w / 2 + Math.cos(ang) * dist;
+          particles[d].ty = h / 2 + Math.sin(ang) * dist;
+        }
+      } else if (phase === 'dissolving' && timer >= DISSOLVE_TIME) {
+        wordIdx = (wordIdx + 1) % WORDS.length;
+        initWord();
+      }
+
+      // Paramètres physiques selon la phase
+      var ease = phase === 'forming' ? 0.04 : (phase === 'dissolving' ? 0.03 : 0.08);
+      var friction = 0.92;
+
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        var dx = p.tx - p.x;
+        var dy = p.ty - p.y;
+        p.vx = (p.vx + dx * ease) * friction;
+        p.vy = (p.vy + dy * ease) * friction;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Alpha
+        if (phase === 'dissolving') {
+          p.alpha *= 0.97;
+        } else if (p.active) {
+          if (p.alpha < 1) p.alpha += 0.02;
+        } else {
+          p.alpha *= 0.96;
+        }
+
+        if (p.alpha < 0.01) continue;
+
+        // Dessiner la particule avec un léger glow
+        ctx.globalAlpha = p.alpha * 0.3;
+        ctx.fillStyle = '#4488ff';
+        ctx.fillRect(p.x - 1, p.y - 1, p.size + 2, p.size + 2);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(p.x, p.y, p.size, p.size);
       }
       ctx.globalAlpha = 1;
 
-      fc++;
-      if (fc >= FPW) {
-        fc = 0;
-        wordIdx = (wordIdx + 1) % WORDS.length;
-        // Transition : baisser opacité et disperser les particules
-        for (var k = 0; k < count * 7; k += 7) {
-          P[k+6] *= 0.2;
-          // Impulsion aléatoire pour que les particules s'envolent
-          P[k+4] += (Math.random() - 0.5) * 8;
-          P[k+5] += (Math.random() - 0.5) * 8;
-        }
-        build();
-      }
       requestAnimationFrame(frame);
     }
 
