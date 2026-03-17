@@ -3,6 +3,8 @@ import re
 import uuid
 import datetime
 import csv
+import logging
+from django.conf import settings as django_settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -18,6 +20,7 @@ from .image_utils import save_webp
 from rubriques.models import ArticlePromo, ArticleInfo, ArticleNouveaute
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def _save_webp(file_obj, user_pk):
@@ -284,8 +287,8 @@ def deposer_annonce(request):
             for f in request.FILES.getlist('photos')[:5]:
                 try:
                     photos.append(_save_webp(f, request.user.pk))
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error("Erreur upload photo annonce: %s", e, exc_info=True)
             annonce.photos = photos
 
             # ── Boost (payant uniquement) ───────────────────────────────────

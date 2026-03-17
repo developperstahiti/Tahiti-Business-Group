@@ -1,9 +1,12 @@
 """Utilitaire WebP partagé — annonces et rubriques."""
 import io
+import logging
 import os
 import uuid
 from django.conf import settings as django_settings
 from PIL import Image as PILImage
+
+logger = logging.getLogger(__name__)
 
 _MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo
 _ALLOWED_FORMATS = {'JPEG', 'PNG', 'WEBP', 'GIF', 'BMP', 'TIFF'}
@@ -41,6 +44,7 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
         buf = io.BytesIO()
         img.save(buf, format='WEBP', quality=85, method=6)
         buf.seek(0)
+        logger.info("Upload S3: bucket=%s key=%s region=%s", bucket, key, region)
         boto3.client(
             's3', region_name=region,
             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
@@ -48,8 +52,11 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
         ).put_object(
             Bucket=bucket, Key=key, Body=buf,
             ContentType='image/webp',
+            ACL='public-read',
         )
-        return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
+        url = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
+        logger.info("Upload S3 OK: %s", url)
+        return url
 
     upload_dir = os.path.join(django_settings.MEDIA_ROOT, folder)
     os.makedirs(upload_dir, exist_ok=True)

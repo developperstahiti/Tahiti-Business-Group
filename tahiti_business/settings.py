@@ -150,16 +150,17 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 AWS_S3_REGION_NAME     = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
 
 # ── PayZen by OSB (paiement en ligne) ─────────────────────────────────────────
-PAYZEN_SHOP_ID     = os.environ.get('PAYZEN_SHOP_ID', '27418282')
-PAYZEN_KEY_TEST    = os.environ.get('PAYZEN_KEY_TEST', 'orbUKNKhPpTWksht')
-PAYZEN_KEY_PROD    = os.environ.get('PAYZEN_KEY_PROD', '2HPQKAx96ruZucN9')
+# ⚠ NE PAS mettre les clés en dur ici — les définir dans Railway > Variables
+PAYZEN_SHOP_ID     = os.environ.get('PAYZEN_SHOP_ID', '')
+PAYZEN_KEY_TEST    = os.environ.get('PAYZEN_KEY_TEST', '')
+PAYZEN_KEY_PROD    = os.environ.get('PAYZEN_KEY_PROD', '')
 PAYZEN_MODE        = os.environ.get('PAYZEN_MODE', 'TEST')   # TEST ou PRODUCTION
 PAYZEN_PAYMENT_URL = os.environ.get('PAYZEN_PAYMENT_URL', 'https://secure.osb.pf/vads-payment/')
 
 # Clés API REST PayZen (formulaire embarqué)
-PAYZEN_REST_API_PASSWORD_TEST = os.environ.get('PAYZEN_REST_API_PASSWORD_TEST', 'testpassword_x3lqAvA5DPddQ037rKXC9oFnd4SrOcUSGj20vhbfrpNBe')
-PAYZEN_REST_API_PASSWORD_PROD = os.environ.get('PAYZEN_REST_API_PASSWORD_PROD', 'prodpassword_WiQnQw5CypnJEUHVQ3rvCloRH8Tndx57WJ3fisdc1kVzB')
-PAYZEN_PUBLIC_KEY_TEST = os.environ.get('PAYZEN_PUBLIC_KEY_TEST', '27418282:testpublickey_CPggUehLPGYSAHsX8tj0BRNH1Jc4UEa3k58Y2ocU07CFa')
-PAYZEN_PUBLIC_KEY_PROD = os.environ.get('PAYZEN_PUBLIC_KEY_PROD', '27418282:publickey_H7m2Bm5E5Njcm61mWJ13jRnLRdRa6yqExj3Xok9rJ2HR8')
-PAYZEN_HMAC_KEY_TEST = os.environ.get('PAYZEN_HMAC_KEY_TEST', 'uApem93KeAKuAN7nWxImZvjcGpFy12KH3i3UONHW8b2lZ')
-PAYZEN_HMAC_KEY_PROD = os.environ.get('PAYZEN_HMAC_KEY_PROD', 'A1KdgKQfkatZ29qTLT35wfHi0dIaTfIkv8DKUxRK2IcMn')
+PAYZEN_REST_API_PASSWORD_TEST = os.environ.get('PAYZEN_REST_API_PASSWORD_TEST', '')
+PAYZEN_REST_API_PASSWORD_PROD = os.environ.get('PAYZEN_REST_API_PASSWORD_PROD', '')
+PAYZEN_PUBLIC_KEY_TEST = os.environ.get('PAYZEN_PUBLIC_KEY_TEST', '')
+PAYZEN_PUBLIC_KEY_PROD = os.environ.get('PAYZEN_PUBLIC_KEY_PROD', '')
+PAYZEN_HMAC_KEY_TEST = os.environ.get('PAYZEN_HMAC_KEY_TEST', '')
+PAYZEN_HMAC_KEY_PROD = os.environ.get('PAYZEN_HMAC_KEY_PROD', '')

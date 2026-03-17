@@ -33,12 +33,12 @@ urlpatterns = [
     path('sw.js', lambda r: FileResponse(
         open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'sw.js'), 'rb'),
         content_type='application/javascript',
-        headers={'Service-Worker-Allowed': '/'},
-    )),
+        headers={'Service-Worker-Allowed': '/', 'Cache-Control': 'no-cache'},
+    ), name='service_worker'),
     path('manifest.json', lambda r: FileResponse(
         open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'manifest.json'), 'rb'),
         content_type='application/manifest+json',
-    )),
+    ), name='manifest'),
 ]
 
 # Serve media files in all environments (DEBUG=True and DEBUG=False)
