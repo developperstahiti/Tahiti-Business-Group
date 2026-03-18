@@ -62,7 +62,8 @@
   {% else %}
   <a href="{% url 'deposer_pub' %}?emplacement=billboard" class="pub-bg-fixed-empty" style="position:relative;display:block;min-height:160px">
     <canvas class="pub-space-canvas"></canvas>
-    <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;z-index:2;font-size:12px;color:rgba(255,255,255,.4)">100 000 XPF/mois — Cliquez pour réserver</div>
+    <div class="pub-space-text"><span class="pub-txt-main pub-txt-visible">Votre publicit&eacute; ici</span><span class="pub-txt-phone">89 61 06 13</span></div>
+    <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;z-index:2;font-size:12px;color:rgba(255,255,255,.3)">100 000 XPF/mois</div>
   </a>
   {% endif %}
 </div>
@@ -806,196 +807,127 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 {% endif %}
 
 <script>
-/* ── Animation particules spatiales — v4 ── */
+/* ── Orbes lumineux bleu/violet + texte alterné ── */
 (function () {
   'use strict';
-  var WORDS = ['Votre Pub', 'Ici', 'Et Maintenant'];
-  var posCache = {};
+  var BG = '#06030f';
 
-  function scanText(text, w, h, gap) {
-    var key = text + '|' + w + '|' + h + '|' + gap;
-    if (posCache[key]) return posCache[key];
-    var c = document.createElement('canvas');
-    c.width = w; c.height = h;
-    var cx = c.getContext('2d');
-    var fs = 10;
-    for (var s = 80; s >= 10; s -= 2) {
-      cx.font = '900 ' + s + 'px Arial,sans-serif';
-      if (cx.measureText(text).width < w * 0.85 && s < h * 0.4) { fs = s; break; }
-    }
-    cx.clearRect(0, 0, w, h);
-    cx.font = '900 ' + fs + 'px Arial,sans-serif';
-    cx.textAlign = 'center';
-    cx.textBaseline = 'middle';
-    cx.fillStyle = '#fff';
-    cx.fillText(text, w / 2, h / 2);
-    var d = cx.getImageData(0, 0, w, h).data;
-    var pts = [];
-    for (var y = 0; y < h; y += gap) {
-      for (var x = 0; x < w; x += gap) {
-        if (d[(y * w + x) * 4 + 3] > 128) pts.push(x, y);
-      }
-    }
-    posCache[key] = pts;
-    return pts;
-  }
+  /* Palette de couleurs bleu → violet */
+  var COLORS = [
+    [60, 40, 200],   /* bleu profond */
+    [100, 60, 240],  /* indigo */
+    [140, 50, 255],  /* violet */
+    [80, 100, 255],  /* bleu clair */
+    [160, 70, 220],  /* mauve */
+  ];
 
-  function initPT(canvas) {
+  function initOrbs(canvas) {
     if (!canvas.offsetWidth && !canvas.offsetHeight) return;
     var ctx = canvas.getContext('2d');
     if (!ctx) return;
-    var w, h, particles = [], wordIdx = 0;
-    var phase = 'floating'; // floating → gathering → holding → releasing
-    var timer = 0;
-    var FLOAT_TIME   = 90;   // 1.5s flottement libre
-    var GATHER_TIME  = 180;  // 3s rassemblement lent
-    var HOLD_TIME    = 240;  // 4s texte stable
-    var RELEASE_TIME = 120;  // 2s relâchement
+    var w, h, orbs = [];
+
+    function makeOrb() {
+      var c = COLORS[Math.floor(Math.random() * COLORS.length)];
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 30 + Math.random() * (Math.min(w, h) * 0.35),
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        color: c,
+        alpha: 0.25 + Math.random() * 0.35,
+        /* oscillation lente */
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.003 + Math.random() * 0.005
+      };
+    }
 
     function resize() {
       w = canvas.width  = canvas.offsetWidth  || 200;
       h = canvas.height = canvas.offsetHeight || 100;
-      particles = [];
-      // Créer toutes les particules flottantes
-      var gap = w < 200 ? 6 : (w < 400 ? 5 : 4);
-      var pts = scanText(WORDS[wordIdx], w, h, gap);
-      var count = pts.length / 2;
-      for (var i = 0; i < count; i++) {
-        particles.push({
-          // Position de départ : éparpillées partout dans le canvas
-          x:  Math.random() * w,
-          y:  Math.random() * h,
-          // Cible texte
-          tx: pts[i * 2],
-          ty: pts[i * 2 + 1],
-          // Vitesse de flottement (lente, aléatoire)
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          // Drift : chaque particule a sa propre direction de flottement
-          driftX: (Math.random() - 0.5) * 0.3,
-          driftY: -0.1 - Math.random() * 0.3, // légère tendance vers le haut (spatial)
-          alpha: 0.1 + Math.random() * 0.4,
-          size:  0.5 + Math.random() * 1.5,
-          // Scintillement
-          twinkle: Math.random() * Math.PI * 2,
-          twinkleSpeed: 0.02 + Math.random() * 0.03
-        });
-      }
-      phase = 'floating';
-      timer = 0;
-    }
-
-    function setNewWord() {
-      wordIdx = (wordIdx + 1) % WORDS.length;
-      var gap = w < 200 ? 6 : (w < 400 ? 5 : 4);
-      var pts = scanText(WORDS[wordIdx], w, h, gap);
-      var need = pts.length / 2;
-      // Ajuster le nombre de particules
-      while (particles.length < need) {
-        particles.push({
-          x: Math.random() * w, y: Math.random() * h,
-          tx: 0, ty: 0,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          driftX: (Math.random() - 0.5) * 0.3,
-          driftY: -0.1 - Math.random() * 0.3,
-          alpha: 0.1 + Math.random() * 0.3,
-          size: 0.5 + Math.random() * 1.5,
-          twinkle: Math.random() * Math.PI * 2,
-          twinkleSpeed: 0.02 + Math.random() * 0.03
-        });
-      }
-      // Tronquer si trop
-      particles.length = need;
-      // Nouvelles cibles
-      for (var i = 0; i < need; i++) {
-        particles[i].tx = pts[i * 2];
-        particles[i].ty = pts[i * 2 + 1];
-      }
+      /* 5–8 orbes selon la taille */
+      var count = Math.max(5, Math.min(8, Math.round((w * h) / 15000)));
+      orbs = [];
+      for (var i = 0; i < count; i++) orbs.push(makeOrb());
     }
 
     function frame() {
-      // Fond noir
-      ctx.fillStyle = '#000';
+      /* fond sombre */
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = BG;
       ctx.fillRect(0, 0, w, h);
 
-      timer++;
+      /* mode screen → lumière additive */
+      ctx.globalCompositeOperation = 'screen';
 
-      // Transitions de phase
-      if (phase === 'floating' && timer >= FLOAT_TIME) {
-        phase = 'gathering'; timer = 0;
-      } else if (phase === 'gathering' && timer >= GATHER_TIME) {
-        phase = 'holding'; timer = 0;
-      } else if (phase === 'holding' && timer >= HOLD_TIME) {
-        phase = 'releasing'; timer = 0;
-      } else if (phase === 'releasing' && timer >= RELEASE_TIME) {
-        setNewWord();
-        phase = 'floating'; timer = 0;
-      }
+      for (var i = 0; i < orbs.length; i++) {
+        var o = orbs[i];
 
-      var progress = 0;
-      if (phase === 'gathering') progress = timer / GATHER_TIME;
-      else if (phase === 'holding') progress = 1;
-      else if (phase === 'releasing') progress = 1 - timer / RELEASE_TIME;
+        /* mouvement doux */
+        o.phase += o.speed;
+        o.x += o.vx + Math.sin(o.phase) * 0.15;
+        o.y += o.vy + Math.cos(o.phase * 0.7) * 0.15;
 
-      // Ease in-out pour un mouvement naturel
-      var ease = progress * progress * (3 - 2 * progress);
+        /* rebond doux aux bords */
+        if (o.x < -o.r) o.x = w + o.r;
+        if (o.x > w + o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = h + o.r;
+        if (o.y > h + o.r) o.y = -o.r;
 
-      for (var i = 0; i < particles.length; i++) {
-        var p = particles[i];
+        /* pulsation douce de l'alpha */
+        var pulse = 0.8 + 0.2 * Math.sin(o.phase * 1.3);
+        var a = o.alpha * pulse;
 
-        // Scintillement
-        p.twinkle += p.twinkleSpeed;
-        var twinkleAlpha = 0.5 + 0.5 * Math.sin(p.twinkle);
+        /* radial gradient */
+        var grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        grad.addColorStop(0, 'rgba(' + o.color[0] + ',' + o.color[1] + ',' + o.color[2] + ',' + a + ')');
+        grad.addColorStop(0.4, 'rgba(' + o.color[0] + ',' + o.color[1] + ',' + o.color[2] + ',' + (a * 0.4) + ')');
+        grad.addColorStop(1, 'rgba(' + o.color[0] + ',' + o.color[1] + ',' + o.color[2] + ',0)');
 
-        if (phase === 'floating' || phase === 'releasing') {
-          // Flottement libre — les particules dérivent doucement
-          p.x += p.driftX + (Math.random() - 0.5) * 0.2;
-          p.y += p.driftY + (Math.random() - 0.5) * 0.2;
-          // Rebouclage : si une particule sort, elle revient de l'autre côté
-          if (p.x < -5) p.x = w + 5;
-          if (p.x > w + 5) p.x = -5;
-          if (p.y < -5) p.y = h + 5;
-          if (p.y > h + 5) p.y = -5;
-          // Alpha doux en flottement
-          var targetA = 0.2 + twinkleAlpha * 0.4;
-          p.alpha += (targetA - p.alpha) * 0.05;
-        } else {
-          // Gathering / Holding — les particules se dirigent vers leur cible
-          var targetX = p.tx;
-          var targetY = p.ty;
-          // Interpolation douce vers la cible
-          p.x += (targetX - p.x) * ease * 0.08;
-          p.y += (targetY - p.y) * ease * 0.08;
-          // Légère vibration quand en position (holding)
-          if (phase === 'holding') {
-            p.x += (Math.random() - 0.5) * 0.3;
-            p.y += (Math.random() - 0.5) * 0.3;
-          }
-          // Alpha : monter vers 1 quand en formation
-          var targetA2 = 0.6 + twinkleAlpha * 0.4;
-          p.alpha += (targetA2 - p.alpha) * 0.04;
-        }
-
-        // Dessiner
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, 6.283);
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
       requestAnimationFrame(frame);
     }
 
     resize();
     frame();
-    window.addEventListener('resize', function () { posCache = {}; resize(); });
+    window.addEventListener('resize', resize);
   }
 
-  var cc = document.querySelectorAll('.pub-space-canvas');
-  for (var i = 0; i < cc.length; i++) initPT(cc[i]);
+  /* ── Texte alterné en fondu ── */
+  function initTextFade(container) {
+    var spans = container.querySelectorAll('span');
+    if (spans.length < 2) return;
+    var idx = 0;
+    setInterval(function () {
+      var cur = spans[idx];
+      var nxt = spans[(idx + 1) % spans.length];
+      cur.className = cur.className.replace('pub-txt-visible', '').trim() + ' pub-txt-hidden';
+      setTimeout(function () {
+        cur.className = cur.className.replace('pub-txt-hidden', '').trim();
+        cur.style.opacity = '0';
+        nxt.style.opacity = '';
+        nxt.className = nxt.className.replace('pub-txt-hidden', '').trim();
+        if (nxt.className.indexOf('pub-txt-visible') === -1) {
+          nxt.className += ' pub-txt-visible';
+        }
+      }, 800);
+      idx = (idx + 1) % spans.length;
+    }, 3500);
+  }
+
+  /* Init all canvases + text overlays */
+  var canvases = document.querySelectorAll('.pub-space-canvas');
+  for (var i = 0; i < canvases.length; i++) initOrbs(canvases[i]);
+
+  var texts = document.querySelectorAll('.pub-space-text');
+  for (var j = 0; j < texts.length; j++) initTextFade(texts[j]);
 })();
 </script>
 

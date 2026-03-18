@@ -232,7 +232,7 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   min-height: 160px;
   position: relative;
   overflow: hidden;
-  background: #000;
+  background: #06030f;
 }
 .pub-empty__icon { font-size: 2rem; margin-bottom: 8px; }
 .pub-empty__title {
@@ -264,7 +264,7 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
 .pub-empty__cta:hover { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.5); }
 .pub-bg-fixed-empty > :not(.pub-space-canvas) { position: relative; z-index: 1; }
 
-/* ── Fond spatial (canvas étoiles) dans les emplacements pub vides ─── */
+/* ── Fond orbes lumineux (canvas) dans les emplacements pub vides ─── */
 .pub-space-canvas {
   position: absolute;
   top: 0; left: 0;
@@ -277,6 +277,43 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
 .pub-empty__price,
 .pub-empty__sub,
 .pub-empty__cta { position: relative; z-index: 1; }
+
+/* ── Texte alterné en fondu dans les encarts pub vides ────────────── */
+.pub-space-text {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+.pub-space-text span {
+  position: absolute;
+  color: #fff;
+  font-weight: 800;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: .02em;
+  text-shadow: 0 0 12px rgba(120,80,255,.7), 0 0 30px rgba(80,60,200,.4);
+  opacity: 0;
+  transition: none;
+}
+.pub-space-text .pub-txt-main { font-size: clamp(14px, 2.5vw, 22px); }
+.pub-space-text .pub-txt-phone { font-size: clamp(16px, 3vw, 26px); letter-spacing: .08em; }
+.pub-space-text span.pub-txt-visible {
+  animation: pubTextFadeIn .8s ease forwards;
+}
+.pub-space-text span.pub-txt-hidden {
+  animation: pubTextFadeOut .8s ease forwards;
+}
+@keyframes pubTextFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pubTextFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
 
 /* ── Billboard (header pub, full width) ──────────────────────── */
 .billboard-wrap {
@@ -354,7 +391,7 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background: #000;
+  background: #06030f;
   text-decoration: none;
   cursor: pointer;
   pointer-events: auto;
@@ -1260,7 +1297,7 @@ img.loaded     { opacity: 1; }
   align-items: center;
   width: 100%;
   height: 64px;
-  background: #000;
+  background: #06030f;
   border-radius: var(--radius);
   text-decoration: none;
   overflow: hidden;
