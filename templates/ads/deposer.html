@@ -28,7 +28,7 @@
           </div>
           {% endif %}
 
-          <form method="post" enctype="multipart/form-data" class="space-y-5">
+          <form id="deposer-form" method="post" enctype="multipart/form-data" class="space-y-5">
             {% csrf_token %}
 
             <div>
@@ -792,10 +792,45 @@ function _renderPhotoPreviews() {
 }
 
 function _syncPhotoInput() {
-  const dt = new DataTransfer();
-  _photoFiles.forEach(f => dt.items.add(f));
-  document.getElementById('photoInput').files = dt.files;
+  // Ne rien faire ici — les fichiers sont envoyés via FormData au submit
 }
+
+// ─── Interception du submit pour envoyer les photos via FormData ───
+(function() {
+  var form = document.getElementById('deposer-form');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    if (_photoFiles.length === 0) return; // pas de photos, submit normal
+    e.preventDefault();
+    var fd = new FormData(form);
+    // Supprimer l'input file vide (name="photos") du FormData
+    fd.delete('photos');
+    // Ajouter chaque fichier manuellement
+    _photoFiles.forEach(function(f) {
+      fd.append('photos', f);
+    });
+    // Envoyer via fetch
+    fetch(form.action || window.location.href, {
+      method: 'POST',
+      body: fd
+    }).then(function(resp) {
+      if (resp.redirected) {
+        window.location.href = resp.url;
+      } else {
+        // Si pas de redirect, recharger la page (erreur de formulaire)
+        resp.text().then(function(html) {
+          document.open();
+          document.write(html);
+          document.close();
+        });
+      }
+    }).catch(function(err) {
+      console.error('Erreur envoi formulaire:', err);
+      // Fallback : essayer le submit normal
+      form.submit();
+    });
+  });
+})();
 
 // ─── Boost Slider ─────────────────────────────────────────────────────────────
 function boostUpdate(pos) {
