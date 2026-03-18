@@ -277,6 +277,12 @@ def deposer_annonce(request):
         if not request.user.is_staff and _rate_limited(request, 'deposer', max_count=5, period_minutes=60):
             messages.error(request, "Limite atteinte : 5 annonces par heure maximum. Réessayez plus tard.")
             return redirect('deposer_annonce')
+        logger.info("=== DEPOSER POST === FILES keys=%s, FILES count=%s",
+                    list(request.FILES.keys()),
+                    sum(len(request.FILES.getlist(k)) for k in request.FILES))
+        for k in request.FILES:
+            for f in request.FILES.getlist(k):
+                logger.info("  FILE: name=%s key=%s size=%s content_type=%s", f.name, k, f.size, f.content_type)
         form = AnnonceForm(request.POST, request.FILES)
         if form.is_valid():
             annonce = form.save(commit=False)
@@ -286,9 +292,12 @@ def deposer_annonce(request):
             photos = []
             for f in request.FILES.getlist('photos')[:5]:
                 try:
-                    photos.append(_save_webp(f, request.user.pk))
+                    url = _save_webp(f, request.user.pk)
+                    logger.info("Photo sauvegardée OK: %s", url)
+                    photos.append(url)
                 except Exception as e:
                     logger.error("Erreur upload photo annonce: %s", e, exc_info=True)
+            logger.info("=== PHOTOS FINAL: %d photo(s) => %s", len(photos), photos)
             annonce.photos = photos
 
             # ── Boost (payant uniquement) ───────────────────────────────────

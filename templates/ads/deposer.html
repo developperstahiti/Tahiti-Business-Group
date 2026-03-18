@@ -792,43 +792,61 @@ function _renderPhotoPreviews() {
 }
 
 function _syncPhotoInput() {
-  // Ne rien faire ici — les fichiers sont envoyés via FormData au submit
+  // Méthode 1 : DataTransfer (Chrome, Edge, Firefox modernes)
+  try {
+    var dt = new DataTransfer();
+    _photoFiles.forEach(function(f) { dt.items.add(f); });
+    document.getElementById('photoInput').files = dt.files;
+    console.log('[photos] sync DataTransfer OK, files:', dt.files.length);
+  } catch(e) {
+    console.warn('[photos] DataTransfer non supporté:', e);
+  }
 }
 
-// ─── Interception du submit pour envoyer les photos via FormData ───
+// ─── Interception du submit : garantir que les photos sont envoyées ───
 (function() {
   var form = document.getElementById('deposer-form');
   if (!form) return;
   form.addEventListener('submit', function(e) {
     if (_photoFiles.length === 0) return; // pas de photos, submit normal
+
+    // Vérifier si l'input a bien les fichiers (DataTransfer a marché)
+    var inp = document.getElementById('photoInput');
+    if (inp && inp.files && inp.files.length === _photoFiles.length) {
+      console.log('[photos] submit normal — input contient', inp.files.length, 'fichiers');
+      return; // tout va bien, laisser le submit normal
+    }
+
+    // Fallback : DataTransfer n'a pas marché, envoyer via XHR
+    console.log('[photos] fallback XHR — input vide, envoi manuel de', _photoFiles.length, 'fichiers');
     e.preventDefault();
     var fd = new FormData(form);
-    // Supprimer l'input file vide (name="photos") du FormData
     fd.delete('photos');
-    // Ajouter chaque fichier manuellement
     _photoFiles.forEach(function(f) {
       fd.append('photos', f);
     });
-    // Envoyer via fetch
-    fetch(form.action || window.location.href, {
-      method: 'POST',
-      body: fd
-    }).then(function(resp) {
-      if (resp.redirected) {
-        window.location.href = resp.url;
-      } else {
-        // Si pas de redirect, recharger la page (erreur de formulaire)
-        resp.text().then(function(html) {
-          document.open();
-          document.write(html);
-          document.close();
-        });
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', form.action || window.location.href, true);
+    xhr.onload = function() {
+      // Django redirige avec 302 — XHR suit automatiquement
+      // On redirige vers l'URL finale
+      if (xhr.responseURL && xhr.responseURL !== window.location.href) {
+        window.location.href = xhr.responseURL;
+      } else if (xhr.status >= 200 && xhr.status < 400) {
+        // Afficher la réponse (page de détail ou formulaire avec erreurs)
+        document.open();
+        document.write(xhr.responseText);
+        document.close();
+        history.pushState(null, '', xhr.responseURL || window.location.href);
       }
-    }).catch(function(err) {
-      console.error('Erreur envoi formulaire:', err);
-      // Fallback : essayer le submit normal
+    };
+    xhr.onerror = function() {
+      console.error('[photos] XHR erreur, tentative submit normal');
+      // Dernier recours : submit normal sans photos
       form.submit();
-    });
+    };
+    xhr.send(fd);
   });
 })();
 

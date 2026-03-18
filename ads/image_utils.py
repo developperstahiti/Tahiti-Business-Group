@@ -38,6 +38,7 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
 
     if os.environ.get('AWS_STORAGE_BUCKET_NAME'):
         import boto3
+        from botocore.exceptions import ClientError
         bucket = os.environ['AWS_STORAGE_BUCKET_NAME']
         region = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
         key = f"{folder}/{filename}"
@@ -45,15 +46,26 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
         img.save(buf, format='WEBP', quality=85, method=6)
         buf.seek(0)
         logger.info("Upload S3: bucket=%s key=%s region=%s", bucket, key, region)
-        boto3.client(
+        s3 = boto3.client(
             's3', region_name=region,
             aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        ).put_object(
-            Bucket=bucket, Key=key, Body=buf,
-            ContentType='image/webp',
-            ACL='public-read',
         )
+        # Essayer avec ACL d'abord, puis sans (buckets récents désactivent les ACL)
+        try:
+            s3.put_object(
+                Bucket=bucket, Key=key, Body=buf,
+                ContentType='image/webp',
+                ACL='public-read',
+            )
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', '')
+            logger.warning("S3 ACL refusé (%s), retry sans ACL: %s", error_code, e)
+            buf.seek(0)
+            s3.put_object(
+                Bucket=bucket, Key=key, Body=buf,
+                ContentType='image/webp',
+            )
         url = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
         logger.info("Upload S3 OK: %s", url)
         return url
