@@ -262,7 +262,7 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   letter-spacing: .04em;
 }
 .pub-empty__cta:hover { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.5); }
-.pub-bg-fixed-empty > :not(.pub-space-canvas) { position: relative; z-index: 1; }
+.pub-bg-fixed-empty > :not(.pub-space-canvas):not(.pub-space-text) { position: relative; z-index: 1; }
 
 /* ── Fond orbes lumineux (canvas) dans les emplacements pub vides ─── */
 .pub-space-canvas {
@@ -280,7 +280,7 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
 
 /* ── Texte alterné en fondu dans les encarts pub vides ────────────── */
 .pub-space-text {
-  position: absolute;
+  position: absolute !important;
   top: 0; left: 0; right: 0; bottom: 0;
   display: flex;
   align-items: center;
