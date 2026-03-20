@@ -5,7 +5,7 @@
 
 {% block og_title %}{{ annonce.titre }} — TBG{% endblock %}
 {% block og_desc %}{{ annonce.description|truncatewords:25 }}{% endblock %}
-{% block og_image %}{% if annonce.photos %}{{ annonce.photos.0 }}{% endif %}{% endblock %}
+{% block og_image %}{% if annonce.photos %}{% if 'http' in annonce.photos.0 %}{{ annonce.photos.0 }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ annonce.photos.0 }}{% endif %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
@@ -182,7 +182,7 @@
     <div class="lightbox-left">
       <div class="lightbox-img-wrap">
         <button class="lightbox-arrow lightbox-arrow--prev" onclick="lightboxNav(-1)" aria-label="Précédent">&#8249;</button>
-        <img id="lightboxImg" src="" alt="" class="lightbox-img">
+        <img id="lightboxImg" src="" alt="{{ annonce.titre }}" class="lightbox-img">
         <button class="lightbox-arrow lightbox-arrow--next" onclick="lightboxNav(1)" aria-label="Suivant">&#8250;</button>
       </div>
       {% if annonce.photos|length > 1 %}
@@ -256,6 +256,42 @@
   </div>
 </div>
 {% endif %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ annonce.titre }}",
+  "description": "{{ annonce.description|truncatewords:50|escapejs }}",
+  {% if annonce.photos %}"image": [{% for photo in annonce.photos %}"{{ photo }}"{% if not forloop.last %},{% endif %}{% endfor %}],{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "price": "{{ annonce.prix|default:'0' }}",
+    "priceCurrency": "XPF",
+    "availability": "https://schema.org/InStock",
+    "itemCondition": "{% if annonce.etat == 'neuf' %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}",
+    "areaServed": {
+      "@type": "Place",
+      "name": "{{ annonce.localisation|default:'Polynésie française' }}"
+    }
+  },
+  "category": "{{ annonce.get_categorie_display|default:annonce.categorie }}"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.tahitibusinessgroup.com/"},
+    {"@type": "ListItem", "position": 2, "name": "{{ annonce.get_categorie_display|default:annonce.categorie }}", "item": "https://www.tahitibusinessgroup.com/annonces/?categorie={{ annonce.categorie }}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ annonce.titre|truncatewords:5 }}"}
+  ]
+}
+</script>
+{% endblock structured_data %}
+
 {% endblock %}
 
 {% block extra_js %}

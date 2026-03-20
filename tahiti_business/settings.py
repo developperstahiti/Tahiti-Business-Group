@@ -58,6 +58,8 @@ MIDDLEWARE = [
 ]
 
 # Autoriser l'affichage en iframe depuis n'importe quel site
+# ⚠ SEO : ALLOWALL est necessaire pour l'embedding iframe des pubs.
+#   Passer a 'SAMEORIGIN' si l'embedding externe n'est plus requis.
 X_FRAME_OPTIONS = 'ALLOWALL'
 
 # Taille max des uploads (50 Mo pour 5 photos de 10 Mo)
@@ -129,6 +131,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ── Security headers ─────────────────────────────────────────────────────────
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # ── Email (vérification à l'inscription) ──────────────────────────────────────
 # Pour activer : ajouter EMAIL_HOST_USER et EMAIL_HOST_PASSWORD dans Railway

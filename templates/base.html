@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>{% block title %}Tahiti Business Group{% endblock %} — Annonces Polynésie</title>
   <meta name="description" content="{% block meta_desc %}Annonces gratuites en Polynésie française. Achetez et vendez véhicules, immobilier, électronique, emploi.{% endblock %}">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -39,8 +37,48 @@
   <meta property="og:site_name"   content="Tahiti Business Group">
   <meta property="og:title"       content="{% block og_title %}Tahiti Business Group — Annonces Polynésie{% endblock %}">
   <meta property="og:description" content="{% block og_desc %}Annonces gratuites en Polynésie française. Véhicules, immobilier, électronique, emploi.{% endblock %}">
-  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
   <meta property="og:image"       content="{% block og_image %}{% static 'img/og-image.webp' %}{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="alternate" hreflang="fr-PF" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Tahiti Business Group",
+      "alternateName": "TBG",
+      "url": "https://www.tahitibusinessgroup.com",
+      "description": "Annonces gratuites en Polynésie française",
+      "inLanguage": "fr-PF",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.tahitibusinessgroup.com/annonces/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "Organization",
+      "name": "Tahiti Business Group",
+      "url": "https://www.tahitibusinessgroup.com",
+      "logo": "https://www.tahitibusinessgroup.com/static/img/favicon-512.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+689-89610613",
+        "contactType": "customer service",
+        "availableLanguage": "French"
+      },
+      "areaServed": {
+        "@type": "Place",
+        "name": "Polynésie française"
+      }
+    }
+  ]
+}
+</script>
+{% endblock structured_data %}
 </head>
 <body class="bg-gray-50 text-gray-900">
 

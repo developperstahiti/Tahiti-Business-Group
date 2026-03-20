@@ -634,9 +634,22 @@ def custom_404(request, exception=None):
 # ── Sitemap dynamique ─────────────────────────────────────────────────────
 def sitemap_xml(request):
     base = request.build_absolute_uri('/').rstrip('/')
-    annonces = Annonce.objects.filter(statut='actif').values('pk', 'updated_at').order_by('-updated_at')[:500]
+    annonces = Annonce.objects.filter(statut='actif').values('pk', 'updated_at').order_by('-updated_at')[:50000]
+    categories_sitemap = [
+        {'code': code, 'label': label}
+        for code, label in CATEGORIES
+    ]
+    static_pages = [
+        {'path': '/pubs/tarifs/', 'changefreq': 'monthly', 'priority': '0.6'},
+        {'path': '/info/', 'changefreq': 'weekly', 'priority': '0.7'},
+        {'path': '/business/', 'changefreq': 'weekly', 'priority': '0.7'},
+    ]
+    today = datetime.date.today().isoformat()
     xml = render_to_string('sitemap.xml', {
         'base': base,
         'annonces': annonces,
+        'categories_sitemap': categories_sitemap,
+        'static_pages': static_pages,
+        'today': today,
     }, request=request)
     return HttpResponse(xml, content_type='application/xml')

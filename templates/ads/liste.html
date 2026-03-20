@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}Annonces{% endblock %}
+{% block title %}{% if cat_active %}{% for code, label in categories %}{% if code == cat_active %}{{ label }} — {% endif %}{% endfor %}{% endif %}Annonces Polynésie{% endblock %}
+
+{% block extra_head %}
+{% if annonces.has_previous %}<link rel="prev" href="?page={{ annonces.previous_page_number }}">{% endif %}
+{% if annonces.has_next %}<link rel="next" href="?page={{ annonces.next_page_number }}">{% endif %}
+{% endblock %}
 
 {% block pub_spacer %}<div class="pub-spacer"></div>{% endblock %}
 
@@ -76,6 +81,17 @@
         </button>
       </div>
       {% endif %}
+
+      <noscript>
+      <nav class="pagination flex justify-center gap-4 mt-6" aria-label="Pages">
+        {% if annonces.has_previous %}
+        <a href="?page={{ annonces.previous_page_number }}" class="btn btn-outline text-sm">&larr; Précédent</a>
+        {% endif %}
+        {% if annonces.has_next %}
+        <a href="?page={{ annonces.next_page_number }}" class="btn btn-outline text-sm">Suivant &rarr;</a>
+        {% endif %}
+      </nav>
+      </noscript>
 
       {% else %}
       <div class="bg-white border border-gray-200 rounded-2xl p-16 text-center shadow-sm">
