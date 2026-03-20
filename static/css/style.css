@@ -2691,13 +2691,23 @@ img.loaded     { opacity: 1; }
   /* Image/vidéo pub : s'adapte à la hauteur */
   #layout-billboard .pub-bg-fixed-img  { width: 100% !important; height: 80px !important; object-fit: contain; }
   #layout-billboard .pub-bg-fixed-link { height: 80px !important; }
-  /* État vide : 3 lignes centrées dans 80px, gap compact */
+  /* État vide : centrées dans 80px, gap compact */
   #layout-billboard .pub-bg-fixed-empty {
+    min-height: 80px !important;
+    height: 80px !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 6px 16px;
+    padding: 4px 16px;
     gap: 2px;
+  }
+  /* Texte alterné — taille adaptée au 80px mobile */
+  #layout-billboard .pub-space-text .pub-txt-main { font-size: 13px; }
+  #layout-billboard .pub-space-text .pub-txt-phone { font-size: 15px; letter-spacing: .06em; }
+  /* Prix billboard — remonter dans le 80px */
+  #layout-billboard .pub-bg-fixed-empty > div[style*="bottom"] {
+    bottom: 6px !important;
+    font-size: 10px !important;
   }
   .pub-spacer { display: none; }
 
