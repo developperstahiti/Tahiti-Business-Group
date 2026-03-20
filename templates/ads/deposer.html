@@ -792,61 +792,65 @@ function _renderPhotoPreviews() {
 }
 
 function _syncPhotoInput() {
-  // Méthode 1 : DataTransfer (Chrome, Edge, Firefox modernes)
+  // Sync via DataTransfer pour le submit normal
   try {
     var dt = new DataTransfer();
     _photoFiles.forEach(function(f) { dt.items.add(f); });
     document.getElementById('photoInput').files = dt.files;
-    console.log('[photos] sync DataTransfer OK, files:', dt.files.length);
-  } catch(e) {
-    console.warn('[photos] DataTransfer non supporté:', e);
-  }
+  } catch(e) { /* fallback géré au submit */ }
 }
 
-// ─── Interception du submit : garantir que les photos sont envoyées ───
+// ─── Interception SYSTÉMATIQUE du submit ─────────────────────────────────────
 (function() {
   var form = document.getElementById('deposer-form');
   if (!form) return;
-  form.addEventListener('submit', function(e) {
-    if (_photoFiles.length === 0) return; // pas de photos, submit normal
 
-    // Vérifier si l'input a bien les fichiers (DataTransfer a marché)
-    var inp = document.getElementById('photoInput');
-    if (inp && inp.files && inp.files.length === _photoFiles.length) {
-      console.log('[photos] submit normal — input contient', inp.files.length, 'fichiers');
-      return; // tout va bien, laisser le submit normal
+  form.addEventListener('submit', function(e) {
+    // TOUJOURS intercepter pour garantir l'envoi des photos
+    e.preventDefault();
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Publication en cours...';
     }
 
-    // Fallback : DataTransfer n'a pas marché, envoyer via XHR
-    console.log('[photos] fallback XHR — input vide, envoi manuel de', _photoFiles.length, 'fichiers');
-    e.preventDefault();
+    // Construire le FormData avec TOUS les champs + photos manuellement
     var fd = new FormData(form);
+    // Supprimer l'entrée photos (potentiellement vide de l'input file)
     fd.delete('photos');
-    _photoFiles.forEach(function(f) {
-      fd.append('photos', f);
+    // Ajouter chaque photo depuis notre tableau JS
+    console.log('[photos] Envoi de', _photoFiles.length, 'photo(s)');
+    _photoFiles.forEach(function(f, i) {
+      console.log('[photos]  #' + i, f.name, f.size, f.type);
+      fd.append('photos', f, f.name);
     });
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', form.action || window.location.href, true);
-    xhr.onload = function() {
-      // Django redirige avec 302 — XHR suit automatiquement
-      // On redirige vers l'URL finale
-      if (xhr.responseURL && xhr.responseURL !== window.location.href) {
-        window.location.href = xhr.responseURL;
-      } else if (xhr.status >= 200 && xhr.status < 400) {
-        // Afficher la réponse (page de détail ou formulaire avec erreurs)
-        document.open();
-        document.write(xhr.responseText);
-        document.close();
-        history.pushState(null, '', xhr.responseURL || window.location.href);
+    fetch(form.action || window.location.href, {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+      redirect: 'follow'
+    }).then(function(resp) {
+      if (resp.redirected) {
+        // Succès — Django a redirigé vers la page de détail
+        window.location.href = resp.url;
+      } else {
+        // Erreur de validation — afficher le formulaire avec les erreurs
+        return resp.text().then(function(html) {
+          document.open();
+          document.write(html);
+          document.close();
+        });
       }
-    };
-    xhr.onerror = function() {
-      console.error('[photos] XHR erreur, tentative submit normal');
-      // Dernier recours : submit normal sans photos
-      form.submit();
-    };
-    xhr.send(fd);
+    }).catch(function(err) {
+      console.error('[photos] Erreur fetch:', err);
+      alert('Erreur lors de la publication. Veuillez réessayer.');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Publier mon annonce';
+      }
+    });
   });
 })();
 

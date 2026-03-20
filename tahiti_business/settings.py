@@ -60,6 +60,10 @@ MIDDLEWARE = [
 # Autoriser l'affichage en iframe depuis n'importe quel site
 X_FRAME_OPTIONS = 'ALLOWALL'
 
+# Taille max des uploads (50 Mo pour 5 photos de 10 Mo)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 Mo
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 Mo
+
 ROOT_URLCONF = 'tahiti_business.urls'
 
 TEMPLATES = [

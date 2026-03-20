@@ -8,7 +8,7 @@ from PIL import Image as PILImage
 
 logger = logging.getLogger(__name__)
 
-_MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo
+_MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 Mo
 _ALLOWED_FORMATS = {'JPEG', 'PNG', 'WEBP', 'GIF', 'BMP', 'TIFF'}
 
 
