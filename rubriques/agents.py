@@ -51,13 +51,28 @@ def _build_sources():
             'exclude_patterns': ['/agenda/', '/annuaire/', '/404'],
         })
 
-    # ── Tahiti Infos Economie ──
+    # ── Tahiti Infos Economie (force en promo) ──
     sources.append({
         'name': 'Tahiti Infos Eco',
         'url': 'https://www.tahiti-infos.com/Economie_r4.html',
         'mode': 'heading_links',
         'exclude_patterns': ['/404'],
+        'force_category': 'promo',
     })
+
+    # ── Outremers360 Economie (force en promo) ──
+    for page in range(1, 4):
+        if page == 1:
+            url = 'https://outremers360.com/economie'
+        else:
+            url = f'https://outremers360.com/economie/page/{page}'
+        sources.append({
+            'name': f'Outremers360 Eco p{page}',
+            'url': url,
+            'mode': 'heading_links',
+            'exclude_patterns': ['/category/', '/tag/', '/page/', '/author/'],
+            'force_category': 'promo',
+        })
 
     # ── Tahiti News (WordPress, ~15 articles/page) ──
     # 8 pages x 15 = ~120 articles (~2 mois)
@@ -109,20 +124,28 @@ HEADERS = {
 # ── Mots-cles pour le tri automatique ─────────────────────────────────────────
 
 PROMO_KEYWORDS = [
-    # Prix et reductions
+    # Prix et reductions (score fort)
     r'-\d+\s*%', r'\d+\s*%\s*(de\s+)?(reduction|remise|rabais)',
     r'promo', r'promotion', r'solde', r'destockage',
     r'bon\s+plan', r'bons?\s+plans?', r'offre\s+speciale',
     r'prix\s+(casse|choc|bas|reduit|exceptionnel)',
-    r'gratuit', r'offert', r'cadeau',
-    r'reduction', r'remise', r'rabais', r'ristourne',
-    r'moins\s+cher', r'economisez', r'profitez',
-    # Commerce
-    r'vente\s+flash', r'black\s*friday', r'french\s*days',
-    r'liquidation', r'fin\s+de\s+serie',
-    r'code\s+promo', r'coupon', r'voucher',
+    r'reduction', r'remise', r'rabais',
+    r'vente\s+flash', r'liquidation',
     r'tarif\s+(preferen|reduit|promo)',
-    r'exclu(sif|sivit)', r'limite',
+    # Enseignes et commerces polynesiens
+    r'carrefour', r'champion', r'hyper\s*u', r'easy\s*market',
+    r'electromenager', r'grande\s+surface',
+    # Economie et consommation locale
+    r'pouvoir\s+d.achat', r'inflation',
+    r'hausse\s+des?\s+prix', r'baisse\s+des?\s+prix',
+    r'cout\s+de\s+la\s+vie', r'panier\s+moyen',
+    r'octroi\s+de\s+mer', r'tgc',
+    r'import(ation)?\s+(de|des|alimentaire)',
+    r'commerce\s+(local|exterieur)',
+    r'marche\s+de\s+papeete', r'marche\s+municipal',
+    # Emploi et salaires
+    r'recrutement', r'embauche', r'offre\s+d.emploi',
+    r'smic', r'salaire\s+minimum',
 ]
 
 NOUVEAUTE_KEYWORDS = [
@@ -166,7 +189,7 @@ def _classify_article(title, content):
         if re.search(pattern, text, re.IGNORECASE):
             nouveaute_score += 1
 
-    if promo_score >= 2 and promo_score > nouveaute_score:
+    if promo_score >= 2 and promo_score >= nouveaute_score:
         return 'promo'
     if nouveaute_score >= 2 and nouveaute_score > promo_score:
         return 'nouveaute'
@@ -260,7 +283,11 @@ def scrape_links(source):
 
         if href not in seen_urls:
             seen_urls.add(href)
-            links.append({'url': href, 'title': title, 'source': source['name']})
+            links.append({
+                'url': href, 'title': title,
+                'source': source['name'],
+                'force_category': source.get('force_category', ''),
+            })
 
     return links[:MAX_ARTICLES_PER_PAGE]
 
@@ -359,7 +386,11 @@ def run_all_agents(dry_run=False):
             if not content or len(content) < 100:
                 continue
 
-            category = _classify_article(link['title'], content)
+            # Force category si la source l'impose, sinon classification auto
+            if link.get('force_category'):
+                category = link['force_category']
+            else:
+                category = _classify_article(link['title'], content)
             saved_photo = download_and_save_photo(photo_url, f'{category}_{results[category]}')
 
             if category == 'promo':
