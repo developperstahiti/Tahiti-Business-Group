@@ -1,11 +1,11 @@
 from django import forms
-from .models import Annonce, Message, CATEGORIES
+from .models import Annonce, Message, CATEGORIES, PRIX_UNITE_CHOICES
 
 
 class AnnonceForm(forms.ModelForm):
     class Meta:
         model = Annonce
-        fields = ['titre', 'categorie', 'prix', 'prix_label', 'localisation', 'description']
+        fields = ['titre', 'categorie', 'prix', 'prix_unite', 'prix_label', 'localisation', 'description']
         widgets = {
             'titre': forms.TextInput(attrs={
                 'placeholder': 'Titre de votre annonce',
@@ -16,6 +16,7 @@ class AnnonceForm(forms.ModelForm):
                 'placeholder': '0',
                 'class': 'form-input'
             }),
+            'prix_unite': forms.Select(attrs={'class': 'form-input'}),
             'prix_label': forms.TextInput(attrs={
                 'placeholder': 'Rempli automatiquement',
                 'class': 'form-input',
@@ -36,6 +37,7 @@ class AnnonceForm(forms.ModelForm):
             'titre': 'Titre de l\'annonce *',
             'categorie': 'Catégorie *',
             'prix': 'Prix (XPF)',
+            'prix_unite': 'Unité de prix',
             'prix_label': 'Affichage prix',
             'localisation': 'Localisation',
             'description': 'Description *',

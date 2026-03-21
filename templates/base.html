@@ -585,6 +585,10 @@
       </div>
 
     </div>
+    <div class="flex flex-wrap gap-4 text-xs text-gray-400 mt-4">
+      <a href="{% url 'mentions_legales' %}" class="hover:text-gray-600 transition">Mentions légales</a>
+      <a href="{% url 'cgu' %}" class="hover:text-gray-600 transition">CGU</a>
+    </div>
     <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-2">
       <p class="text-gray-400 text-xs">© 2026 Tahiti Business Group • 89 61 06 13 • cocogamestahiti@gmail.com</p>
       <p class="text-gray-400 text-xs">By <a href="https://letsgo.web" target="_blank" rel="noopener" class="letsgo-link-footer">Let's GoWeb</a> 🌺</p>
@@ -1034,6 +1038,31 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
     };
   }
 })();
+</script>
+
+<!-- Cookie consent banner -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e293b;border-top:1px solid #334155;padding:12px 20px;box-shadow:0 -4px 20px rgba(0,0,0,.15)">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <p style="color:#94a3b8;font-size:13px;margin:0;flex:1;min-width:250px">
+      Ce site utilise des cookies fonctionnels pour assurer le bon fonctionnement du service.
+      <a href="{% url 'cgu' %}#cookies" style="color:#60a5fa;text-decoration:underline">En savoir plus</a>
+    </p>
+    <div style="display:flex;gap:8px">
+      <button onclick="cookieConsent('refused')" style="background:transparent;border:1px solid #475569;color:#94a3b8;padding:6px 16px;border-radius:6px;font-size:13px;cursor:pointer">Refuser</button>
+      <button onclick="cookieConsent('accepted')" style="background:#3b82f6;border:none;color:#fff;padding:6px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600">Accepter</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  if (!localStorage.getItem('cookie_consent')) {
+    document.getElementById('cookie-banner').style.display = 'block';
+  }
+})();
+function cookieConsent(choice) {
+  localStorage.setItem('cookie_consent', choice);
+  document.getElementById('cookie-banner').style.display = 'none';
+}
 </script>
 
 </body>

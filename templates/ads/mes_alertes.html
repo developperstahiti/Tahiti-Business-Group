@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block title %}Mes alertes — TBG{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">Mes alertes annonces</h1>
+
+  <!-- Créer une alerte -->
+  <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-8">
+    <h2 class="font-bold text-lg mb-4 text-gray-900">Créer une nouvelle alerte</h2>
+    <form method="post" action="{% url 'creer_alerte' %}" class="flex flex-wrap gap-3 items-end">
+      {% csrf_token %}
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Catégorie *</label>
+        <select name="categorie" required class="form-input w-full" id="alerte-cat">
+          <option value="">Choisir...</option>
+          {% for code, label in categories %}
+          <option value="{{ code }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Sous-catégorie</label>
+        <select name="sous_categorie" class="form-input w-full" id="alerte-sous-cat">
+          <option value="">Toutes</option>
+        </select>
+      </div>
+      <button type="submit" class="bg-blue-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-700 transition text-sm">
+        Créer l'alerte
+      </button>
+    </form>
+  </div>
+
+  <!-- Liste des alertes -->
+  {% if alertes %}
+  <div class="space-y-3">
+    {% for alerte in alertes %}
+    <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+      <div>
+        <span class="font-bold text-gray-900">{{ alerte.get_categorie_display }}</span>
+        {% if alerte.sous_categorie %}
+        <span class="text-gray-400 mx-1">›</span>
+        <span class="text-gray-600">{{ alerte.sous_categorie }}</span>
+        {% endif %}
+        <div class="text-xs text-gray-400 mt-1">Créée le {{ alerte.created_at|date:"d/m/Y" }}</div>
+      </div>
+      <form method="post" action="{% url 'supprimer_alerte' alerte.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="text-red-500 text-sm font-semibold hover:text-red-700 transition">Supprimer</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-gray-500 text-center py-8">Aucune alerte configurée. Créez une alerte pour être notifié des nouvelles annonces.</p>
+  {% endif %}
+</div>
+
+<script>
+var sousCatsData = {{ sous_cats_data|safe }};
+document.getElementById('alerte-cat').addEventListener('change', function() {
+  var sel = document.getElementById('alerte-sous-cat');
+  sel.innerHTML = '<option value="">Toutes</option>';
+  var subs = sousCatsData[this.value] || [];
+  subs.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s.value; opt.textContent = s.label;
+    sel.appendChild(opt);
+  });
+});
+</script>
+{% endblock %}

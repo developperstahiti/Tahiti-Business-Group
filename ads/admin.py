@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.http import HttpResponse
 import csv
-from .models import Annonce, Message, Signalement
+from .models import Annonce, Message, Signalement, AlerteAnnonce
 
 
 def _export_csv(modeladmin, request, queryset):
@@ -20,16 +20,16 @@ _export_csv.short_description = "Exporter en CSV"
 
 @admin.register(Annonce)
 class AnnonceAdmin(admin.ModelAdmin):
-    list_display = ['titre', 'user', 'categorie', 'prix_display', 'statut_badge', 'views', 'boost', 'created_at']
-    list_filter = ['statut', 'categorie', 'boost', 'created_at']
+    list_display = ['titre', 'user', 'categorie', 'prix_display', 'statut_badge', 'verified_badge', 'views', 'boost', 'created_at']
+    list_filter = ['statut', 'categorie', 'boost', 'verified', 'created_at']
     search_fields = ['titre', 'description', 'user__email', 'user__nom']
     list_editable = ['boost']
-    actions = ['approuver', 'moderer', 'marquer_vendu', _export_csv]
+    actions = ['approuver', 'moderer', 'marquer_vendu', 'marquer_verifie', _export_csv]
     readonly_fields = ['views', 'created_at', 'updated_at', 'photos_preview']
     fieldsets = (
-        ('Annonce', {'fields': ('titre', 'categorie', 'prix', 'prix_label', 'localisation', 'description')}),
+        ('Annonce', {'fields': ('titre', 'categorie', 'prix', 'prix_unite', 'prix_label', 'localisation', 'description')}),
         ('Média', {'fields': ('photos', 'photos_preview')}),
-        ('Statut', {'fields': ('statut', 'boost', 'user')}),
+        ('Statut', {'fields': ('statut', 'boost', 'verified', 'user')}),
         ('Stats', {'fields': ('views', 'created_at', 'updated_at')}),
     )
 
@@ -45,6 +45,13 @@ class AnnonceAdmin(admin.ModelAdmin):
             color, obj.get_statut_display()
         )
     statut_badge.short_description = 'Statut'
+
+    def verified_badge(self, obj):
+        if obj.verified:
+            return format_html('<span style="color:#059669;font-weight:bold">✓</span>')
+        return ''
+    verified_badge.short_description = 'Vérifiée'
+    verified_badge.admin_order_field = 'verified'
 
     def photos_preview(self, obj):
         if not obj.photos:
@@ -69,6 +76,11 @@ class AnnonceAdmin(admin.ModelAdmin):
         queryset.update(statut='vendu')
         self.message_user(request, f"{queryset.count()} annonce(s) marquée(s) vendue.")
     marquer_vendu.short_description = "Marquer comme vendu"
+
+    def marquer_verifie(self, request, queryset):
+        queryset.update(verified=True)
+        self.message_user(request, f"{queryset.count()} annonce(s) marquée(s) vérifiée(s).")
+    marquer_verifie.short_description = "Marquer comme vérifiée"
 
 
 @admin.register(Message)
@@ -97,3 +109,11 @@ class SignalementAdmin(admin.ModelAdmin):
             s.annonce.save()
         self.message_user(request, f"{queryset.count()} annonce(s) modérée(s).")
     supprimer_annonce_signalee.short_description = "Modérer l'annonce signalée"
+
+
+@admin.register(AlerteAnnonce)
+class AlerteAnnonceAdmin(admin.ModelAdmin):
+    list_display = ['user', 'categorie', 'sous_categorie', 'derniere_notification', 'created_at']
+    list_filter = ['categorie']
+    search_fields = ['user__email', 'user__nom']
+    readonly_fields = ['created_at']

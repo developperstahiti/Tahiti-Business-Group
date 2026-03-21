@@ -9,13 +9,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import models as db_models
 from django.db.models import Q, Case, When, Value, IntegerField, Count
 from django.db.models.functions import TruncDay
 from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
-from .models import Annonce, Message, CATEGORIES, SOUS_CATEGORIES, Signalement
+from django.core.mail import send_mail
+from .models import Annonce, Message, CATEGORIES, SOUS_CATEGORIES, Signalement, PRIX_UNITE_CHOICES
 from .image_utils import save_webp
 from rubriques.models import ArticlePromo, ArticleInfo, ArticleNouveaute
 
@@ -201,6 +203,10 @@ def liste_annonces(request):
         except ValueError:
             pass
 
+    # Filtre photos uniquement
+    if request.GET.get('photos'):
+        qs = qs.exclude(photos=[])
+
     if tri == 'prix_asc':
         qs = qs.order_by('prix')
     elif tri == 'prix_desc':
@@ -240,6 +246,7 @@ def liste_annonces(request):
         'prix_min':        prix_min,
         'prix_max':        prix_max,
         'tri':             tri,
+        'photos_only':     request.GET.get('photos', ''),
     })
 
 
@@ -314,6 +321,44 @@ def deposer_annonce(request):
                 annonce.boost_demande = boost_demande
 
             annonce.save()
+
+            # Notifier les utilisateurs avec une alerte correspondante
+            from .models import AlerteAnnonce
+
+            alertes = AlerteAnnonce.objects.filter(categorie=annonce.categorie)
+            if annonce.sous_categorie:
+                alertes = alertes.filter(
+                    db_models.Q(sous_categorie='') | db_models.Q(sous_categorie=annonce.sous_categorie)
+                )
+            # Max 1 email par jour par alerte
+            yesterday = timezone.now() - datetime.timedelta(days=1)
+            alertes = alertes.filter(
+                db_models.Q(derniere_notification__isnull=True) | db_models.Q(derniere_notification__lt=yesterday)
+            ).exclude(user=request.user)
+
+            for alerte in alertes[:50]:  # Limiter à 50 notifications
+                try:
+                    send_mail(
+                        subject=f'Nouvelle annonce {annonce.get_categorie_display()} — TBG',
+                        message=(
+                            f'Bonjour {alerte.user.nom or ""},\n\n'
+                            f'Une nouvelle annonce correspond à votre alerte :\n\n'
+                            f'"{annonce.titre}"\n'
+                            f'Prix : {annonce.get_prix_display_label()}\n'
+                            f'Lieu : {annonce.localisation}\n\n'
+                            f'Voir l\'annonce :\n'
+                            f'https://www.tahitibusinessgroup.com/annonces/{annonce.pk}/\n\n'
+                            f'— Tahiti Business Group'
+                        ),
+                        from_email=django_settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[alerte.user.email],
+                        fail_silently=True,
+                    )
+                    alerte.derniere_notification = timezone.now()
+                    alerte.save(update_fields=['derniere_notification'])
+                except Exception:
+                    pass
+
             if boost_duree in ('7jours', '1mois'):
                 messages.success(request, "Annonce publiée ! Votre demande de boost a bien été envoyée — notre équipe vous contactera pour le paiement.")
             else:
@@ -356,6 +401,7 @@ def edit_annonce(request, pk):
             annonce.specs = new_specs
         annonce.localisation   = request.POST.get('localisation', '').strip() or annonce.localisation
         annonce.prix_label     = request.POST.get('prix_label', '').strip()
+        annonce.prix_unite     = request.POST.get('prix_unite', '')
         try:
             annonce.prix = int(request.POST.get('prix', 0) or 0)
         except (ValueError, TypeError):
@@ -400,6 +446,7 @@ def edit_annonce(request, pk):
     return render(request, 'ads/edit_annonce.html', {
         'annonce':              annonce,
         'categories':           CATEGORIES,
+        'prix_unite_choices':   PRIX_UNITE_CHOICES,
         'sous_categories_data': _sous_cats_data(),
         'remaining_slots':      max(0, 5 - len(annonce.photos)),
     })
@@ -463,6 +510,26 @@ def contact_annonce(request, pk):
             to_user=to_user,
             content=content,
         )
+        # Email notification to the ad owner
+        try:
+            send_mail(
+                subject=f'Nouveau message pour votre annonce "{annonce.titre}" — TBG',
+                message=(
+                    f'Bonjour {annonce.user.nom or ""},\n\n'
+                    f'Vous avez reçu un nouveau message pour votre annonce '
+                    f'"{annonce.titre}" sur Tahiti Business Group.\n\n'
+                    f'De : {msg.from_user.nom or msg.from_user.email}\n'
+                    f'Message : {msg.content[:200]}\n\n'
+                    f'Connectez-vous pour répondre :\n'
+                    f'https://www.tahitibusinessgroup.com/mes-messages/\n\n'
+                    f'— Tahiti Business Group'
+                ),
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[annonce.user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass  # Don't break the flow if email fails
         thread.filter(from_user=to_user, read=False).update(read=True)
         html = render_to_string(
             'partials/_message_bubble.html',
@@ -626,7 +693,50 @@ def export_csv(request):
     return response
 
 
+# ── Alertes annonces ──────────────────────────────────────────────────────
+@login_required
+def mes_alertes(request):
+    from .models import AlerteAnnonce, CATEGORIES, SOUS_CATEGORIES
+    alertes = AlerteAnnonce.objects.filter(user=request.user)
+    return render(request, 'ads/mes_alertes.html', {
+        'alertes': alertes,
+        'categories': CATEGORIES,
+        'sous_cats_data': _sous_cats_data(),
+    })
+
+@login_required
+def creer_alerte(request):
+    from .models import AlerteAnnonce
+    if request.method == 'POST':
+        cat = request.POST.get('categorie', '')
+        sous_cat = request.POST.get('sous_categorie', '')
+        if cat:
+            AlerteAnnonce.objects.get_or_create(
+                user=request.user,
+                categorie=cat,
+                sous_categorie=sous_cat,
+            )
+            messages.success(request, 'Alerte créée avec succès !')
+    return redirect('mes_alertes')
+
+@login_required
+def supprimer_alerte(request, pk):
+    from .models import AlerteAnnonce
+    alerte = get_object_or_404(AlerteAnnonce, pk=pk, user=request.user)
+    alerte.delete()
+    messages.success(request, 'Alerte supprimée.')
+    return redirect('mes_alertes')
+
+
 # ── Custom 404 ───────────────────────────────────────────────────────────
+def mentions_legales(request):
+    return render(request, 'ads/mentions_legales.html')
+
+
+def cgu(request):
+    return render(request, 'ads/cgu.html')
+
+
 def custom_404(request, exception=None):
     return render(request, '404.html', status=404)
 

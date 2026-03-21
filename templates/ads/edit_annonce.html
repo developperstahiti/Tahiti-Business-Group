@@ -49,11 +49,19 @@
             </div>
 
             <!-- Prix -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="prix-row">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="prix-row">
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Prix (XPF)</label>
                 <input type="number" name="prix" value="{{ annonce.prix }}" min="0" class="form-input">
                 <p class="text-xs text-gray-400 mt-1">Laissez 0 pour "Gratuit"</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Unité de prix</label>
+                <select name="prix_unite" class="form-input">
+                  {% for value, label in prix_unite_choices %}
+                  <option value="{{ value }}" {% if annonce.prix_unite == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Affichage prix</label>

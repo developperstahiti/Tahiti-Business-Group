@@ -59,11 +59,15 @@
               {{ form.localisation }}
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="prix-row">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="prix-row">
               <div>
                 <label id="prix-label" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Prix (XPF)</label>
                 {{ form.prix }}
                 <p class="text-xs text-gray-400 mt-1" id="prix-hint">Laissez 0 pour "Gratuit"</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Unité de prix</label>
+                {{ form.prix_unite }}
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Affichage prix</label>

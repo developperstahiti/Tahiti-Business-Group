@@ -71,6 +71,16 @@ SOUS_CATEGORIES = {
 
 SOUS_CATEGORIE_CHOICES = [item for sublist in SOUS_CATEGORIES.values() for item in sublist]
 
+PRIX_UNITE_CHOICES = [
+    ('',         '— Prix fixe'),
+    ('heure',    '/ heure'),
+    ('jour',     '/ jour'),
+    ('semaine',  '/ semaine'),
+    ('mois',     '/ mois'),
+    ('unite',    '/ unité'),
+    ('negocier', 'À négocier'),
+]
+
 
 class Annonce(models.Model):
     user = models.ForeignKey(
@@ -82,6 +92,7 @@ class Annonce(models.Model):
     description    = models.TextField()
     prix           = models.IntegerField(default=0)
     prix_label     = models.CharField(max_length=50, blank=True, help_text="Ex: 15 000 XPF, Gratuit, À débattre")
+    prix_unite     = models.CharField(max_length=20, choices=PRIX_UNITE_CHOICES, default='', blank=True)
     categorie      = models.CharField(max_length=50, choices=CATEGORIES)
     sous_categorie = models.CharField(max_length=50, blank=True, default='')
     localisation   = models.CharField(max_length=100, default='Papeete')
@@ -96,6 +107,7 @@ class Annonce(models.Model):
         choices=[('', 'Sans boost'), ('active', 'Actif'), ('pending', 'En attente'), ('expired', 'Expiré')]
     )
     boost_expires_at = models.DateTimeField(null=True, blank=True)
+    verified       = models.BooleanField(default=False)
     views          = models.PositiveIntegerField(default=0)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
@@ -111,9 +123,15 @@ class Annonce(models.Model):
     def get_prix_display_label(self):
         if self.prix_label:
             return self.prix_label
+        if self.prix_unite == 'negocier':
+            return 'À négocier'
         if self.prix == 0:
             return 'Gratuit'
-        return f"{self.prix:,} XPF".replace(',', ' ')
+        base = f"{self.prix:,} XPF".replace(',', '\u00a0')
+        if self.prix_unite:
+            unite_map = dict(PRIX_UNITE_CHOICES)
+            return f"{base} {unite_map.get(self.prix_unite, '')}"
+        return base
 
     def get_main_photo(self):
         return self.photos[0] if self.photos else None
@@ -168,3 +186,23 @@ class Signalement(models.Model):
 
     def __str__(self):
         return f"Signal #{self.pk} — {self.annonce.titre}"
+
+
+class AlerteAnnonce(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='alertes'
+    )
+    categorie      = models.CharField(max_length=50, choices=CATEGORIES)
+    sous_categorie = models.CharField(max_length=50, blank=True, default='')
+    derniere_notification = models.DateTimeField(null=True, blank=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Alerte annonce'
+        verbose_name_plural = 'Alertes annonces'
+        unique_together = ['user', 'categorie', 'sous_categorie']
+
+    def __str__(self):
+        return f"Alerte {self.user} — {self.categorie}"

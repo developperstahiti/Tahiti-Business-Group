@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}{% if cat_active %}{% for code, label in categories %}{% if code == cat_active %}{{ label }} — {% endif %}{% endfor %}{% endif %}Annonces Polynésie{% endblock %}
+{% block meta_desc %}{% if cat_active %}Annonces {{ cat_active }} en Polynésie française sur TBG.{% else %}Toutes les annonces gratuites en Polynésie française — véhicules, immobilier, emploi, services, occasions.{% endif %}{% endblock %}
 
 {% block extra_head %}
 {% if annonces.has_previous %}<link rel="prev" href="?page={{ annonces.previous_page_number }}">{% endif %}
@@ -30,9 +31,21 @@
               <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
-            <input type="text" name="localisation" value="{{ ville }}" placeholder="Île, ville..." class="form-input text-sm">
+            <select name="localisation" class="form-input text-sm" onchange="this.form.submit()">
+              <option value="">Toute la Polynésie</option>
+              <option value="Papeete" {% if ville == 'Papeete' %}selected{% endif %}>Papeete</option>
+              <option value="Faaa" {% if ville == 'Faaa' %}selected{% endif %}>Faa'a</option>
+              <option value="Punaauia" {% if ville == 'Punaauia' %}selected{% endif %}>Punaauia</option>
+              <option value="Pirae" {% if ville == 'Pirae' %}selected{% endif %}>Pirae</option>
+              <option value="Arue" {% if ville == 'Arue' %}selected{% endif %}>Arue</option>
+              <option value="Mahina" {% if ville == 'Mahina' %}selected{% endif %}>Mahina</option>
+              <option value="Paea" {% if ville == 'Paea' %}selected{% endif %}>Paea</option>
+              <option value="Papara" {% if ville == 'Papara' %}selected{% endif %}>Papara</option>
+              <option value="Taravao" {% if ville == 'Taravao' %}selected{% endif %}>Taravao</option>
+              <option value="Moorea" {% if ville == 'Moorea' %}selected{% endif %}>Moorea</option>
+            </select>
           </div>
-          <!-- Ligne 2 : sous-catégorie + prix min/max + tri -->
+          <!-- Ligne 2 : sous-catégorie + tri -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
             <select name="sous_cat" class="form-input text-sm" id="filter-sous-cat">
               <option value="">Sous-catégorie</option>
@@ -40,11 +53,11 @@
               <option value="{{ val }}" {% if val == sous_cat %}selected{% endif %}>{{ lbl }}</option>
               {% endfor %}
             </select>
-            <div class="flex gap-1">
-              <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Prix min" class="form-input text-sm w-full" min="0">
-            </div>
-            <div class="flex gap-1">
-              <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Prix max" class="form-input text-sm w-full" min="0">
+            <div class="flex items-center gap-2">
+              <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Min" class="form-input text-sm w-24" min="0">
+              <span class="text-gray-400">&mdash;</span>
+              <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Max" class="form-input text-sm w-24" min="0">
+              <span class="text-xs text-gray-400">XPF</span>
             </div>
             <select name="tri" class="form-input text-sm">
               <option value="" {% if not tri %}selected{% endif %}>Pertinence</option>
@@ -52,6 +65,11 @@
               <option value="prix_asc" {% if tri == 'prix_asc' %}selected{% endif %}>Prix croissant</option>
               <option value="prix_desc" {% if tri == 'prix_desc' %}selected{% endif %}>Prix décroissant</option>
             </select>
+            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <input type="checkbox" name="photos" value="1" {% if request.GET.photos %}checked{% endif %}
+                     class="rounded border-gray-300" onchange="this.form.submit()">
+              Avec photos uniquement
+            </label>
           </div>
           <div class="flex gap-2 flex-wrap">
             <button type="submit" class="btn btn-primary text-sm">Rechercher</button>

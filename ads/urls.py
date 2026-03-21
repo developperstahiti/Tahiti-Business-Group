@@ -18,4 +18,9 @@ urlpatterns = [
     path('business/', views.page_business, name='page_business'),
     path('admin-stats/', views.admin_stats, name='admin_stats'),
     path('admin-stats/export-csv/', views.export_csv, name='export_csv'),
+    path('mes-alertes/', views.mes_alertes, name='mes_alertes'),
+    path('mes-alertes/creer/', views.creer_alerte, name='creer_alerte'),
+    path('mes-alertes/<int:pk>/supprimer/', views.supprimer_alerte, name='supprimer_alerte'),
+    path('mentions-legales/', views.mentions_legales, name='mentions_legales'),
+    path('cgu/', views.cgu, name='cgu'),
 ]
