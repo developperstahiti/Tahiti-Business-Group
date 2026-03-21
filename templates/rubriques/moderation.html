@@ -19,7 +19,10 @@
         {% endif %}
       </p>
     </div>
-    <a href="{% url 'rubriques_index' %}" class="text-sm text-blue-600 hover:underline">← Voir la page publique</a>
+    <div class="flex gap-3 items-center">
+      <a href="{% url 'run_agents' %}" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded hover:bg-emerald-700 transition" onclick="this.textContent='Scraping en cours...';this.style.pointerEvents='none'">Lancer les agents</a>
+      <a href="{% url 'rubriques_index' %}" class="text-sm text-blue-600 hover:underline">← Page publique</a>
+    </div>
   </div>
 
   <!-- Tabs -->

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from ads.image_utils import save_webp
 from .models import ArticlePromo, ArticleInfo, ArticleNouveaute
 
@@ -156,6 +156,18 @@ def moderation_dashboard(request):
         'nouveautes_recents': ArticleNouveaute.objects.exclude(statut='en_attente').select_related('pro_user')[:5],
         'total_attente':      promos_attente.count() + infos_attente.count() + nouveautes_attente.count(),
     })
+
+
+@login_required
+def run_agents_view(request):
+    """Lance les agents de scraping — admin only."""
+    if not request.user.is_staff:
+        raise Http404
+    from .agents import run_all_agents
+    results = run_all_agents()
+    total = sum(results.values())
+    messages.success(request, f"Agents termines : {results.get('info',0)} infos, {results.get('promo',0)} promos, {results.get('nouveaute',0)} nouveautes ({total} total)")
+    return redirect('rubriques_index')
 
 
 @login_required
