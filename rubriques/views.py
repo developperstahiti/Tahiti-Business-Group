@@ -160,13 +160,23 @@ def moderation_dashboard(request):
 
 @login_required
 def run_agents_view(request):
-    """Lance les agents de scraping — admin only."""
+    """Lance les agents de scraping en arriere-plan — admin only."""
     if not request.user.is_staff:
         raise Http404
+    import threading
     from .agents import run_all_agents
-    results = run_all_agents()
-    total = sum(results.values())
-    messages.success(request, f"Agents termines : {results.get('info',0)} infos, {results.get('promo',0)} promos, {results.get('nouveaute',0)} nouveautes ({total} total)")
+
+    def _run():
+        try:
+            import django
+            django.db.connections.close_all()
+            run_all_agents()
+        except Exception:
+            import logging
+            logging.getLogger('rubriques.agents').exception("Erreur agent background")
+
+    threading.Thread(target=_run, daemon=True).start()
+    messages.success(request, "Agents lances en arriere-plan. Rafraichissez la page dans ~30 secondes pour voir les nouveaux articles.")
     return redirect('rubriques_index')
 
 
