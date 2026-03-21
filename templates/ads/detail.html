@@ -87,6 +87,13 @@
           <span class="fav-icon">♡</span>
           <span class="fav-label">Favoris</span>
         </button>
+        <!-- Partager -->
+        <button onclick="shareAnnonce()" id="share-btn"
+                class="inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2.5 hover:bg-gray-100 transition"
+                aria-label="Partager l'annonce">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Partager
+        </button>
         <!-- Signaler -->
         <a href="{% url 'signaler_annonce' annonce.pk %}"
            class="inline-flex items-center gap-1.5 border border-red-200 text-red-500 text-xs font-semibold px-4 py-2.5 hover:border-red-400 hover:text-red-700 transition ml-auto">
