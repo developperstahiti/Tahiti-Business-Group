@@ -1,10 +1,11 @@
 """
 Agents automatiques de scraping pour les rubriques TBG.
 
-Scrape des sources polynesiennes et publie directement
-dans ArticleInfo, ArticlePromo, ArticleNouveaute.
+Scrape des sources polynesiennes, analyse le contenu pour le trier
+automatiquement en Promo, Info ou Nouveaute, puis publie.
 """
 import logging
+import re
 import requests
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
@@ -14,9 +15,9 @@ logger = logging.getLogger('rubriques.agents')
 
 User = get_user_model()
 
-# ── Sources par type de rubrique ──────────────────────────────────────────────
+# ── Sources a scraper (toutes melangees, le tri se fait apres) ────────────────
 
-SOURCES_INFO = [
+SOURCES = [
     {
         'name': 'Radio1',
         'url': 'https://www.radio1.pf/',
@@ -29,9 +30,6 @@ SOURCES_INFO = [
         'mode': 'heading_links',
         'exclude_patterns': ['/agenda/', '/annuaire/', '/404'],
     },
-]
-
-SOURCES_PROMO = [
     {
         'name': 'Tahiti Infos Eco',
         'url': 'https://www.tahiti-infos.com/Economie_r4.html',
@@ -40,21 +38,79 @@ SOURCES_PROMO = [
     },
 ]
 
-SOURCES_NOUVEAUTE = [
-    {
-        'name': 'Radio1 Actu',
-        'url': 'https://www.radio1.pf/category/actus/',
-        'mode': 'heading_links',
-        'exclude_patterns': ['/event/', '/category/', '/page/', '/tag/'],
-    },
-]
-
 MAX_ARTICLES_PER_SOURCE = 5
+MAX_TOTAL = 15
 REQUEST_TIMEOUT = 15
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (compatible; TBG-Bot/1.0; +https://www.tahitibusinessgroup.com)',
     'Accept-Language': 'fr-FR,fr;q=0.9',
 }
+
+# ── Mots-cles pour le tri automatique ─────────────────────────────────────────
+
+PROMO_KEYWORDS = [
+    # Prix et reductions
+    r'-\d+\s*%', r'\d+\s*%\s*(de\s+)?(reduction|remise|rabais)',
+    r'promo', r'promotion', r'solde', r'destockage',
+    r'bon\s+plan', r'bons?\s+plans?', r'offre\s+speciale',
+    r'prix\s+(casse|choc|bas|reduit|exceptionnel)',
+    r'gratuit', r'offert', r'cadeau',
+    r'reduction', r'remise', r'rabais', r'ristourne',
+    r'moins\s+cher', r'economisez', r'profitez',
+    # Commerce
+    r'xpf', r'\d[\s\xa0]*\d{3}\s*(f|fcfp|xpf)',
+    r'vente\s+flash', r'black\s*friday', r'french\s*days',
+    r'liquidation', r'fin\s+de\s+serie',
+    r'code\s+promo', r'coupon', r'voucher',
+]
+
+NOUVEAUTE_KEYWORDS = [
+    # Ouvertures et lancements
+    r'ouverture', r'inaugur', r'lance(ment)?',
+    r'nouveau(x|te|tes)?', r'nouvelle', r'innov',
+    r'ouvre\s+ses?\s+portes?',
+    # Entreprises et business
+    r'start-?up', r'entreprise\s+(cree|lance|ouvre)',
+    r'investiss', r'partenariat', r'franchise',
+    r'chiffre\s+d.affaires', r'croissance',
+    r'developpement\s+(economique|durable)',
+    # Services et infra
+    r'fibre\s+optique', r'5g', r'numerique',
+    r'application\s+(mobile|web)',
+    r'service\s+(public|nouveau|lance)',
+    r'transport\s+(aerien|maritime)',
+    r'vol\s+(direct|inaugural)', r'liaison\s+(aerienne|maritime)',
+    r'hotel|resort|pension|bungalow',
+    r'tourisme', r'visiteurs',
+    r'restaurant|cafe|brasserie',
+]
+
+# Tout ce qui ne matche ni promo ni nouveaute => Info (actualite generale)
+
+
+def _classify_article(title, content):
+    """Classe un article en 'promo', 'nouveaute' ou 'info' selon son contenu."""
+    text = f"{title} {content[:1500]}".lower()
+
+    # Compter les matches pour chaque categorie
+    promo_score = 0
+    for pattern in PROMO_KEYWORDS:
+        if re.search(pattern, text, re.IGNORECASE):
+            promo_score += 1
+
+    nouveaute_score = 0
+    for pattern in NOUVEAUTE_KEYWORDS:
+        if re.search(pattern, text, re.IGNORECASE):
+            nouveaute_score += 1
+
+    # Seuils : il faut au moins 2 mots-cles pour etre classe
+    if promo_score >= 2 and promo_score > nouveaute_score:
+        return 'promo'
+    if nouveaute_score >= 2 and nouveaute_score > promo_score:
+        return 'nouveaute'
+
+    # Par defaut => info (actualite)
+    return 'info'
 
 
 def download_and_save_photo(image_url, prefix='agent'):
@@ -146,7 +202,7 @@ def scrape_links(source):
 
             if href not in seen_urls:
                 seen_urls.add(href)
-                links.append({'url': href, 'title': title})
+                links.append({'url': href, 'title': title, 'source': source['name']})
     else:
         selector = source.get('selector', 'a')
         for a_tag in soup.select(selector)[:20]:
@@ -165,7 +221,7 @@ def scrape_links(source):
 
             if href not in seen_urls:
                 seen_urls.add(href)
-                links.append({'url': href, 'title': title})
+                links.append({'url': href, 'title': title, 'source': source['name']})
 
     logger.info(f"[{source['name']}] {len(links)} liens trouves")
     return links[:MAX_ARTICLES_PER_SOURCE]
@@ -206,10 +262,9 @@ def scrape_article_content(url):
     # Fallback: texte brut
     if not paragraphs and content_el:
         raw = content_el.get_text(separator='\n', strip=True)
-        # Garder les lignes de plus de 30 chars
         paragraphs = [line for line in raw.split('\n') if len(line.strip()) > 30]
 
-    content = '\n\n'.join(paragraphs[:15])  # Max 15 paragraphes
+    content = '\n\n'.join(paragraphs[:15])
 
     # Trouver une image (og:image en priorite)
     img = None
@@ -228,74 +283,67 @@ def scrape_article_content(url):
     return content, img
 
 
-def run_info_agent(dry_run=False):
-    """Agent Info: scrape les actualites polynesiennes."""
-    from .models import ArticleInfo
+def _is_duplicate(url):
+    """Verifie si l'URL existe deja dans n'importe quelle rubrique."""
+    from .models import ArticleInfo, ArticlePromo, ArticleNouveaute
+    return (
+        ArticleInfo.objects.filter(source_media=url).exists()
+        or ArticlePromo.objects.filter(lien_promo=url).exists()
+        or ArticleNouveaute.objects.filter(lien_redirection=url).exists()
+    )
+
+
+def run_all_agents(dry_run=False):
+    """Scrape toutes les sources, analyse et trie chaque article."""
+    from .models import ArticleInfo, ArticlePromo, ArticleNouveaute
+
     bot = get_or_create_bot_user()
-    created_count = 0
+    results = {'info': 0, 'promo': 0, 'nouveaute': 0}
+    total = 0
 
-    for source in SOURCES_INFO:
+    # 1. Collecter tous les liens de toutes les sources
+    all_links = []
+    for source in SOURCES:
         links = scrape_links(source)
-        for link in links:
-            if ArticleInfo.objects.filter(source_media=link['url']).exists():
-                continue
+        all_links.extend(links)
 
-            if dry_run:
-                logger.info(f"[DRY RUN] Info: {link['title'][:60]}")
-                created_count += 1
-                if created_count >= MAX_ARTICLES_PER_SOURCE:
-                    break
-                continue
+    # Dedupliquer par URL
+    seen = set()
+    unique_links = []
+    for link in all_links:
+        if link['url'] not in seen:
+            seen.add(link['url'])
+            unique_links.append(link)
 
-            content, photo_url = scrape_article_content(link['url'])
-            if not content or len(content) < 100:
-                logger.warning(f"[Info] Contenu trop court, ignore: {link['url']}")
-                continue
+    logger.info(f"Total: {len(unique_links)} liens uniques")
 
-            saved_photo = download_and_save_photo(photo_url, f'info_{created_count}')
+    # 2. Traiter chaque article
+    for link in unique_links:
+        if total >= MAX_TOTAL:
+            break
 
-            ArticleInfo.objects.create(
-                auteur=bot,
-                titre=link['title'][:200],
-                contenu=content,
-                photo=saved_photo,
-                source_media=link['url'],
-                statut='valide',
-            )
-            created_count += 1
-            logger.info(f"[Info] Publie: {link['title'][:60]}")
+        # Anti-doublon global (cherche dans les 3 tables)
+        if _is_duplicate(link['url']):
+            continue
 
-            if created_count >= MAX_ARTICLES_PER_SOURCE:
-                break
+        if dry_run:
+            logger.info(f"[DRY RUN] {link['title'][:60]} | {link['url'][:60]}")
+            total += 1
+            continue
 
-    return created_count
+        # Scraper le contenu complet
+        content, photo_url = scrape_article_content(link['url'])
+        if not content or len(content) < 100:
+            continue
 
+        # Classifier l'article
+        category = _classify_article(link['title'], content)
 
-def run_promo_agent(dry_run=False):
-    """Agent Promo: scrape les actus economiques."""
-    from .models import ArticlePromo
-    bot = get_or_create_bot_user()
-    created_count = 0
+        # Telecharger la photo
+        saved_photo = download_and_save_photo(photo_url, f'{category}_{results[category]}')
 
-    for source in SOURCES_PROMO:
-        links = scrape_links(source)
-        for link in links:
-            if ArticlePromo.objects.filter(lien_promo=link['url']).exists():
-                continue
-
-            if dry_run:
-                logger.info(f"[DRY RUN] Promo: {link['title'][:60]}")
-                created_count += 1
-                if created_count >= MAX_ARTICLES_PER_SOURCE:
-                    break
-                continue
-
-            content, photo_url = scrape_article_content(link['url'])
-            if not content or len(content) < 50:
-                continue
-
-            saved_photo = download_and_save_photo(photo_url, f'promo_{created_count}')
-
+        # Publier dans la bonne rubrique
+        if category == 'promo':
             ArticlePromo.objects.create(
                 pro_user=bot,
                 titre=link['title'][:200],
@@ -304,40 +352,7 @@ def run_promo_agent(dry_run=False):
                 lien_promo=link['url'],
                 statut='valide',
             )
-            created_count += 1
-            logger.info(f"[Promo] Publie: {link['title'][:60]}")
-
-            if created_count >= MAX_ARTICLES_PER_SOURCE:
-                break
-
-    return created_count
-
-
-def run_nouveaute_agent(dry_run=False):
-    """Agent Nouveaute: scrape les infos locales."""
-    from .models import ArticleNouveaute
-    bot = get_or_create_bot_user()
-    created_count = 0
-
-    for source in SOURCES_NOUVEAUTE:
-        links = scrape_links(source)
-        for link in links:
-            if ArticleNouveaute.objects.filter(lien_redirection=link['url']).exists():
-                continue
-
-            if dry_run:
-                logger.info(f"[DRY RUN] Nouveaute: {link['title'][:60]}")
-                created_count += 1
-                if created_count >= MAX_ARTICLES_PER_SOURCE:
-                    break
-                continue
-
-            content, photo_url = scrape_article_content(link['url'])
-            if not content or len(content) < 50:
-                continue
-
-            saved_photo = download_and_save_photo(photo_url, f'nouv_{created_count}')
-
+        elif category == 'nouveaute':
             ArticleNouveaute.objects.create(
                 pro_user=bot,
                 titre=link['title'][:200],
@@ -346,19 +361,19 @@ def run_nouveaute_agent(dry_run=False):
                 lien_redirection=link['url'],
                 statut='valide',
             )
-            created_count += 1
-            logger.info(f"[Nouveaute] Publie: {link['title'][:60]}")
+        else:  # info
+            ArticleInfo.objects.create(
+                auteur=bot,
+                titre=link['title'][:200],
+                contenu=content,
+                photo=saved_photo,
+                source_media=link['url'],
+                statut='valide',
+            )
 
-            if created_count >= MAX_ARTICLES_PER_SOURCE:
-                break
+        results[category] += 1
+        total += 1
+        logger.info(f"[{category.upper()}] {link['title'][:60]}")
 
-    return created_count
-
-
-def run_all_agents(dry_run=False):
-    """Lance les 3 agents sequentiellement."""
-    results = {}
-    results['info'] = run_info_agent(dry_run=dry_run)
-    results['promo'] = run_promo_agent(dry_run=dry_run)
-    results['nouveaute'] = run_nouveaute_agent(dry_run=dry_run)
+    logger.info(f"Termine: {results} (total={total})")
     return results
