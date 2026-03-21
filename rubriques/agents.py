@@ -98,9 +98,9 @@ def _build_sources():
     return sources
 
 
-MAX_ARTICLES_PER_PAGE = 30  # Max liens par page source
-MAX_TOTAL = 100             # Max articles publies par execution
-REQUEST_TIMEOUT = 15
+MAX_ARTICLES_PER_PAGE = 20  # Max liens par page source
+MAX_TOTAL = 5               # Max articles publies par clic (leger et rapide)
+REQUEST_TIMEOUT = 10
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept-Language': 'fr-FR,fr;q=0.9',
@@ -327,84 +327,71 @@ def _is_duplicate(url):
 
 
 def run_all_agents(dry_run=False):
-    """Scrape toutes les sources polynesiennes, analyse et trie chaque article."""
+    """Scrape les sources une par une, s'arrete des que MAX_TOTAL articles sont publies."""
     from .models import ArticleInfo, ArticlePromo, ArticleNouveaute
+    import random
 
     bot = get_or_create_bot_user()
     results = {'info': 0, 'promo': 0, 'nouveaute': 0}
     total = 0
-    skipped = 0
 
     sources = _build_sources()
-    logger.info(f"Demarrage: {len(sources)} pages a scraper")
+    # Melanger pour varier les sources a chaque clic
+    random.shuffle(sources)
 
-    # 1. Collecter tous les liens
-    all_links = []
-    seen = set()
     for source in sources:
-        if total + len(all_links) - skipped >= MAX_TOTAL * 3:
-            break  # Assez de liens collectes
-
-        links = scrape_links(source)
-        for link in links:
-            if link['url'] not in seen:
-                seen.add(link['url'])
-                all_links.append(link)
-
-    logger.info(f"Total: {len(all_links)} liens uniques collectes")
-
-    # 2. Traiter chaque article
-    for link in all_links:
         if total >= MAX_TOTAL:
             break
 
-        if _is_duplicate(link['url']):
-            skipped += 1
-            continue
+        links = scrape_links(source)
+        for link in links:
+            if total >= MAX_TOTAL:
+                break
 
-        if dry_run:
+            if _is_duplicate(link['url']):
+                continue
+
+            if dry_run:
+                total += 1
+                continue
+
+            content, photo_url = scrape_article_content(link['url'])
+            if not content or len(content) < 100:
+                continue
+
+            category = _classify_article(link['title'], content)
+            saved_photo = download_and_save_photo(photo_url, f'{category}_{results[category]}')
+
+            if category == 'promo':
+                ArticlePromo.objects.create(
+                    pro_user=bot,
+                    titre=link['title'][:200],
+                    contenu=content,
+                    photo=saved_photo,
+                    lien_promo=link['url'],
+                    statut='valide',
+                )
+            elif category == 'nouveaute':
+                ArticleNouveaute.objects.create(
+                    pro_user=bot,
+                    titre=link['title'][:200],
+                    contenu=content,
+                    photo=saved_photo,
+                    lien_redirection=link['url'],
+                    statut='valide',
+                )
+            else:
+                ArticleInfo.objects.create(
+                    auteur=bot,
+                    titre=link['title'][:200],
+                    contenu=content,
+                    photo=saved_photo,
+                    source_media=link['url'],
+                    statut='valide',
+                )
+
+            results[category] += 1
             total += 1
-            continue
 
-        content, photo_url = scrape_article_content(link['url'])
-        if not content or len(content) < 100:
-            continue
-
-        category = _classify_article(link['title'], content)
-        saved_photo = download_and_save_photo(photo_url, f'{category}_{results[category]}')
-
-        if category == 'promo':
-            ArticlePromo.objects.create(
-                pro_user=bot,
-                titre=link['title'][:200],
-                contenu=content,
-                photo=saved_photo,
-                lien_promo=link['url'],
-                statut='valide',
-            )
-        elif category == 'nouveaute':
-            ArticleNouveaute.objects.create(
-                pro_user=bot,
-                titre=link['title'][:200],
-                contenu=content,
-                photo=saved_photo,
-                lien_redirection=link['url'],
-                statut='valide',
-            )
-        else:
-            ArticleInfo.objects.create(
-                auteur=bot,
-                titre=link['title'][:200],
-                contenu=content,
-                photo=saved_photo,
-                source_media=link['url'],
-                statut='valide',
-            )
-
-        results[category] += 1
-        total += 1
-        if total % 10 == 0:
-            logger.info(f"Progression: {total} articles publies...")
-
-    logger.info(f"Termine: {results} (total={total}, doublons ignores={skipped})")
+    logger.info(f"Termine: {results} (total={total})")
     return results
