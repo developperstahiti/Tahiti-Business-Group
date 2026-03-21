@@ -150,6 +150,9 @@ EMAIL_HOST_PASSWORD = config('BREVO_API_KEY', default='')
 DEFAULT_FROM_EMAIL = 'Tahiti Business Group <noreply@tahitibusinessgroup.com>'
 SERVER_EMAIL = 'noreply@tahitibusinessgroup.com'
 
+# ── Anthropic (Claude AI) ──
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+
 # ── AWS S3 (stockage persistant sur Railway) ──────────────────────────────────
 # Variables à ajouter dans Railway → Settings → Variables :
 #   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME, AWS_S3_REGION_NAME
