@@ -1,8 +1,9 @@
 """
 Agents automatiques de scraping pour les rubriques TBG.
 
-Scrape des sources polynesiennes, analyse le contenu pour le trier
-automatiquement en Promo, Info ou Nouveaute, puis publie.
+Scrape TOUTES les sources polynesiennes (avec pagination pour remonter
+jusqu'a 2 mois), analyse le contenu pour le trier automatiquement
+en Promo, Info ou Nouveaute, puis publie.
 """
 import logging
 import re
@@ -15,34 +16,93 @@ logger = logging.getLogger('rubriques.agents')
 
 User = get_user_model()
 
-# ── Sources a scraper (toutes melangees, le tri se fait apres) ────────────────
+# ── TOUTES les sources polynesiennes avec pagination ──────────────────────────
+# Chaque source a une liste de pages a scraper pour couvrir ~2 mois d'articles
 
-SOURCES = [
-    {
-        'name': 'Radio1',
-        'url': 'https://www.radio1.pf/',
-        'mode': 'heading_links',
-        'exclude_patterns': ['/event/', '/category/', '/page/', '/tag/'],
-    },
-    {
-        'name': 'Tahiti Infos',
-        'url': 'https://www.tahiti-infos.com/',
-        'mode': 'heading_links',
-        'exclude_patterns': ['/agenda/', '/annuaire/', '/404'],
-    },
-    {
+def _build_sources():
+    """Genere la liste complete des sources avec pages paginatees."""
+    sources = []
+
+    # ── Radio1 (WordPress, ~16 articles/page) ──
+    # 10 pages x 16 = ~160 articles (~2 mois)
+    for page in range(1, 11):
+        if page == 1:
+            url = 'https://www.radio1.pf/category/actus/'
+        else:
+            url = f'https://www.radio1.pf/category/actus/page/{page}/'
+        sources.append({
+            'name': f'Radio1 p{page}',
+            'url': url,
+            'mode': 'heading_links',
+            'exclude_patterns': ['/event/', '/category/', '/page/', '/tag/'],
+        })
+
+    # ── Tahiti Infos (accueil + pages, ~40 articles/page) ──
+    # 5 pages x 40 = ~200 articles (~2 mois)
+    for page in range(1, 6):
+        if page == 1:
+            url = 'https://www.tahiti-infos.com/'
+        else:
+            url = f'https://www.tahiti-infos.com/?page={page}'
+        sources.append({
+            'name': f'Tahiti Infos p{page}',
+            'url': url,
+            'mode': 'heading_links',
+            'exclude_patterns': ['/agenda/', '/annuaire/', '/404'],
+        })
+
+    # ── Tahiti Infos Economie ──
+    sources.append({
         'name': 'Tahiti Infos Eco',
         'url': 'https://www.tahiti-infos.com/Economie_r4.html',
         'mode': 'heading_links',
         'exclude_patterns': ['/404'],
-    },
-]
+    })
 
-MAX_ARTICLES_PER_SOURCE = 5
-MAX_TOTAL = 15
+    # ── Tahiti News (WordPress, ~15 articles/page) ──
+    # 8 pages x 15 = ~120 articles (~2 mois)
+    for page in range(1, 9):
+        if page == 1:
+            url = 'https://tahitinews.co/'
+        else:
+            url = f'https://tahitinews.co/page/{page}/'
+        sources.append({
+            'name': f'TahitiNews p{page}',
+            'url': url,
+            'mode': 'heading_links',
+            'exclude_patterns': ['/category/', '/tag/', '/page/'],
+        })
+
+    # ── Outremers360 Pacifique (~20 articles/page) ──
+    # 5 pages x 20 = ~100 articles (~2 mois Pacifique)
+    for page in range(1, 6):
+        if page == 1:
+            url = 'https://outremers360.com/bassin-pacifique'
+        else:
+            url = f'https://outremers360.com/bassin-pacifique/page/{page}'
+        sources.append({
+            'name': f'Outremers360 p{page}',
+            'url': url,
+            'mode': 'heading_links',
+            'exclude_patterns': ['/category/', '/tag/', '/page/', '/author/'],
+        })
+
+    # ── Polynesie 1ere (France TV) ──
+    sources.append({
+        'name': 'Polynesie 1ere',
+        'url': 'https://la1ere.francetvinfo.fr/polynesie/',
+        'mode': 'heading_links',
+        'exclude_patterns': ['/replay/', '/programme/', '/direct/'],
+    })
+
+    return sources
+
+
+MAX_ARTICLES_PER_PAGE = 30  # Max liens par page source
+MAX_TOTAL = 100             # Max articles publies par execution
 REQUEST_TIMEOUT = 15
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (compatible; TBG-Bot/1.0; +https://www.tahitibusinessgroup.com)',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept-Language': 'fr-FR,fr;q=0.9',
 }
 
@@ -58,10 +118,11 @@ PROMO_KEYWORDS = [
     r'reduction', r'remise', r'rabais', r'ristourne',
     r'moins\s+cher', r'economisez', r'profitez',
     # Commerce
-    r'xpf', r'\d[\s\xa0]*\d{3}\s*(f|fcfp|xpf)',
     r'vente\s+flash', r'black\s*friday', r'french\s*days',
     r'liquidation', r'fin\s+de\s+serie',
     r'code\s+promo', r'coupon', r'voucher',
+    r'tarif\s+(preferen|reduit|promo)',
+    r'exclu(sif|sivit)', r'limite',
 ]
 
 NOUVEAUTE_KEYWORDS = [
@@ -83,16 +144,18 @@ NOUVEAUTE_KEYWORDS = [
     r'hotel|resort|pension|bungalow',
     r'tourisme', r'visiteurs',
     r'restaurant|cafe|brasserie',
+    # Projets et amenagement
+    r'chantier', r'travaux', r'amenagement',
+    r'projet\s+(urbain|immobilier|public)',
+    r'construction', r'renovation',
+    r'energie\s+(solaire|renouvelable|eolien)',
 ]
-
-# Tout ce qui ne matche ni promo ni nouveaute => Info (actualite generale)
 
 
 def _classify_article(title, content):
     """Classe un article en 'promo', 'nouveaute' ou 'info' selon son contenu."""
-    text = f"{title} {content[:1500]}".lower()
+    text = f"{title} {content[:2000]}".lower()
 
-    # Compter les matches pour chaque categorie
     promo_score = 0
     for pattern in PROMO_KEYWORDS:
         if re.search(pattern, text, re.IGNORECASE):
@@ -103,13 +166,11 @@ def _classify_article(title, content):
         if re.search(pattern, text, re.IGNORECASE):
             nouveaute_score += 1
 
-    # Seuils : il faut au moins 2 mots-cles pour etre classe
     if promo_score >= 2 and promo_score > nouveaute_score:
         return 'promo'
     if nouveaute_score >= 2 and nouveaute_score > promo_score:
         return 'nouveaute'
 
-    # Par defaut => info (actualite)
     return 'info'
 
 
@@ -122,7 +183,6 @@ def download_and_save_photo(image_url, prefix='agent'):
         resp.raise_for_status()
         content_type = resp.headers.get('Content-Type', '')
         if 'image' not in content_type and not image_url.lower().endswith(('.jpg', '.jpeg', '.png', '.webp', '.gif')):
-            logger.warning(f"Pas une image: {content_type} | {image_url[:80]}")
             return ''
         from io import BytesIO
         from ads.image_utils import save_webp
@@ -130,10 +190,9 @@ def download_and_save_photo(image_url, prefix='agent'):
         img_data.name = 'download.jpg'
         img_data.size = len(resp.content)
         url = save_webp(img_data, 'rubriques', prefix)
-        logger.info(f"Photo sauvegardee: {url[:80]}")
         return url
     except Exception as e:
-        logger.warning(f"Erreur download photo {image_url[:60]}: {e}")
+        logger.warning(f"Erreur photo {image_url[:50]}: {e}")
         return ''
 
 
@@ -177,54 +236,33 @@ def scrape_links(source):
     seen_urls = set()
     exclude = source.get('exclude_patterns', [])
 
-    if source.get('mode') == 'heading_links':
-        for heading in soup.select('h2, h3, h4'):
-            a_tag = heading.find('a')
-            if not a_tag:
-                a_tag = heading.find_parent('a')
-            if not a_tag:
-                continue
+    for heading in soup.select('h2, h3, h4'):
+        a_tag = heading.find('a')
+        if not a_tag:
+            a_tag = heading.find_parent('a')
+        if not a_tag:
+            continue
 
-            href = a_tag.get('href', '')
-            if not href or href == '#':
-                continue
+        href = a_tag.get('href', '')
+        if not href or href == '#':
+            continue
 
-            href = urljoin(source['url'], href)
-            if not href.startswith('http'):
-                continue
+        href = urljoin(source['url'], href)
+        if not href.startswith('http'):
+            continue
 
-            if any(pat in href for pat in exclude):
-                continue
+        if any(pat in href for pat in exclude):
+            continue
 
-            title = heading.get_text(strip=True)
-            if not title or len(title) < 15:
-                continue
+        title = heading.get_text(strip=True)
+        if not title or len(title) < 15:
+            continue
 
-            if href not in seen_urls:
-                seen_urls.add(href)
-                links.append({'url': href, 'title': title, 'source': source['name']})
-    else:
-        selector = source.get('selector', 'a')
-        for a_tag in soup.select(selector)[:20]:
-            href = a_tag.get('href', '')
-            if not href or href == '#':
-                continue
-            href = urljoin(source['url'], href)
-            if not href.startswith('http'):
-                continue
-            if any(pat in href for pat in exclude):
-                continue
+        if href not in seen_urls:
+            seen_urls.add(href)
+            links.append({'url': href, 'title': title, 'source': source['name']})
 
-            title = a_tag.get_text(strip=True)
-            if not title or len(title) < 15:
-                continue
-
-            if href not in seen_urls:
-                seen_urls.add(href)
-                links.append({'url': href, 'title': title, 'source': source['name']})
-
-    logger.info(f"[{source['name']}] {len(links)} liens trouves")
-    return links[:MAX_ARTICLES_PER_SOURCE]
+    return links[:MAX_ARTICLES_PER_PAGE]
 
 
 def scrape_article_content(url):
@@ -239,11 +277,9 @@ def scrape_article_content(url):
 
     soup = BeautifulSoup(resp.text, 'html.parser')
 
-    # Supprimer les scripts, styles, nav, footer
-    for tag in soup.select('script, style, nav, footer, header, aside, .sidebar, .menu, .ad'):
+    for tag in soup.select('script, style, nav, footer, header, aside, .sidebar, .menu, .ad, .comments'):
         tag.decompose()
 
-    # Chercher le contenu principal
     content_el = soup.select_one(
         'article, .article-content, .entry-content, .post-content, '
         '.content, main, .main-content, #content'
@@ -251,7 +287,6 @@ def scrape_article_content(url):
     if not content_el:
         content_el = soup.body
 
-    # Extraire les paragraphes proprement
     paragraphs = []
     if content_el:
         for p in content_el.select('p'):
@@ -259,14 +294,12 @@ def scrape_article_content(url):
             if len(text) > 30:
                 paragraphs.append(text)
 
-    # Fallback: texte brut
     if not paragraphs and content_el:
         raw = content_el.get_text(separator='\n', strip=True)
         paragraphs = [line for line in raw.split('\n') if len(line.strip()) > 30]
 
     content = '\n\n'.join(paragraphs[:15])
 
-    # Trouver une image (og:image en priorite)
     img = None
     og_image = soup.select_one('meta[property="og:image"]')
     if og_image and og_image.get('content'):
@@ -294,55 +327,52 @@ def _is_duplicate(url):
 
 
 def run_all_agents(dry_run=False):
-    """Scrape toutes les sources, analyse et trie chaque article."""
+    """Scrape toutes les sources polynesiennes, analyse et trie chaque article."""
     from .models import ArticleInfo, ArticlePromo, ArticleNouveaute
 
     bot = get_or_create_bot_user()
     results = {'info': 0, 'promo': 0, 'nouveaute': 0}
     total = 0
+    skipped = 0
 
-    # 1. Collecter tous les liens de toutes les sources
+    sources = _build_sources()
+    logger.info(f"Demarrage: {len(sources)} pages a scraper")
+
+    # 1. Collecter tous les liens
     all_links = []
-    for source in SOURCES:
-        links = scrape_links(source)
-        all_links.extend(links)
-
-    # Dedupliquer par URL
     seen = set()
-    unique_links = []
-    for link in all_links:
-        if link['url'] not in seen:
-            seen.add(link['url'])
-            unique_links.append(link)
+    for source in sources:
+        if total + len(all_links) - skipped >= MAX_TOTAL * 3:
+            break  # Assez de liens collectes
 
-    logger.info(f"Total: {len(unique_links)} liens uniques")
+        links = scrape_links(source)
+        for link in links:
+            if link['url'] not in seen:
+                seen.add(link['url'])
+                all_links.append(link)
+
+    logger.info(f"Total: {len(all_links)} liens uniques collectes")
 
     # 2. Traiter chaque article
-    for link in unique_links:
+    for link in all_links:
         if total >= MAX_TOTAL:
             break
 
-        # Anti-doublon global (cherche dans les 3 tables)
         if _is_duplicate(link['url']):
+            skipped += 1
             continue
 
         if dry_run:
-            logger.info(f"[DRY RUN] {link['title'][:60]} | {link['url'][:60]}")
             total += 1
             continue
 
-        # Scraper le contenu complet
         content, photo_url = scrape_article_content(link['url'])
         if not content or len(content) < 100:
             continue
 
-        # Classifier l'article
         category = _classify_article(link['title'], content)
-
-        # Telecharger la photo
         saved_photo = download_and_save_photo(photo_url, f'{category}_{results[category]}')
 
-        # Publier dans la bonne rubrique
         if category == 'promo':
             ArticlePromo.objects.create(
                 pro_user=bot,
@@ -361,7 +391,7 @@ def run_all_agents(dry_run=False):
                 lien_redirection=link['url'],
                 statut='valide',
             )
-        else:  # info
+        else:
             ArticleInfo.objects.create(
                 auteur=bot,
                 titre=link['title'][:200],
@@ -373,7 +403,8 @@ def run_all_agents(dry_run=False):
 
         results[category] += 1
         total += 1
-        logger.info(f"[{category.upper()}] {link['title'][:60]}")
+        if total % 10 == 0:
+            logger.info(f"Progression: {total} articles publies...")
 
-    logger.info(f"Termine: {results} (total={total})")
+    logger.info(f"Termine: {results} (total={total}, doublons ignores={skipped})")
     return results
