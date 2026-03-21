@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f8fafc;padding:20px">
+  <div style="max-width:500px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;border:1px solid #e2e8f0">
+    <div style="text-align:center;margin-bottom:24px">
+      <h1 style="color:#1e293b;font-size:20px;margin:0">Tahiti Business Group</h1>
+    </div>
+    <p style="color:#475569;font-size:14px;line-height:1.6">Bonjour {{ nom }},</p>
+    <p style="color:#475569;font-size:14px;line-height:1.6">
+      Votre annonce <strong>"{{ annonce_titre }}"</strong> est maintenant en ligne !
+    </p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:16px;margin:16px 0">
+      <p style="color:#166534;font-size:13px;margin:0">
+        <strong>{{ annonce_titre }}</strong><br>
+        Catégorie : {{ categorie }}<br>
+        Prix : {{ prix }}
+      </p>
+    </div>
+    <div style="text-align:center;margin:24px 0">
+      <a href="https://www.tahitibusinessgroup.com/annonces/{{ annonce_pk }}/"
+         style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px;display:inline-block">
+        Voir mon annonce
+      </a>
+    </div>
+    <p style="color:#475569;font-size:13px;line-height:1.6">
+      Boostez votre annonce pour plus de visibilité ! Les annonces boostées apparaissent en priorité dans les résultats.
+    </p>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">
+    <p style="color:#94a3b8;font-size:11px;text-align:center">
+      © 2026 Tahiti Business Group — Polynésie française
+    </p>
+  </div>
+</body>
+</html>

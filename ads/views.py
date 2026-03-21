@@ -359,6 +359,29 @@ def deposer_annonce(request):
                 except Exception:
                     pass
 
+            # Email de confirmation de publication
+            try:
+                from django.template.loader import render_to_string
+                from django.utils.html import strip_tags
+
+                html_msg = render_to_string('emails/annonce_publiee.html', {
+                    'nom': request.user.nom or 'membre',
+                    'annonce_titre': annonce.titre,
+                    'categorie': annonce.get_categorie_display(),
+                    'prix': annonce.get_prix_display_label(),
+                    'annonce_pk': annonce.pk,
+                })
+                send_mail(
+                    subject=f'Votre annonce "{annonce.titre}" est en ligne sur TBG',
+                    message=strip_tags(html_msg),
+                    from_email=None,
+                    recipient_list=[request.user.email],
+                    html_message=html_msg,
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+
             if boost_duree in ('7jours', '1mois'):
                 messages.success(request, "Annonce publiée ! Votre demande de boost a bien été envoyée — notre équipe vous contactera pour le paiement.")
             else:
@@ -510,26 +533,27 @@ def contact_annonce(request, pk):
             to_user=to_user,
             content=content,
         )
-        # Email notification to the ad owner
+        # Email notification au vendeur
         try:
+            from django.template.loader import render_to_string
+            from django.utils.html import strip_tags
+
+            html_msg = render_to_string('emails/nouveau_message.html', {
+                'vendeur_nom': annonce.user.nom or 'vendeur',
+                'annonce_titre': annonce.titre,
+                'acheteur_nom': msg.from_user.nom or msg.from_user.email,
+                'message_preview': msg.content[:60] + ('...' if len(msg.content) > 60 else ''),
+            })
             send_mail(
                 subject=f'Nouveau message pour votre annonce "{annonce.titre}" — TBG',
-                message=(
-                    f'Bonjour {annonce.user.nom or ""},\n\n'
-                    f'Vous avez reçu un nouveau message pour votre annonce '
-                    f'"{annonce.titre}" sur Tahiti Business Group.\n\n'
-                    f'De : {msg.from_user.nom or msg.from_user.email}\n'
-                    f'Message : {msg.content[:200]}\n\n'
-                    f'Connectez-vous pour répondre :\n'
-                    f'https://www.tahitibusinessgroup.com/mes-messages/\n\n'
-                    f'— Tahiti Business Group'
-                ),
-                from_email=django_settings.DEFAULT_FROM_EMAIL,
+                message=strip_tags(html_msg),
+                from_email=None,
                 recipient_list=[annonce.user.email],
+                html_message=html_msg,
                 fail_silently=True,
             )
         except Exception:
-            pass  # Don't break the flow if email fails
+            pass
         thread.filter(from_user=to_user, read=False).update(read=True)
         html = render_to_string(
             'partials/_message_bubble.html',

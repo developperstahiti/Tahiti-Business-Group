@@ -93,6 +93,25 @@ def register_view(request):
         else:
             login(request, user)
             messages.success(request, "Compte créé avec succès ! Bienvenue sur Tahiti Business Group.")
+            # Email de bienvenue
+            try:
+                from django.core.mail import send_mail
+                from django.template.loader import render_to_string
+                from django.utils.html import strip_tags
+
+                html_msg = render_to_string('emails/bienvenue.html', {
+                    'nom': user.nom or 'nouveau membre',
+                })
+                send_mail(
+                    subject='Bienvenue sur Tahiti Business Group !',
+                    message=strip_tags(html_msg),
+                    from_email=None,  # uses DEFAULT_FROM_EMAIL
+                    recipient_list=[user.email],
+                    html_message=html_msg,
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
             return redirect('index')
 
     return render(request, 'users/register.html', {'form': form})
