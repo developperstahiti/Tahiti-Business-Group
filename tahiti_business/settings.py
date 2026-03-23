@@ -140,20 +140,12 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# ── Email — Brevo (ex-Sendinblue) SMTP ──
-_BREVO_USER = config('BREVO_USER', default='')
-_BREVO_KEY  = config('BREVO_API_KEY', default='')
-if _BREVO_USER and _BREVO_KEY:
-    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST          = 'smtp-relay.brevo.com'
-    EMAIL_PORT          = 465
-    EMAIL_USE_SSL       = True
-    EMAIL_HOST_USER     = _BREVO_USER
-    EMAIL_HOST_PASSWORD = _BREVO_KEY
+# ── Email — Brevo API HTTP (SMTP bloque par Railway) ──
+BREVO_API_V3_KEY = config('BREVO_API_V3_KEY', default='')
+if BREVO_API_V3_KEY:
+    EMAIL_BACKEND = 'tahiti_business.brevo_backend.BrevoAPIBackend'
 else:
-    # Pas de credentials Brevo → log en console (evite le crash)
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_TIMEOUT      = 10  # secondes — evite le blocage infini
 DEFAULT_FROM_EMAIL = 'Tahiti Business Group <noreply@tahitibusinessgroup.com>'
 SERVER_EMAIL       = 'noreply@tahitibusinessgroup.com'
 
