@@ -25,6 +25,7 @@ urlpatterns = [
     path('moderer/<int:pk>/', views.moderer_annonce, name='moderer_annonce'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('supprimer-compte/', views.supprimer_compte, name='supprimer_compte'),
+    path('test-email/', views.test_email, name='test_email'),
 
     # Password reset
     path('password-reset/', SafePasswordResetView.as_view(

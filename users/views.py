@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.core import signing
 from django.conf import settings as django_settings
+from django.http import Http404, JsonResponse
 from .forms import LoginForm, RegisterForm, ProfileForm
 from ads.models import Annonce, Message
 from ads.image_utils import save_webp
@@ -236,6 +237,33 @@ def supprimer_compte(request):
         else:
             messages.error(request, "Confirmation incorrecte. Tapez SUPPRIMER pour confirmer.")
     return render(request, 'users/supprimer_compte.html')
+
+
+@login_required
+def test_email(request):
+    """Diagnostic : teste l'envoi email — admin only."""
+    if not request.user.is_staff:
+        raise Http404
+    backend = django_settings.EMAIL_BACKEND
+    host_user = getattr(django_settings, 'EMAIL_HOST_USER', '(vide)')
+    info = {
+        'backend': backend,
+        'host_user': host_user,
+        'has_password': bool(getattr(django_settings, 'EMAIL_HOST_PASSWORD', '')),
+        'timeout': getattr(django_settings, 'EMAIL_TIMEOUT', None),
+    }
+    try:
+        result = send_mail(
+            'Test Email TBG',
+            'Si tu recois cet email, Brevo fonctionne correctement sur Railway.',
+            django_settings.DEFAULT_FROM_EMAIL,
+            [request.user.email],
+            fail_silently=False,
+        )
+        info['resultat'] = f'Envoye ({result})'
+    except Exception as e:
+        info['erreur'] = f'{type(e).__name__}: {e}'
+    return JsonResponse(info)
 
 
 @login_required
