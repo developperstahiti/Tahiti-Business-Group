@@ -141,7 +141,7 @@
               <a href="{% url 'annonce_detail' annonce.pk %}" class="text-sm font-medium hover:text-accent transition truncate block">
                 {{ annonce.titre }}
               </a>
-              <div class="text-xs text-muted">{{ annonce.views }} vues • {{ annonce.created_at|date:"d/m/Y" }}</div>
+              <div class="text-xs text-muted">{{ annonce.views }} vues • {{ annonce.clics }} clics • {{ annonce.created_at|date:"d/m/Y" }}</div>
             </div>
             <span class="text-xs px-2 py-0.5 rounded-full
               {% if annonce.statut == 'actif' %}bg-green-900/50 text-green-400

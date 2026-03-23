@@ -47,7 +47,8 @@
           <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-xs text-gray-500">
             <span class="font-bold text-blue-600">{{ annonce.get_prix_display_label }}</span>
             <span>{{ annonce.localisation }}</span>
-            <span>{{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
+            <span>👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
+            <span>🖱 {{ annonce.clics }} clic{{ annonce.clics|pluralize }}</span>
           </div>
           <div class="mt-1 flex items-center gap-2">
             <span class="badge

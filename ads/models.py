@@ -108,7 +108,8 @@ class Annonce(models.Model):
     )
     boost_expires_at = models.DateTimeField(null=True, blank=True)
     verified       = models.BooleanField(default=False)
-    views          = models.PositiveIntegerField(default=0)
+    views          = models.PositiveIntegerField(default=0)  # impressions (vu a l'ecran)
+    clics          = models.PositiveIntegerField(default=0)  # clics (ouverture detail)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
 
@@ -137,8 +138,9 @@ class Annonce(models.Model):
         return self.photos[0] if self.photos else None
 
     def increment_views(self):
-        self.views += 1
-        self.save(update_fields=['views'])
+        """Ancienne methode — maintenant incremente les clics."""
+        self.clics += 1
+        self.save(update_fields=['clics'])
 
 
 class Message(models.Model):

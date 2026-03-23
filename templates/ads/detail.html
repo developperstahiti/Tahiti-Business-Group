@@ -61,6 +61,7 @@
           <span class="flex items-center gap-1.5">📦 {{ annonce.get_categorie_display }}</span>
           <span class="flex items-center gap-1.5">📍 {{ annonce.localisation }}</span>
           <span class="flex items-center gap-1.5">👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
+          <span class="flex items-center gap-1.5">🖱 {{ annonce.clics }} clic{{ annonce.clics|pluralize }}</span>
           <span class="flex items-center gap-1.5">📅 {{ annonce.created_at|date:"d/m/Y" }}</span>
         </div>
 
