@@ -599,6 +599,30 @@ def mes_messages(request):
     return render(request, 'ads/mes_messages.html', {'conversations': conversations})
 
 
+# ── Impressions (vues au scroll) ──────────────────────────────────────────
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import json
+
+
+@csrf_exempt
+@require_POST
+def track_impressions(request):
+    """Incremente les vues des annonces visibles a l'ecran (batch)."""
+    try:
+        data = json.loads(request.body)
+        ids = data.get('ids', [])
+        if not ids or not isinstance(ids, list):
+            return JsonResponse({'ok': False})
+        # Max 50 par requete pour eviter les abus
+        ids = [int(i) for i in ids[:50]]
+        from django.db.models import F
+        Annonce.objects.filter(pk__in=ids, statut='actif').update(views=F('views') + 1)
+        return JsonResponse({'ok': True, 'count': len(ids)})
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return JsonResponse({'ok': False}, status=400)
+
+
 # ── Rate limiting (session-based) ─────────────────────────────────────────
 def _rate_limited(request, action, max_count=3, period_minutes=60):
     key = f'rl_{action}'

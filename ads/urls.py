@@ -23,4 +23,5 @@ urlpatterns = [
     path('mes-alertes/<int:pk>/supprimer/', views.supprimer_alerte, name='supprimer_alerte'),
     path('mentions-legales/', views.mentions_legales, name='mentions_legales'),
     path('cgu/', views.cgu, name='cgu'),
+    path('api/impressions/', views.track_impressions, name='track_impressions'),
 ]

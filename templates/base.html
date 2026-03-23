@@ -1063,6 +1063,53 @@ function cookieConsent(choice) {
   localStorage.setItem('cookie_consent', choice);
   document.getElementById('cookie-banner').style.display = 'none';
 }
+
+/* ── Impression tracker (vues au scroll) ── */
+(function(){
+  var seen = {};
+  var queue = [];
+  var timer = null;
+
+  function flush() {
+    if (!queue.length) return;
+    var ids = queue.splice(0);
+    fetch('/api/impressions/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ids: ids})
+    }).catch(function(){});
+  }
+
+  function enqueue(id) {
+    if (seen[id]) return;
+    seen[id] = true;
+    queue.push(id);
+    clearTimeout(timer);
+    timer = setTimeout(flush, 1500);
+  }
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          var id = e.target.getAttribute('data-annonce-id');
+          if (id) enqueue(parseInt(id));
+        }
+      });
+    }, {threshold: 0.5});
+
+    function observe() {
+      document.querySelectorAll('[data-annonce-id]').forEach(function(el) {
+        if (!el.__imp) { el.__imp = true; observer.observe(el); }
+      });
+    }
+    observe();
+    /* Observer aussi apres chargement dynamique */
+    if (window.MutationObserver) {
+      new MutationObserver(observe).observe(document.body, {childList: true, subtree: true});
+    }
+  }
+})();
 </script>
 
 </body>
