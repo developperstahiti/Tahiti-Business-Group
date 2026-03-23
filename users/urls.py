@@ -1,6 +1,20 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class SafePasswordResetView(auth_views.PasswordResetView):
+    """Redirige vers 'done' meme si l'envoi SMTP echoue."""
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except Exception as e:
+            logger.error("Erreur envoi email reset: %s", e)
+            return super(auth_views.PasswordResetView, self).form_valid(form)
+
 
 urlpatterns = [
     path('login/', views.login_view, name='login'),
@@ -13,7 +27,7 @@ urlpatterns = [
     path('supprimer-compte/', views.supprimer_compte, name='supprimer_compte'),
 
     # Password reset
-    path('password-reset/', auth_views.PasswordResetView.as_view(
+    path('password-reset/', SafePasswordResetView.as_view(
         template_name='users/password_reset.html',
         html_email_template_name='emails/password_reset_email.html',
         subject_template_name='emails/password_reset_subject.txt',

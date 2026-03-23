@@ -281,9 +281,6 @@ def deposer_annonce(request):
     from .forms import AnnonceForm
 
     if request.method == 'POST':
-        if not request.user.is_staff and _rate_limited(request, 'deposer', max_count=5, period_minutes=60):
-            messages.error(request, "Limite atteinte : 5 annonces par heure maximum. Réessayez plus tard.")
-            return redirect('deposer_annonce')
         logger.info("=== DEPOSER POST === FILES keys=%s, FILES count=%s",
                     list(request.FILES.keys()),
                     sum(len(request.FILES.getlist(k)) for k in request.FILES))
