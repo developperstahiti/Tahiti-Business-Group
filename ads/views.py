@@ -222,6 +222,10 @@ def liste_annonces(request):
     if request.GET.get('photos'):
         qs = qs.exclude(photos=[])
 
+    # Filtre comptes pro uniquement
+    if request.GET.get('pro'):
+        qs = qs.filter(user__role__in=['pro', 'admin'])
+
     if tri == 'prix_asc':
         qs = qs.order_by('prix')
     elif tri == 'prix_desc':

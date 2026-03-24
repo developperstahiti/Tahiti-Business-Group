@@ -65,6 +65,11 @@
                      class="rounded border-gray-300" onchange="this.form.submit()">
               Avec photos uniquement
             </label>
+            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <input type="checkbox" name="pro" value="1" {% if request.GET.pro %}checked{% endif %}
+                     class="rounded border-gray-300" onchange="this.form.submit()">
+              Pro uniquement
+            </label>
           </div>
           <div class="flex gap-2 flex-wrap">
             <button type="submit" class="btn btn-primary text-sm">Rechercher</button>
