@@ -118,6 +118,7 @@ class Annonce(models.Model):
     verified       = models.BooleanField(default=False)
     views          = models.PositiveIntegerField(default=0)  # impressions (vu a l'ecran)
     clics          = models.PositiveIntegerField(default=0)  # clics (ouverture detail)
+    derniere_remontee = models.DateTimeField(null=True, blank=True)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
 

@@ -144,7 +144,7 @@ def _apply_boost_sort(qs):
             default=Value(0),
             output_field=IntegerField()
         )
-    ).order_by('-_boost_rank', '-created_at')
+    ).order_by('-_boost_rank', '-updated_at')
 
 
 def index(request):
@@ -531,6 +531,42 @@ def marquer_vendu(request, pk):
     annonce.statut = 'vendu'
     annonce.save()
     messages.success(request, "Annonce marquée comme vendue.")
+    return redirect('mes_annonces')
+
+
+@login_required
+def remonter_annonces(request):
+    """Remonter les annonces selectionnees (delai 24h entre chaque remontee)."""
+    if request.method != 'POST':
+        return redirect('mes_annonces')
+
+    ids = request.POST.getlist('annonce_ids')
+    if not ids:
+        messages.warning(request, "Aucune annonce selectionnee.")
+        return redirect('mes_annonces')
+
+    annonces = Annonce.objects.filter(pk__in=ids, user=request.user, statut='actif')
+    now = timezone.now()
+    remontees = 0
+    bloquees = []
+
+    for a in annonces:
+        if a.derniere_remontee and (now - a.derniere_remontee).total_seconds() < 86400:
+            reste = 86400 - (now - a.derniere_remontee).total_seconds()
+            heures = int(reste // 3600)
+            minutes = int((reste % 3600) // 60)
+            bloquees.append(f'"{a.titre}" (encore {heures}h{minutes:02d})')
+        else:
+            a.updated_at = now  # auto_now empeche le set direct, on passe par save()
+            a.derniere_remontee = now
+            Annonce.objects.filter(pk=a.pk).update(updated_at=now, derniere_remontee=now)
+            remontees += 1
+
+    if remontees:
+        messages.success(request, f"{remontees} annonce(s) remontee(s) avec succes.")
+    if bloquees:
+        messages.warning(request, f"Annonces non remontees (delai 24h) : {', '.join(bloquees)}")
+
     return redirect('mes_annonces')
 
 

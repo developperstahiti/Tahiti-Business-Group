@@ -10,6 +10,7 @@ urlpatterns = [
     path('annonces/<int:pk>/edit/', views.edit_annonce, name='edit_annonce'),
     path('annonces/<int:pk>/supprimer/', views.supprimer_annonce, name='supprimer_annonce'),
     path('annonces/<int:pk>/vendu/', views.marquer_vendu, name='marquer_vendu'),
+    path('mes-annonces/remonter/', views.remonter_annonces, name='remonter_annonces'),
     path('annonces/<int:pk>/contact/', views.contact_annonce, name='contact_annonce'),
     path('annonces/<int:pk>/signaler/', views.signaler_annonce, name='signaler_annonce'),
     path('mes-messages/', views.mes_messages, name='mes_messages'),
