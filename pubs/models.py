@@ -16,6 +16,9 @@ EMPLACEMENTS = [
     ("haut",      "Sidebar Haut (40 000 XPF/mois)"),
     ("milieu",    "Sidebar Milieu (28 000 XPF/mois)"),
     ("bas",       "Sidebar Bas (20 000 XPF/mois)"),
+    ("cat_haut",   "Catégorie — Haut (15 000 XPF/mois)"),
+    ("cat_milieu", "Catégorie — Milieu (12 000 XPF/mois)"),
+    ("cat_bas",    "Catégorie — Bas (10 000 XPF/mois)"),
 ]
 
 PRIX_PAR_EMPLACEMENT = {
@@ -26,6 +29,9 @@ PRIX_PAR_EMPLACEMENT = {
     "haut":      40000,
     "milieu":    28000,
     "bas":       20000,
+    "cat_haut":   15000,
+    "cat_milieu": 12000,
+    "cat_bas":    10000,
 }
 
 DUREE_CHOICES = [
@@ -73,11 +79,23 @@ DIMS_PAR_EMPLACEMENT = {
     "haut":             (600, 300),
     "milieu":           (600, 270),
     "bas":              (600, 240),
+    "cat_haut":         (1200, 150),
+    "cat_milieu":       (1200, 150),
+    "cat_bas":          (1200, 150),
 }
 
 # Formats d'image supportés par Pillow (les SVG et autres vecteurs sont exclus)
 _SUPPORTED_MIME_PREFIXES = ('image/jpeg', 'image/png', 'image/webp', 'image/gif',
                              'image/bmp', 'image/tiff')
+
+
+CAT_CHOICES = [
+    ('vehicules',  'Véhicules'),
+    ('immobilier', 'Immobilier'),
+    ('occasion',   'Occasion'),
+    ('emploi',     'Emploi'),
+    ('services',   'Services'),
+]
 
 
 class Publicite(models.Model):
@@ -89,6 +107,8 @@ class Publicite(models.Model):
     video_url    = models.URLField(blank=True, help_text="URL externe d'une vidéo")
     lien         = models.URLField(blank=True)
     emplacement  = models.CharField(max_length=20, choices=EMPLACEMENTS)
+    categorie    = models.CharField(max_length=20, choices=CAT_CHOICES, blank=True, default='',
+                                    help_text="Catégorie ciblée (uniquement pour emplacements cat_*)")
     prix         = models.IntegerField(default=0)
     actif        = models.BooleanField(default=True)
     client_nom   = models.CharField(max_length=150, blank=True)

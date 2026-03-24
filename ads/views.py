@@ -253,6 +253,14 @@ def liste_annonces(request):
             'next_page': page.next_page_number() if page.has_next() else None,
         })
 
+    # Pubs spécifiques à la catégorie (3 encarts : haut, milieu, bas)
+    from pubs.models import Publicite
+    pub_cat_haut = pub_cat_milieu = pub_cat_bas = None
+    if cat:
+        pub_cat_haut   = Publicite.objects.filter(emplacement='cat_haut',   categorie=cat, actif=True).first()
+        pub_cat_milieu = Publicite.objects.filter(emplacement='cat_milieu', categorie=cat, actif=True).first()
+        pub_cat_bas    = Publicite.objects.filter(emplacement='cat_bas',    categorie=cat, actif=True).first()
+
     return render(request, 'ads/liste.html', {
         'annonces':        page,
         'categories':      CATEGORIES,
@@ -268,6 +276,9 @@ def liste_annonces(request):
         'photos_only':     request.GET.get('photos', ''),
         'transaction':     transaction,
         'communes_par_archipel': _get_communes_data(),
+        'pub_cat_haut':   pub_cat_haut,
+        'pub_cat_milieu': pub_cat_milieu,
+        'pub_cat_bas':    pub_cat_bas,
     })
 
 

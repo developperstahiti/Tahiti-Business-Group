@@ -37,14 +37,4 @@
       </div>
     </div>
   </a>
-  <!-- Contacter button (only for authenticated users who don't own the ad) -->
-  {% if user.is_authenticated %}{% if annonce.user != user %}
-  <div class="px-3 pb-3 pt-1">
-    <button type="button"
-      onclick="openContact('{% url 'contact_annonce' pk=annonce.pk %}')"
-      class="btn-contact-card">
-      ✉️ Contacter
-    </button>
-  </div>
-  {% endif %}{% endif %}
 </div>

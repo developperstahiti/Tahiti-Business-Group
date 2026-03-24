@@ -5,13 +5,13 @@ from .models import Publicite, DemandePublicite
 
 @admin.register(Publicite)
 class PubliciteAdmin(admin.ModelAdmin):
-    list_display = ['titre', 'emplacement_badge', 'client_nom', 'prix_display', 'payment_badge', 'actif', 'apercu', 'created_at']
-    list_filter = ['emplacement', 'actif', 'payment_status']
+    list_display = ['titre', 'emplacement_badge', 'cat_badge', 'client_nom', 'prix_display', 'payment_badge', 'actif', 'apercu', 'created_at']
+    list_filter = ['emplacement', 'categorie', 'actif', 'payment_status']
     list_editable = ['actif']
     search_fields = ['titre', 'client_nom', 'client_email', 'payment_ref']
     readonly_fields = ['created_at', 'apercu', 'payment_ref', 'payment_trans_id']
     fieldsets = (
-        ('Publicité', {'fields': ('titre', 'description', 'image', 'image_url', 'lien', 'emplacement', 'actif')}),
+        ('Publicité', {'fields': ('titre', 'description', 'image', 'image_url', 'lien', 'emplacement', 'categorie', 'actif')}),
         ('Client', {'fields': ('client_nom', 'client_email', 'client_tel')}),
         ('Facturation', {'fields': ('prix', 'duree_semaines', 'date_debut', 'date_fin')}),
         ('Paiement PayZen', {'fields': ('payment_status', 'payment_ref', 'payment_trans_id'), 'classes': ('collapse',)}),
@@ -19,14 +19,31 @@ class PubliciteAdmin(admin.ModelAdmin):
     )
 
     def emplacement_badge(self, obj):
-        colors = {'haut': '#ef4444', 'milieu': '#f59e0b', 'bas': '#10b981', 'billboard': '#3b82f6'}
-        labels = {'haut': '🔴 HAUT', 'milieu': '🟡 MILIEU', 'bas': '🟢 BAS', 'billboard': '📺 BILLBOARD'}
+        colors = {
+            'haut': '#ef4444', 'milieu': '#f59e0b', 'bas': '#10b981', 'billboard': '#3b82f6',
+            'cat_haut': '#8b5cf6', 'cat_milieu': '#8b5cf6', 'cat_bas': '#8b5cf6',
+        }
+        labels = {
+            'haut': '🔴 HAUT', 'milieu': '🟡 MILIEU', 'bas': '🟢 BAS', 'billboard': '📺 BILLBOARD',
+            'cat_haut': '📌 CAT HAUT', 'cat_milieu': '📌 CAT MILIEU', 'cat_bas': '📌 CAT BAS',
+        }
         return format_html(
             '<span style="color:{};font-weight:bold">{}</span>',
             colors.get(obj.emplacement, '#6b7280'),
             labels.get(obj.emplacement, obj.emplacement.upper())
         )
     emplacement_badge.short_description = 'Emplacement'
+
+    def cat_badge(self, obj):
+        if not obj.categorie:
+            return '—'
+        cat_labels = {'vehicules': '🚗', 'immobilier': '🏠', 'occasion': '📦', 'emploi': '💼', 'services': '🔧'}
+        return format_html(
+            '<span style="font-weight:bold">{} {}</span>',
+            cat_labels.get(obj.categorie, ''),
+            obj.get_categorie_display()
+        )
+    cat_badge.short_description = 'Catégorie'
 
     def prix_display(self, obj):
         return f"{obj.prix:,} XPF".replace(',', ' ')

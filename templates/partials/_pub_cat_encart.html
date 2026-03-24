@@ -1,0 +1,29 @@
+<!-- PUB CATÉGORIE : {{ position }} -->
+{% if pub %}
+<div class="pub-cat-encart my-6 rounded-2xl overflow-hidden shadow-sm border border-gray-200">
+  <a href="{{ pub.lien }}" target="_blank" rel="noopener sponsored" class="block relative">
+    <div class="absolute top-2 left-2 bg-black/40 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm z-10">Sponsorisé</div>
+    {% if pub.is_video %}
+    <video src="{{ pub.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+    {% elif pub.get_image %}
+    <img src="{{ pub.get_image }}" alt="{{ pub.titre }}" class="w-full h-auto block" loading="lazy">
+    {% else %}
+    <div class="h-28 bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-lg">
+      {{ pub.titre }}
+    </div>
+    {% endif %}
+  </a>
+</div>
+{% elif cat_active %}
+<div class="pub-cat-encart my-6">
+  <a href="{% url 'deposer_pub' %}?emplacement={{ emplacement }}&categorie={{ cat_active }}"
+     class="pub-empty block rounded-2xl overflow-hidden" style="position:relative;min-height:90px">
+    <canvas class="pub-space-canvas"></canvas>
+    <div class="pub-space-text">
+      <span class="pub-txt-main pub-txt-visible">Votre publicit&eacute; ici</span>
+      <span class="pub-txt-phone">89 61 06 13</span>
+    </div>
+    <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.6)">{{ prix_label }}</div>
+  </a>
+</div>
+{% endif %}
