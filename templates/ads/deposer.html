@@ -63,7 +63,7 @@
               <div>
                 <label id="prix-label" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Prix (XPF)</label>
                 {{ form.prix }}
-                <p class="text-xs text-gray-400 mt-1" id="prix-hint">Laissez 0 pour "Gratuit"</p>
+                <p class="text-xs text-gray-400 mt-1" id="prix-hint">Laissez 0 pour "Prix sur demande"</p>
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Unité de prix</label>
@@ -449,7 +449,7 @@ function adaptPrix(cat, sousCat) {
   } else {
     if (lbl)  lbl.textContent  = 'Prix (XPF)';
     if (inp)  inp.placeholder  = '';
-    if (hint) hint.textContent = 'Laissez 0 pour "Gratuit"';
+    if (hint) hint.textContent = 'Laissez 0 pour "Prix sur demande"';
   }
 }
 

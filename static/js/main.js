@@ -124,7 +124,7 @@ function initPrixInput() {
     if (!isNaN(val) && val > 0 && !labelInput.value) {
       labelInput.placeholder = `${val.toLocaleString('fr-FR')} XPF`;
     } else if (val === 0 && !labelInput.value) {
-      labelInput.placeholder = 'Gratuit';
+      labelInput.placeholder = 'Prix sur demande';
     }
   });
 }

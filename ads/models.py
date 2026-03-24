@@ -91,7 +91,7 @@ class Annonce(models.Model):
     titre          = models.CharField(max_length=200)
     description    = models.TextField()
     prix           = models.IntegerField(default=0)
-    prix_label     = models.CharField(max_length=50, blank=True, help_text="Ex: 15 000 XPF, Gratuit, À débattre")
+    prix_label     = models.CharField(max_length=50, blank=True, help_text="Ex: 15 000 XPF, Prix sur demande, À débattre")
     prix_unite     = models.CharField(max_length=20, choices=PRIX_UNITE_CHOICES, default='', blank=True)
     categorie      = models.CharField(max_length=50, choices=CATEGORIES)
     sous_categorie = models.CharField(max_length=50, blank=True, default='')
@@ -127,7 +127,7 @@ class Annonce(models.Model):
         if self.prix_unite == 'negocier':
             return 'À négocier'
         if self.prix == 0:
-            return 'Gratuit'
+            return 'Prix sur demande'
         base = f"{self.prix:,} XPF".replace(',', '\u00a0')
         if self.prix_unite:
             unite_map = dict(PRIX_UNITE_CHOICES)
