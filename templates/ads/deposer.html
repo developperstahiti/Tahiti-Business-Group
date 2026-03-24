@@ -51,6 +51,21 @@
               </div>
             </div>
 
+            <!-- Vente / Location (immobilier uniquement) -->
+            <div id="transaction-row" class="hidden">
+              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Type de transaction *</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 border rounded-lg hover:bg-emerald-50 transition">
+                  <input type="radio" name="type_transaction" value="vente" class="text-emerald-500">
+                  <span class="text-sm font-semibold text-emerald-700">Vente</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 border rounded-lg hover:bg-blue-50 transition">
+                  <input type="radio" name="type_transaction" value="location" class="text-blue-500">
+                  <span class="text-sm font-semibold text-blue-700">Location</span>
+                </label>
+              </div>
+            </div>
+
             <!-- Champs adaptatifs selon sous-catégorie -->
             <div id="specs-container"></div>
 
@@ -733,8 +748,15 @@ if (sousCatSel) {
 // ─── Init catégorie (après SPECS_DEF + renderSpecs) ─────────────────────────
 const catSelDep = document.getElementById('id_categorie');
 if (catSelDep) {
-  catSelDep.addEventListener('change', () => updateSousCatsDep(catSelDep.value));
+  catSelDep.addEventListener('change', () => {
+    updateSousCatsDep(catSelDep.value);
+    const txRow = document.getElementById('transaction-row');
+    if (txRow) txRow.classList.toggle('hidden', catSelDep.value !== 'immobilier');
+  });
   updateSousCatsDep(catSelDep.value);
+  // Init: afficher si immobilier pre-selectionne
+  const txRowInit = document.getElementById('transaction-row');
+  if (txRowInit && catSelDep.value === 'immobilier') txRowInit.classList.remove('hidden');
 }
 
 // ─── Gestion photos avec drag & drop upload + réordonnancement ───────────────

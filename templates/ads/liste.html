@@ -45,13 +45,18 @@
               <option value="Moorea" {% if ville == 'Moorea' %}selected{% endif %}>Moorea</option>
             </select>
           </div>
-          <!-- Ligne 2 : sous-catégorie + tri -->
+          <!-- Ligne 2 : sous-catégorie + transaction + tri -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
             <select name="sous_cat" class="form-input text-sm" id="filter-sous-cat">
               <option value="">Sous-catégorie</option>
               {% for val, lbl in sous_cats_dispo %}
               <option value="{{ val }}" {% if val == sous_cat %}selected{% endif %}>{{ lbl }}</option>
               {% endfor %}
+            </select>
+            <select name="transaction" class="form-input text-sm" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}" onchange="this.form.submit()">
+              <option value="">Vente & Location</option>
+              <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente uniquement</option>
+              <option value="location" {% if transaction == 'location' %}selected{% endif %}>Location uniquement</option>
             </select>
             <div class="flex items-center gap-2">
               <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Min" class="form-input text-sm w-24" min="0">
@@ -144,9 +149,18 @@ function updateSousCats(cat) {
     sel.appendChild(opt);
   });
 }
+// Afficher/cacher filtre Vente/Location selon catégorie
+function toggleTransactionFilter(cat) {
+  const el = document.getElementById('filter-transaction');
+  if (el) el.style.display = (cat === 'immobilier') ? '' : 'none';
+}
 // Init au chargement si catégorie déjà sélectionnée
 const catSel = document.getElementById('filter-cat');
-if (catSel && catSel.value) updateSousCats(catSel.value);
+if (catSel) {
+  if (catSel.value) updateSousCats(catSel.value);
+  toggleTransactionFilter(catSel.value);
+  catSel.addEventListener('change', function() { toggleTransactionFilter(this.value); });
+}
 
 // Charger plus
 (function() {

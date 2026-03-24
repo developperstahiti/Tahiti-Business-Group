@@ -183,6 +183,7 @@ def liste_annonces(request):
     prix_min = request.GET.get('prix_min', '')
     prix_max = request.GET.get('prix_max', '')
     tri      = request.GET.get('tri', '')
+    transaction = request.GET.get('transaction', '')
 
     if q:
         qs = qs.filter(Q(titre__icontains=q) | Q(description__icontains=q))
@@ -190,6 +191,8 @@ def liste_annonces(request):
         qs = qs.filter(categorie=cat)
     if sous_cat:
         qs = qs.filter(sous_categorie=sous_cat)
+    if transaction:
+        qs = qs.filter(type_transaction=transaction)
     if ville:
         qs = qs.filter(localisation__icontains=ville)
     if prix_min:
@@ -247,6 +250,7 @@ def liste_annonces(request):
         'prix_max':        prix_max,
         'tri':             tri,
         'photos_only':     request.GET.get('photos', ''),
+        'transaction':     transaction,
     })
 
 
@@ -292,6 +296,11 @@ def deposer_annonce(request):
             annonce = form.save(commit=False)
             annonce.user = request.user
             annonce.sous_categorie = request.POST.get('sous_categorie', '')
+            # Vente / Location (immobilier uniquement)
+            if annonce.categorie == 'immobilier':
+                annonce.type_transaction = request.POST.get('type_transaction', 'vente')
+            else:
+                annonce.type_transaction = 'non_applicable'
             annonce.specs = _clean_specs(request.POST)
             photos = []
             for f in request.FILES.getlist('photos')[:5]:

@@ -285,6 +285,8 @@
         <div class="cat-dropdown">
           <div class="cat-dropdown__header">Immobilier</div>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier">Toutes</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=vente" class="text-emerald-600 font-semibold">A vendre</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=location" class="text-blue-600 font-semibold">A louer</a>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements">Appartements &amp; studios</a>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons">Maisons &amp; villas</a>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains">Terrains &amp; lots</a>
@@ -468,6 +470,8 @@
       </button>
       <div class="slide-accordion__panel">
         <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="slide-sub-link">Tout Immobilier</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=vente" class="slide-sub-link" style="color:#059669;font-weight:600">A vendre</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=location" class="slide-sub-link" style="color:#2563eb;font-weight:600">A louer</a>
         <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements" class="slide-sub-link">Appartements & studios</a>
         <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons" class="slide-sub-link">Maisons & villas</a>
         <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains" class="slide-sub-link">Terrains & lots</a>

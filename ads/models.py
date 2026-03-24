@@ -95,6 +95,11 @@ class Annonce(models.Model):
     prix_unite     = models.CharField(max_length=20, choices=PRIX_UNITE_CHOICES, default='', blank=True)
     categorie      = models.CharField(max_length=50, choices=CATEGORIES)
     sous_categorie = models.CharField(max_length=50, blank=True, default='')
+    type_transaction = models.CharField(
+        max_length=20,
+        choices=[('non_applicable', 'Non applicable'), ('vente', 'Vente'), ('location', 'Location')],
+        default='non_applicable',
+    )
     localisation   = models.CharField(max_length=100, default='Papeete')
     photos         = models.JSONField(default=list, blank=True)
     specs          = models.JSONField(default=dict, blank=True)

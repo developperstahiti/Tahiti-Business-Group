@@ -56,7 +56,14 @@
           <a href="{% url 'edit_annonce' annonce.pk %}" class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition">✏️ Modifier</a>
           {% endif %}
         </div>
-        <div class="text-3xl font-black text-blue-600 mb-5">{{ annonce.get_prix_display_label }}</div>
+        <div class="text-3xl font-black text-blue-600 mb-5">
+          {{ annonce.get_prix_display_label }}
+          {% if annonce.type_transaction == 'vente' %}
+          <span class="ml-3 text-sm font-bold px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full">Vente</span>
+          {% elif annonce.type_transaction == 'location' %}
+          <span class="ml-3 text-sm font-bold px-3 py-1 bg-blue-100 text-blue-700 rounded-full">Location</span>
+          {% endif %}
+        </div>
         <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
           <span class="flex items-center gap-1.5">📦 {{ annonce.get_categorie_display }}</span>
           <span class="flex items-center gap-1.5">📍 {{ annonce.localisation }}</span>
