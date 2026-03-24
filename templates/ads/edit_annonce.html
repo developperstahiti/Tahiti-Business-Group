@@ -74,15 +74,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Commune</label>
-                <select name="commune" id="id_commune" class="form-input">
-                  <option value="">-- Choisir --</option>
-                </select>
+                <input type="text" name="commune" id="id_commune" class="form-input" list="communes-list"
+                  value="{{ annonce.commune }}" placeholder="Tapez votre commune..." autocomplete="off">
+                <datalist id="communes-list"></datalist>
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Quartier / Section</label>
-                <select name="quartier" id="id_quartier" class="form-input">
-                  <option value="">-- Optionnel --</option>
-                </select>
+                <input type="text" name="quartier" id="id_quartier" class="form-input" list="quartiers-list"
+                  value="{{ annonce.quartier }}" placeholder="Optionnel..." autocomplete="off">
+                <datalist id="quartiers-list"></datalist>
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision</label>
@@ -172,40 +172,39 @@
 {{ communes_par_archipel|json_script:"communes-edit" }}
 {{ quartiers_par_commune|json_script:"quartiers-edit" }}
 <script>
-// ── Localisation dynamique ──────────────────────────────────────
+// ── Localisation dynamique (autocomplete) ───────────────────────
 (function initLocEdit() {
   const COMMUNES = JSON.parse(document.getElementById("communes-edit").textContent);
   const QUARTIERS = JSON.parse(document.getElementById("quartiers-edit").textContent);
-  const communeSel = document.getElementById('id_commune');
-  const quartierSel = document.getElementById('id_quartier');
-  const curCommune = '{{ annonce.commune|escapejs }}';
-  const curQuartier = '{{ annonce.quartier|escapejs }}';
-  if (!communeSel) return;
+  const communeInput = document.getElementById('id_commune');
+  const quartierInput = document.getElementById('id_quartier');
+  const communesList = document.getElementById('communes-list');
+  const quartiersList = document.getElementById('quartiers-list');
+  if (!communeInput) return;
 
+  // Remplir datalist communes
   Object.entries(COMMUNES).forEach(([archipel, communes]) => {
-    const group = document.createElement('optgroup');
-    group.label = archipel;
     communes.forEach(c => {
       const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      if (c === curCommune) opt.selected = true;
-      group.appendChild(opt);
+      opt.value = c;
+      opt.label = archipel;
+      communesList.appendChild(opt);
     });
-    communeSel.appendChild(group);
   });
 
-  function fillQuartiers(commune, preselect) {
-    quartierSel.innerHTML = '<option value="">-- Optionnel --</option>';
+  // Remplir datalist quartiers selon commune
+  function fillQuartiers(commune) {
+    quartiersList.innerHTML = '';
     (QUARTIERS[commune] || []).forEach(q => {
       const opt = document.createElement('option');
-      opt.value = q; opt.textContent = q;
-      if (q === preselect) opt.selected = true;
-      quartierSel.appendChild(opt);
+      opt.value = q;
+      quartiersList.appendChild(opt);
     });
   }
 
-  if (curCommune) fillQuartiers(curCommune, curQuartier);
-  communeSel.addEventListener('change', function() { fillQuartiers(this.value, ''); });
+  if (communeInput.value) fillQuartiers(communeInput.value);
+  communeInput.addEventListener('input', function() { fillQuartiers(this.value); });
+  communeInput.addEventListener('change', function() { fillQuartiers(this.value); });
 })();
 
 // ── Sous-catégories dynamiques ─────────────────────────────────

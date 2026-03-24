@@ -75,15 +75,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Commune *</label>
-                <select name="commune" id="id_commune" class="form-input" required>
-                  <option value="">-- Choisir une commune --</option>
-                </select>
+                <input type="text" name="commune" id="id_commune" class="form-input" list="communes-list" required
+                  placeholder="Tapez votre commune..." autocomplete="off">
+                <datalist id="communes-list"></datalist>
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Quartier / Section</label>
-                <select name="quartier" id="id_quartier" class="form-input">
-                  <option value="">-- Optionnel --</option>
-                </select>
+                <input type="text" name="quartier" id="id_quartier" class="form-input" list="quartiers-list"
+                  placeholder="Optionnel..." autocomplete="off">
+                <datalist id="quartiers-list"></datalist>
               </div>
               <div>
                 <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision</label>
@@ -433,42 +433,44 @@ const COMMUNES_DATA = JSON.parse(document.getElementById("communes-data").textCo
 const QUARTIERS_DATA = JSON.parse(document.getElementById("quartiers-data").textContent);
 
 (function initLocalisation() {
-  const communeSel = document.getElementById('id_commune');
-  const quartierSel = document.getElementById('id_quartier');
+  const communeInput = document.getElementById('id_commune');
+  const quartierInput = document.getElementById('id_quartier');
+  const communesList = document.getElementById('communes-list');
+  const quartiersList = document.getElementById('quartiers-list');
   const hiddenLoc = document.getElementById('id_localisation_hidden');
-  if (!communeSel) return;
+  if (!communeInput) return;
 
-  // Remplir toutes les communes groupees par archipel
+  // Remplir la datalist des communes
   Object.entries(COMMUNES_DATA).forEach(([archipel, communes]) => {
-    const group = document.createElement('optgroup');
-    group.label = archipel;
     communes.forEach(c => {
       const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      group.appendChild(opt);
+      opt.value = c;
+      opt.label = archipel;
+      communesList.appendChild(opt);
     });
-    communeSel.appendChild(group);
   });
 
-  communeSel.addEventListener('change', function() {
-    const commune = this.value;
-    // MAJ quartiers
-    quartierSel.innerHTML = '<option value="">-- Optionnel --</option>';
+  // Quand la commune change, mettre a jour les quartiers
+  function updateQuartiers() {
+    const commune = communeInput.value;
+    quartiersList.innerHTML = '';
     const qlist = QUARTIERS_DATA[commune] || [];
     qlist.forEach(q => {
       const opt = document.createElement('option');
-      opt.value = q; opt.textContent = q;
-      quartierSel.appendChild(opt);
+      opt.value = q;
+      quartiersList.appendChild(opt);
     });
-    // MAJ champ hidden localisation pour compatibilite
     if (hiddenLoc) hiddenLoc.value = commune;
-  });
+  }
 
-  quartierSel.addEventListener('change', function() {
+  communeInput.addEventListener('input', updateQuartiers);
+  communeInput.addEventListener('change', updateQuartiers);
+
+  quartierInput.addEventListener('input', function() {
     if (hiddenLoc && this.value) {
-      hiddenLoc.value = communeSel.value + ' - ' + this.value;
+      hiddenLoc.value = communeInput.value + ' - ' + this.value;
     } else if (hiddenLoc) {
-      hiddenLoc.value = communeSel.value;
+      hiddenLoc.value = communeInput.value;
     }
   });
 })();

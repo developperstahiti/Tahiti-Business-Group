@@ -31,9 +31,9 @@
               <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
-            <select name="localisation" id="filter-commune" class="form-input text-sm" onchange="this.form.submit()">
-              <option value="">Toute la Polynesie</option>
-            </select>
+            <input type="text" name="localisation" id="filter-commune" class="form-input text-sm" list="filter-communes-list"
+              value="{{ ville }}" placeholder="Toute la Polynesie..." autocomplete="off">
+            <datalist id="filter-communes-list"></datalist>
           </div>
           <!-- Ligne 2 : sous-catégorie + transaction + tri -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
@@ -142,19 +142,15 @@ function updateSousCats(cat) {
 }
 // Remplir le select communes dynamiquement
 (function initCommuneFilter() {
-  const sel = document.getElementById('filter-commune');
+  const datalist = document.getElementById('filter-communes-list');
   const data = JSON.parse(document.getElementById('communes-liste').textContent);
-  const current = '{{ ville|escapejs }}';
   Object.entries(data).forEach(([archipel, communes]) => {
-    const group = document.createElement('optgroup');
-    group.label = archipel;
     communes.forEach(c => {
       const opt = document.createElement('option');
-      opt.value = c; opt.textContent = c;
-      if (c === current) opt.selected = true;
-      group.appendChild(opt);
+      opt.value = c;
+      opt.label = archipel;
+      datalist.appendChild(opt);
     });
-    sel.appendChild(group);
   });
 })();
 
