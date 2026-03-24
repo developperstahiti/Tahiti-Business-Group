@@ -69,10 +69,26 @@
             <!-- Champs adaptatifs selon sous-catégorie -->
             <div id="specs-container"></div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Localisation</label>
-              {{ form.localisation }}
+            <!-- Localisation structuree -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Commune *</label>
+                <select name="commune" id="id_commune" class="form-input" required>
+                  <option value="">-- Choisir une commune --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Quartier / Section</label>
+                <select name="quartier" id="id_quartier" class="form-input">
+                  <option value="">-- Optionnel --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision</label>
+                <input type="text" name="precision_lieu" class="form-input" placeholder="Ex: PK18, Plateau des ananas...">
+              </div>
             </div>
+            <input type="hidden" name="localisation" id="id_localisation_hidden" value="">
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="prix-row">
               <div>
@@ -406,7 +422,54 @@
 
 {% block extra_js %}
 {{ sous_categories_data|json_script:"sous-cats-data" }}
+{{ communes_par_archipel|json_script:"communes-data" }}
+{{ quartiers_par_commune|json_script:"quartiers-data" }}
 <script>
+
+// ─── Localisation dynamique (commune / quartier) ────────────────────────────
+const COMMUNES_DATA = JSON.parse(document.getElementById("communes-data").textContent);
+const QUARTIERS_DATA = JSON.parse(document.getElementById("quartiers-data").textContent);
+
+(function initLocalisation() {
+  const communeSel = document.getElementById('id_commune');
+  const quartierSel = document.getElementById('id_quartier');
+  const hiddenLoc = document.getElementById('id_localisation_hidden');
+  if (!communeSel) return;
+
+  // Remplir toutes les communes groupees par archipel
+  Object.entries(COMMUNES_DATA).forEach(([archipel, communes]) => {
+    const group = document.createElement('optgroup');
+    group.label = archipel;
+    communes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      group.appendChild(opt);
+    });
+    communeSel.appendChild(group);
+  });
+
+  communeSel.addEventListener('change', function() {
+    const commune = this.value;
+    // MAJ quartiers
+    quartierSel.innerHTML = '<option value="">-- Optionnel --</option>';
+    const qlist = QUARTIERS_DATA[commune] || [];
+    qlist.forEach(q => {
+      const opt = document.createElement('option');
+      opt.value = q; opt.textContent = q;
+      quartierSel.appendChild(opt);
+    });
+    // MAJ champ hidden localisation pour compatibilite
+    if (hiddenLoc) hiddenLoc.value = commune;
+  });
+
+  quartierSel.addEventListener('change', function() {
+    if (hiddenLoc && this.value) {
+      hiddenLoc.value = communeSel.value + ' - ' + this.value;
+    } else if (hiddenLoc) {
+      hiddenLoc.value = communeSel.value;
+    }
+  });
+})();
 
 // ─── Sous-catégories dynamiques ────────────────────────────────────────────────
 const SOUS_CATS_DEP = JSON.parse(document.getElementById("sous-cats-data").textContent);

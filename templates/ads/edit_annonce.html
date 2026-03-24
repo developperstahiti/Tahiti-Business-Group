@@ -70,12 +70,26 @@
               </div>
             </div>
 
-            <!-- Localisation -->
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Localisation</label>
-              <input type="text" name="localisation" value="{{ annonce.localisation }}" class="form-input"
-                placeholder="Ex: Papeete, Faa'a, Moorea...">
+            <!-- Localisation structuree -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Commune</label>
+                <select name="commune" id="id_commune" class="form-input">
+                  <option value="">-- Choisir --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Quartier / Section</label>
+                <select name="quartier" id="id_quartier" class="form-input">
+                  <option value="">-- Optionnel --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision</label>
+                <input type="text" name="precision_lieu" value="{{ annonce.precision_lieu }}" class="form-input" placeholder="Ex: PK18...">
+              </div>
             </div>
+            <input type="hidden" name="localisation" value="{{ annonce.localisation }}">
 
             <!-- Description -->
             <div>
@@ -155,7 +169,45 @@
 
 {% block extra_js %}
 {{ sous_categories_data|json_script:"sous-cats-data" }}
+{{ communes_par_archipel|json_script:"communes-edit" }}
+{{ quartiers_par_commune|json_script:"quartiers-edit" }}
 <script>
+// ── Localisation dynamique ──────────────────────────────────────
+(function initLocEdit() {
+  const COMMUNES = JSON.parse(document.getElementById("communes-edit").textContent);
+  const QUARTIERS = JSON.parse(document.getElementById("quartiers-edit").textContent);
+  const communeSel = document.getElementById('id_commune');
+  const quartierSel = document.getElementById('id_quartier');
+  const curCommune = '{{ annonce.commune|escapejs }}';
+  const curQuartier = '{{ annonce.quartier|escapejs }}';
+  if (!communeSel) return;
+
+  Object.entries(COMMUNES).forEach(([archipel, communes]) => {
+    const group = document.createElement('optgroup');
+    group.label = archipel;
+    communes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      if (c === curCommune) opt.selected = true;
+      group.appendChild(opt);
+    });
+    communeSel.appendChild(group);
+  });
+
+  function fillQuartiers(commune, preselect) {
+    quartierSel.innerHTML = '<option value="">-- Optionnel --</option>';
+    (QUARTIERS[commune] || []).forEach(q => {
+      const opt = document.createElement('option');
+      opt.value = q; opt.textContent = q;
+      if (q === preselect) opt.selected = true;
+      quartierSel.appendChild(opt);
+    });
+  }
+
+  if (curCommune) fillQuartiers(curCommune, curQuartier);
+  communeSel.addEventListener('change', function() { fillQuartiers(this.value, ''); });
+})();
+
 // ── Sous-catégories dynamiques ─────────────────────────────────
 const SOUS_CATS = JSON.parse(document.getElementById("sous-cats-data").textContent);
 const initialSousCat = "{{ annonce.sous_categorie }}";

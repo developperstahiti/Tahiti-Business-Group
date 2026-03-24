@@ -100,7 +100,10 @@ class Annonce(models.Model):
         choices=[('non_applicable', 'Non applicable'), ('vente', 'Vente'), ('location', 'Location')],
         default='non_applicable',
     )
-    localisation   = models.CharField(max_length=100, default='Papeete')
+    localisation   = models.CharField(max_length=100, default='Papeete')  # ancien champ — compatibilite
+    commune        = models.CharField(max_length=100, blank=True, default='')
+    quartier       = models.CharField(max_length=100, blank=True, default='')
+    precision_lieu = models.CharField(max_length=150, blank=True, default='')
     photos         = models.JSONField(default=list, blank=True)
     specs          = models.JSONField(default=dict, blank=True)
     statut         = models.CharField(max_length=20, choices=STATUTS, default='actif')

@@ -31,18 +31,8 @@
               <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
-            <select name="localisation" class="form-input text-sm" onchange="this.form.submit()">
-              <option value="">Toute la Polynésie</option>
-              <option value="Papeete" {% if ville == 'Papeete' %}selected{% endif %}>Papeete</option>
-              <option value="Faaa" {% if ville == 'Faaa' %}selected{% endif %}>Faa'a</option>
-              <option value="Punaauia" {% if ville == 'Punaauia' %}selected{% endif %}>Punaauia</option>
-              <option value="Pirae" {% if ville == 'Pirae' %}selected{% endif %}>Pirae</option>
-              <option value="Arue" {% if ville == 'Arue' %}selected{% endif %}>Arue</option>
-              <option value="Mahina" {% if ville == 'Mahina' %}selected{% endif %}>Mahina</option>
-              <option value="Paea" {% if ville == 'Paea' %}selected{% endif %}>Paea</option>
-              <option value="Papara" {% if ville == 'Papara' %}selected{% endif %}>Papara</option>
-              <option value="Taravao" {% if ville == 'Taravao' %}selected{% endif %}>Taravao</option>
-              <option value="Moorea" {% if ville == 'Moorea' %}selected{% endif %}>Moorea</option>
+            <select name="localisation" id="filter-commune" class="form-input text-sm" onchange="this.form.submit()">
+              <option value="">Toute la Polynesie</option>
             </select>
           </div>
           <!-- Ligne 2 : sous-catégorie + transaction + tri -->
@@ -135,6 +125,7 @@
 
 {% block extra_js %}
 {{ sous_cats_data|json_script:"sous-cats-liste" }}
+{{ communes_par_archipel|json_script:"communes-liste" }}
 
 <script>
 const SOUS_CATS = JSON.parse(document.getElementById('sous-cats-liste').textContent);
@@ -149,6 +140,24 @@ function updateSousCats(cat) {
     sel.appendChild(opt);
   });
 }
+// Remplir le select communes dynamiquement
+(function initCommuneFilter() {
+  const sel = document.getElementById('filter-commune');
+  const data = JSON.parse(document.getElementById('communes-liste').textContent);
+  const current = '{{ ville|escapejs }}';
+  Object.entries(data).forEach(([archipel, communes]) => {
+    const group = document.createElement('optgroup');
+    group.label = archipel;
+    communes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      if (c === current) opt.selected = true;
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+  });
+})();
+
 // Afficher/cacher filtre Vente/Location selon catégorie
 function toggleTransactionFilter(cat) {
   const el = document.getElementById('filter-transaction');

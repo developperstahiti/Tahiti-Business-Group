@@ -56,6 +56,16 @@ def _sous_cats_data():
     }
 
 
+def _get_communes_data():
+    from .localites_polynesie import get_communes_by_archipel
+    return get_communes_by_archipel()
+
+
+def _get_quartiers_data():
+    from .localites_polynesie import get_quartiers_by_commune
+    return get_quartiers_by_commune()
+
+
 
 def page_info(request):
     faq = [
@@ -194,7 +204,9 @@ def liste_annonces(request):
     if transaction:
         qs = qs.filter(type_transaction=transaction)
     if ville:
-        qs = qs.filter(localisation__icontains=ville)
+        qs = qs.filter(
+            Q(commune__icontains=ville) | Q(quartier__icontains=ville) | Q(localisation__icontains=ville)
+        )
     if prix_min:
         try:
             qs = qs.filter(prix__gte=int(prix_min))
@@ -251,6 +263,7 @@ def liste_annonces(request):
         'tri':             tri,
         'photos_only':     request.GET.get('photos', ''),
         'transaction':     transaction,
+        'communes_par_archipel': _get_communes_data(),
     })
 
 
@@ -296,6 +309,12 @@ def deposer_annonce(request):
             annonce = form.save(commit=False)
             annonce.user = request.user
             annonce.sous_categorie = request.POST.get('sous_categorie', '')
+            # Localisation structuree
+            annonce.commune = request.POST.get('commune', '')
+            annonce.quartier = request.POST.get('quartier', '')
+            annonce.precision_lieu = request.POST.get('precision_lieu', '')
+            if annonce.commune:
+                annonce.localisation = annonce.commune
             # Vente / Location (immobilier uniquement)
             if annonce.categorie == 'immobilier':
                 annonce.type_transaction = request.POST.get('type_transaction', 'vente')
@@ -396,9 +415,12 @@ def deposer_annonce(request):
     else:
         form = AnnonceForm()
 
+    from .localites_polynesie import get_communes_by_archipel
     return render(request, 'ads/deposer.html', {
         'form':               form,
         'sous_categories_data': _sous_cats_data(),
+        'communes_par_archipel': get_communes_by_archipel(),
+        'quartiers_par_commune': _get_quartiers_data(),
     })
 
 
@@ -428,7 +450,10 @@ def edit_annonce(request, pk):
         new_specs = _clean_specs(request.POST)
         if new_specs:
             annonce.specs = new_specs
-        annonce.localisation   = request.POST.get('localisation', '').strip() or annonce.localisation
+        annonce.commune        = request.POST.get('commune', '')
+        annonce.quartier       = request.POST.get('quartier', '')
+        annonce.precision_lieu = request.POST.get('precision_lieu', '')
+        annonce.localisation   = annonce.commune or request.POST.get('localisation', '').strip() or annonce.localisation
         annonce.prix_label     = request.POST.get('prix_label', '').strip()
         annonce.prix_unite     = request.POST.get('prix_unite', '')
         try:
@@ -478,6 +503,8 @@ def edit_annonce(request, pk):
         'prix_unite_choices':   PRIX_UNITE_CHOICES,
         'sous_categories_data': _sous_cats_data(),
         'remaining_slots':      max(0, 5 - len(annonce.photos)),
+        'communes_par_archipel': _get_communes_data(),
+        'quartiers_par_commune': _get_quartiers_data(),
     })
 
 
