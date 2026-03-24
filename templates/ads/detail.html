@@ -24,20 +24,48 @@
     <!-- CONTENU -->
     <div class="layout-main space-y-4">
 
-      <!-- Photos -->
+      <!-- Photos : mosaique -->
       {% if annonce.photos %}
       <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        {% with photo_count=annonce.photos|length %}
         <div class="p-4">
-          <img id="mainPhoto" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}" class="photo-main rounded-xl" style="cursor:zoom-in" onclick="openLightbox(0)">
+          {% if photo_count == 1 %}
+          <!-- Une seule photo -->
+          <img id="mainPhoto" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
+            class="w-full rounded-xl object-cover cursor-zoom-in" style="max-height:480px"
+            onclick="openLightbox(0)">
+          {% else %}
+          <!-- Mosaique : grande photo + miniatures -->
+          <div class="grid grid-cols-4 gap-2" style="max-height:480px">
+            <!-- Photo principale avec fleches -->
+            <div class="col-span-3 relative rounded-xl overflow-hidden">
+              <img id="mainPhoto" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
+                class="w-full h-full object-cover cursor-zoom-in" style="max-height:480px"
+                onclick="openLightbox(currentPhotoIdx)">
+              <!-- Fleches navigation -->
+              <button onclick="navPhoto(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
+              <button onclick="navPhoto(1)" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo suivante">&rsaquo;</button>
+              <div class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm" id="photo-counter">1 / {{ photo_count }}</div>
+            </div>
+            <!-- Miniatures a droite -->
+            <div class="col-span-1 flex flex-col gap-2">
+              {% for photo in annonce.photos|slice:":4" %}
+              <div class="relative rounded-lg overflow-hidden cursor-pointer flex-1 min-h-0" onclick="goToPhoto({{ forloop.counter0 }})">
+                <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" loading="lazy"
+                  class="w-full h-full object-cover photo-mosaic-thumb {% if forloop.first %}ring-2 ring-blue-500{% endif %}"
+                  data-idx="{{ forloop.counter0 }}">
+                {% if forloop.counter == 4 and photo_count > 4 %}
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg" onclick="openLightbox(3)">
+                  +{{ photo_count|add:"-4" }}
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
         </div>
-        {% if annonce.photos|length > 1 %}
-        <div class="flex gap-2 px-4 pb-4 overflow-x-auto">
-          {% for photo in annonce.photos %}
-          <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" class="photo-thumb {% if forloop.first %}active{% endif %}" loading="lazy"
-            onclick="switchPhoto(this, '{{ photo }}')">
-          {% endfor %}
-        </div>
-        {% endif %}
+        {% endwith %}
       </div>
 
       {% else %}
@@ -363,6 +391,28 @@
 
 {% block extra_js %}
 <script>
+// Navigation photo mosaique
+let currentPhotoIdx = 0;
+const allPhotos = [{% for photo in annonce.photos %}'{{ photo }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+
+function navPhoto(dir) {
+  currentPhotoIdx = (currentPhotoIdx + dir + allPhotos.length) % allPhotos.length;
+  goToPhoto(currentPhotoIdx);
+}
+
+function goToPhoto(idx) {
+  currentPhotoIdx = idx;
+  const main = document.getElementById('mainPhoto');
+  if (main) main.src = allPhotos[idx];
+  const counter = document.getElementById('photo-counter');
+  if (counter) counter.textContent = (idx + 1) + ' / ' + allPhotos.length;
+  // Highlight miniature active
+  document.querySelectorAll('.photo-mosaic-thumb').forEach(t => {
+    t.classList.toggle('ring-2', parseInt(t.dataset.idx) === idx);
+    t.classList.toggle('ring-blue-500', parseInt(t.dataset.idx) === idx);
+  });
+}
+
 function switchPhoto(el, src) {
   document.getElementById('mainPhoto').src = src;
   document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('active'));
