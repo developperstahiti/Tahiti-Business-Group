@@ -55,13 +55,15 @@
             <div id="transaction-row" class="hidden">
               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Type de transaction *</label>
               <div class="flex gap-4">
-                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 border rounded-lg hover:bg-emerald-50 transition">
-                  <input type="radio" name="type_transaction" value="vente" class="text-emerald-500">
-                  <span class="text-sm font-semibold text-emerald-700">Vente</span>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 16px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;transition:background .15s"
+                  onmouseover="this.style.background='#ecfdf5'" onmouseout="this.style.background='#fff'">
+                  <input type="radio" name="type_transaction" value="vente">
+                  <span style="font-size:14px;font-weight:600;color:#047857">Vente</span>
                 </label>
-                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 border rounded-lg hover:bg-blue-50 transition">
-                  <input type="radio" name="type_transaction" value="location" class="text-blue-500">
-                  <span class="text-sm font-semibold text-blue-700">Location</span>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 16px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;transition:background .15s"
+                  onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">
+                  <input type="radio" name="type_transaction" value="location">
+                  <span style="font-size:14px;font-weight:600;color:#1d4ed8">Location</span>
                 </label>
               </div>
             </div>
