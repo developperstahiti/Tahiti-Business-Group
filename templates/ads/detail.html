@@ -36,11 +36,11 @@
             onclick="openLightbox(0)">
           {% else %}
           <!-- Mosaique : grande photo + miniatures -->
-          <div class="grid grid-cols-4 gap-2" style="max-height:480px">
+          <div class="grid grid-cols-4 gap-2" style="height:420px">
             <!-- Photo principale avec fleches -->
-            <div class="col-span-3 relative rounded-xl overflow-hidden">
+            <div class="col-span-3 relative rounded-xl overflow-hidden" style="height:420px">
               <img id="mainPhoto" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
-                class="w-full h-full object-cover cursor-zoom-in" style="max-height:480px"
+                class="w-full h-full object-cover cursor-zoom-in"
                 onclick="openLightbox(currentPhotoIdx)">
               <!-- Fleches navigation -->
               <button onclick="navPhoto(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
@@ -48,7 +48,7 @@
               <div class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm" id="photo-counter">1 / {{ photo_count }}</div>
             </div>
             <!-- Miniatures a droite -->
-            <div class="col-span-1 flex flex-col gap-2">
+            <div class="col-span-1 flex flex-col gap-2" style="height:420px;overflow:hidden">
               {% for photo in annonce.photos|slice:":4" %}
               <div class="relative rounded-lg overflow-hidden cursor-pointer flex-1 min-h-0" onclick="goToPhoto({{ forloop.counter0 }})">
                 <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" loading="lazy"
