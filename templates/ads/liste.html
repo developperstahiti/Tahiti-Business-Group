@@ -181,6 +181,8 @@ if (catSel) {
       .then(r => r.json())
       .then(data => {
         document.getElementById('annonces-grid').insertAdjacentHTML('beforeend', data.html);
+        // Relancer le lazy loading pour les nouvelles images
+        if (typeof initLazyImages === 'function') initLazyImages();
         if (data.has_next) {
           btn.dataset.next = data.next_page;
           btn.textContent = 'Charger plus';

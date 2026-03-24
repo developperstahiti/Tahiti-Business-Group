@@ -22,9 +22,6 @@ function showToast(msg, type = 'info') {
 
 // ── Lazy image loading (scroll-based for #main-frame compat) ───
 function initLazyImages() {
-  var imgs = document.querySelectorAll('img[data-src]');
-  if (!imgs.length) return;
-
   var scrollEl = document.getElementById('main-frame') || null;
 
   function loadImg(img) {
@@ -35,6 +32,7 @@ function initLazyImages() {
   }
 
   function check() {
+    var imgs = document.querySelectorAll('img[data-src]');
     var viewH = scrollEl ? scrollEl.clientHeight : window.innerHeight;
     imgs.forEach(function(img) {
       if (!img.dataset.src) return;
