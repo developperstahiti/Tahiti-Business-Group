@@ -14,13 +14,13 @@ class SecurityHeadersMiddleware:
         response = self.get_response(request)
         response['Content-Security-Policy'] = (
             f"default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' 'unsafe-eval' "
-            f"https://cdn.tailwindcss.com https://static.osb.pf; "
+            f"script-src 'self' 'nonce-{nonce}' https://static.osb.pf; "
             f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             f"font-src 'self' https://fonts.gstatic.com; "
             f"img-src 'self' data: blob: https://*.amazonaws.com; "
             f"connect-src 'self'; "
             f"object-src 'none'; "
+            f"form-action 'self' https://secure.osb.pf; "
             f"frame-ancestors 'none'"
         )
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'

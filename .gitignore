@@ -32,6 +32,10 @@ env/
 Thumbs.db
 desktop.ini
 
+# Node (Tailwind build)
+node_modules/
+package-lock.json
+
 # Temp
 tmp_imgs/
 *.log

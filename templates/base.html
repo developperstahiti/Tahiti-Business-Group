@@ -6,22 +6,8 @@
   {% block robots %}{% endblock %}
   <title>{% block title %}Tahiti Business Group{% endblock %} — Annonces Polynésie</title>
   <meta name="description" content="{% block meta_desc %}Annonces gratuites en Polynésie française. Achetez et vendez véhicules, immobilier, électronique, emploi.{% endblock %}">
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <script nonce="{{ csp_nonce }}" src="https://cdn.tailwindcss.com"></script>
-  <script nonce="{{ csp_nonce }}">
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans:  ['Arial', 'Helvetica', 'sans-serif'],
-            serif: ['Arial', 'Helvetica', 'sans-serif'],
-          },
-          colors: { primary: '#1a6cf1', accent: '#059669' }
-        }
-      }
-    }
-  </script>
   {% load static %}
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}?v={{ STATIC_VERSION }}">
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ STATIC_VERSION }}">
   {% block extra_css %}{% endblock %}
   {% block extra_head %}{% endblock %}
