@@ -32,10 +32,12 @@
       <div class="annonce-card__price">{{ annonce.get_prix_display_label }}</div>
       <div class="annonce-card__meta">
         <span>👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
+        <span>🖱 {{ annonce.clics }} clic{{ annonce.clics|pluralize }}</span>
       </div>
       {% load notation_tags %}{% vendeur_note annonce.user as vn %}
       <div class="annonce-card__seller">
         <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__avatar-link" onclick="event.stopPropagation()">{% if annonce.user.avatar_url %}<img src="{{ annonce.user.avatar_url }}" alt="" class="annonce-card__avatar">{% else %}<span class="annonce-card__avatar annonce-card__avatar--initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>{% endif %}</a>
+        <span class="annonce-card__name">{{ annonce.user.nom|default:annonce.user.email }}</span>
         {% if vn.moyenne %}<span class="annonce-card__note">★ {{ vn.moyenne }}</span>{% endif %}
         <span class="annonce-card__loc">📍 {% firstof annonce.commune annonce.localisation %}</span>
       </div>
