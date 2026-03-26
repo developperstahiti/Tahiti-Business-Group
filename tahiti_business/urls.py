@@ -18,7 +18,7 @@ def robots_txt(request):
     content = (
         "User-agent: *\n"
         "Allow: /\n"
-        "Disallow: /tbg-gestion-2026/\n"
+        "Disallow: /3319cdb9fc7eb59/\n"
         "Disallow: /admin-stats/\n"
         "Disallow: /deposer/\n"
         "Disallow: /mes-annonces/\n"
@@ -37,7 +37,7 @@ def robots_txt(request):
 urlpatterns = [
     path('admin/<path:p>', lambda r, p=None: HttpResponse(status=404)),
     path('admin/', lambda r: HttpResponse(status=404)),
-    path('tbg-gestion-2026/', admin.site.urls),
+    path('3319cdb9fc7eb59/', admin.site.urls),
     path('', include('ads.urls')),
     path('users/', include('users.urls')),
     path('pubs/', include('pubs.urls')),

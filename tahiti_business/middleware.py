@@ -26,7 +26,7 @@ class SecurityHeadersMiddleware:
 _PRIVATE_PREFIXES = (
     '/deposer/',
     '/mes-',
-    '/tbg-gestion-2026',
+    '/3319cdb9fc7eb59',
     '/users/',
     '/edit/',
     '/supprimer/',

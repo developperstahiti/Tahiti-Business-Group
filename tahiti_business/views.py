@@ -16,7 +16,7 @@ def otp_verify(request):
             for device in devices_for_user(request.user, confirmed=True):
                 if device.verify_token(token):
                     request.session['otp_admin_verified'] = True
-                    next_url = request.GET.get('next', '/tbg-gestion-2026/')
+                    next_url = request.GET.get('next', '/3319cdb9fc7eb59/')
                     return redirect(next_url)
             error = 'Code OTP invalide. Réessayez.'
         else:
@@ -24,5 +24,5 @@ def otp_verify(request):
 
     return render(request, 'admin/otp_verify.html', {
         'error': error,
-        'next': request.GET.get('next', '/tbg-gestion-2026/'),
+        'next': request.GET.get('next', '/3319cdb9fc7eb59/'),
     })
