@@ -164,7 +164,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function() {
   // ── Render stars helper ──────────────────────────────────
   function renderStars(el, note) {

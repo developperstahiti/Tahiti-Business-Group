@@ -133,7 +133,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // Tout selectionner / deselectionner
 document.getElementById('select-all-cb')?.addEventListener('change', function() {
   document.querySelectorAll('.annonce-cb').forEach(cb => cb.checked = this.checked);

@@ -178,8 +178,8 @@
 {% load static %}
 {{ sous_cats_data|json_script:"sous-cats-liste" }}
 
-<script src="{% static 'js/location-selector.js' %}"></script>
-<script>
+<script nonce="{{ csp_nonce }}" src="{% static 'js/location-selector.js' %}"></script>
+<script nonce="{{ csp_nonce }}">
 const SOUS_CATS = JSON.parse(document.getElementById('sous-cats-liste').textContent);
 function updateSousCats(cat) {
   const sel = document.getElementById('filter-sous-cat');

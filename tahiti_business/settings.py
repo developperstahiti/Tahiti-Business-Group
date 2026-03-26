@@ -77,6 +77,7 @@ TEMPLATES = [
                 'pubs.context_processors.sidebar_pubs',
                 'pubs.context_processors.admin_stats',
                 'tahiti_business.context_processors.static_version',
+                'tahiti_business.context_processors.csp_nonce',
             ],
         },
     },

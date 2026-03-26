@@ -38,7 +38,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // If no ids param in URL, read localStorage and redirect
 (function(){
   const params = new URLSearchParams(location.search);

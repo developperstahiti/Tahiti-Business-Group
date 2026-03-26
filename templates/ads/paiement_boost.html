@@ -82,12 +82,12 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://static.osb.pf/static/js/krypton-client/V4.0/stable/kr-payment-form.min.js"
+<script nonce="{{ csp_nonce }}" src="https://static.osb.pf/static/js/krypton-client/V4.0/stable/kr-payment-form.min.js"
         kr-public-key="{{ public_key }}"
         kr-post-url-success="/boost/paiement/{{ annonce.pk }}/valider/"
         kr-language="fr-FR">
 </script>
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener('DOMContentLoaded', function() {
   var checkReady = setInterval(function() {
     var form = document.querySelector('.kr-embedded');

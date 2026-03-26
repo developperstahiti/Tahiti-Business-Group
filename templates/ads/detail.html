@@ -451,7 +451,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // Render vendeur stars on detail page
 (function() {
   var el = document.querySelector('.detail-vendeur-stars');

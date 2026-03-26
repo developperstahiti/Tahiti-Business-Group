@@ -670,8 +670,8 @@
 {% load static %}
 {{ sous_categories_data|json_script:"sous-cats-data" }}
 
-<script src="{% static 'js/location-selector.js' %}"></script>
-<script>
+<script nonce="{{ csp_nonce }}" src="{% static 'js/location-selector.js' %}"></script>
+<script nonce="{{ csp_nonce }}">
 /* ══════════════════════════════════════════════════════════════════════
    DEPOSER — FORMULAIRE INTERACTIF
    ══════════════════════════════════════════════════════════════════════ */

@@ -57,7 +57,7 @@
   {% endif %}
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 var sousCatsData = {{ sous_cats_data|safe }};
 document.getElementById('alerte-cat').addEventListener('change', function() {
   var sel = document.getElementById('alerte-sous-cat');

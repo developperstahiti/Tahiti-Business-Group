@@ -237,7 +237,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 // ── Données de prix ──
 var PRIX = {{ prix_json|safe }};
 var DISCOUNTS = {{ discount_json|safe }};

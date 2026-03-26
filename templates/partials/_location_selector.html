@@ -8,7 +8,7 @@
 
 <div id="loc-selector-{{ mode|default:'filter' }}" class="loc-selector-root"></div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function() {
   var root = document.getElementById('loc-selector-{{ mode|default:"filter" }}');
   if (!root || !window.LocationSelector) return;

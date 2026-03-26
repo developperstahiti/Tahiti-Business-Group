@@ -1,3 +1,6 @@
+import secrets
+
+
 class SecurityHeadersMiddleware:
     """Ajoute des headers de securite HTTP a chaque reponse."""
 
@@ -5,16 +8,20 @@ class SecurityHeadersMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        nonce = secrets.token_urlsafe(32)
+        request.csp_nonce = nonce
+
         response = self.get_response(request)
         response['Content-Security-Policy'] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
-            "https://cdn.tailwindcss.com https://static.osb.pf; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data: blob: https://*.amazonaws.com; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none'"
+            f"default-src 'self'; "
+            f"script-src 'self' 'nonce-{nonce}' 'unsafe-eval' "
+            f"https://cdn.tailwindcss.com https://static.osb.pf; "
+            f"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            f"font-src 'self' https://fonts.gstatic.com; "
+            f"img-src 'self' data: blob: https://*.amazonaws.com; "
+            f"connect-src 'self'; "
+            f"object-src 'none'; "
+            f"frame-ancestors 'none'"
         )
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'

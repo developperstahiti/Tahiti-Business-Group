@@ -7,8 +7,8 @@
   <title>{% block title %}Tahiti Business Group{% endblock %} — Annonces Polynésie</title>
   <meta name="description" content="{% block meta_desc %}Annonces gratuites en Polynésie française. Achetez et vendez véhicules, immobilier, électronique, emploi.{% endblock %}">
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+  <script nonce="{{ csp_nonce }}" src="https://cdn.tailwindcss.com"></script>
+  <script nonce="{{ csp_nonce }}">
     tailwind.config = {
       theme: {
         extend: {
@@ -624,7 +624,7 @@
 </nav>
 
 {% load static %}
-<script src="{% static 'js/main.js' %}?v={{ STATIC_VERSION }}"></script>
+<script nonce="{{ csp_nonce }}" src="{% static 'js/main.js' %}?v={{ STATIC_VERSION }}"></script>
 {% block extra_js %}{% endblock %}
 
 <!-- ═══ CONTACT MODAL ═══ -->
@@ -646,7 +646,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // ── Positionner les dropdowns nav en fixed sur desktop ────────────────
 (function() {
   if (!window.matchMedia('(min-width:1025px)').matches) return;
@@ -696,7 +696,7 @@ function toggleSlideAccordion(btn) {
 
 </script>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // ── Contact Modal ────────────────────────────────────────────────────────────
 function openContact(url) {
   const modal = document.getElementById('contactModal');
@@ -763,7 +763,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
 </script>
 
 
-<script>
+<script nonce="{{ csp_nonce }}">
 /* ── Animations pub supprimées — encarts désormais statiques ── */
 (function () {
   'use strict';
@@ -904,7 +904,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
   </button>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 // ── PWA : Service Worker + Install Prompt ───────────────────────────
 (function() {
   // Enregistrer le service worker
@@ -968,7 +968,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact
     </div>
   </div>
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   if (!document.cookie.split(';').some(function(c){return c.trim().startsWith('cookie_consent=')})) {
     document.getElementById('cookie-banner').style.display = 'block';
