@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Promos, Nouveautés et Infos Business en Polynésie — TBG{% endblock %}
+{% block title %}Promotions, Nouveautés et Infos média en Polynésie — TBG{% endblock %}
 {% block meta_desc %}Découvrez les promotions, nouveautés et actualités business en Polynésie française sur Tahiti Business Group.{% endblock %}
 
 {% block content %}
@@ -10,23 +10,23 @@
   <div class="mb-12 border-b-2 border-gray-900 pb-6">
     <h1 class="text-4xl font-bold text-gray-900 mb-3">Rubriques TBG</h1>
     <p class="text-gray-500 text-base max-w-xl">
-      Promotions professionnelles · Actualités locales · Nouveautés business à Tahiti
+      Promotions / Offres spéciales · Infos média / Articles de presse · Nouveautés / À tester absolument
     </p>
     {% if user.is_authenticated %}
     <div class="flex flex-wrap gap-2 mt-5">
       {% if user.is_pro %}
       <a href="{% url 'deposer_promo' %}"
          class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 hover:bg-black transition">
-        💰 Déposer une promo
+        <img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"> Déposer une promotion
       </a>
       <a href="{% url 'deposer_nouveaute' %}"
          class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-4 py-2 hover:bg-black transition">
-        🚀 Publier une nouveauté
+        <img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Publier une nouveauté
       </a>
       {% endif %}
       <a href="{% url 'deposer_info' %}"
          class="inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2 hover:bg-gray-100 transition">
-        📰 Soumettre une info
+        <img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Soumettre une info média
       </a>
       {% if user.is_staff %}
       <a href="{% url 'moderation_dashboard' %}"
@@ -41,7 +41,7 @@
   <!-- ── PROMO ─────────────────────────────────────────────────────── -->
   <section class="mb-16" id="promos">
     <div class="rubrique-section-header">
-      <h2>Promos &amp; Réductions</h2>
+      <h2>Promotion / Offre spéciale</h2>
       <span class="rubrique-section-badge">PRO</span>
     </div>
     {% if promos %}
@@ -49,10 +49,10 @@
       {% for p in promos %}
       <a href="{% url 'promo_detail' p.pk %}" class="article-card">
         <div class="article-card__image">
-          {% if p.photo %}<img src="{{ p.photo }}" alt="{{ p.titre }}" loading="lazy">{% else %}<span class="article-card__emoji">💰</span>{% endif %}
+          {% if p.photo %}<img src="{{ p.photo }}" alt="{{ p.titre }}" loading="lazy">{% else %}<span class="article-card__emoji"><img src="{% static 'img/cat-promotion.webp' %}" alt="" class="cat-icon--lg"></span>{% endif %}
         </div>
         <div class="article-card__body">
-          <span class="article-card__badge">Promo</span>
+          <span class="article-card__badge">Promotion</span>
           <div class="article-card__title">{{ p.titre }}</div>
           <div class="article-card__desc">{{ p.contenu }}</div>
           <div class="article-card__meta">
@@ -65,8 +65,8 @@
     </div>
     {% else %}
     <div class="border-2 border-dashed border-gray-300 p-10 text-center">
-      <div class="text-4xl mb-2 grayscale">💰</div>
-      <p class="text-gray-400 text-sm font-medium">Aucune promo validée pour l'instant.</p>
+      <div class="text-4xl mb-2 grayscale"><img src="{% static 'img/cat-promotion.webp' %}" alt="" class="cat-icon--lg"></div>
+      <p class="text-gray-400 text-sm font-medium">Aucune promotion validée pour l'instant.</p>
       {% if user.is_pro %}
       <a href="{% url 'deposer_promo' %}" class="mt-3 inline-block text-xs font-bold underline text-gray-700">
         Soyez le premier à publier →
@@ -79,17 +79,17 @@
   <!-- ── INFO ──────────────────────────────────────────────────────── -->
   <section class="mb-16" id="info">
     <div class="rubrique-section-header">
-      <h2>Actualités &amp; Infos</h2>
+      <h2>Infos média / Article de presse</h2>
     </div>
     {% if infos %}
     <div class="rubrique-grid">
       {% for a in infos %}
       <a href="{% url 'info_detail' a.pk %}" class="article-card">
         <div class="article-card__image">
-          {% if a.photo %}<img src="{{ a.photo }}" alt="{{ a.titre }}" loading="lazy">{% else %}<span class="article-card__emoji">📰</span>{% endif %}
+          {% if a.photo %}<img src="{{ a.photo }}" alt="{{ a.titre }}" loading="lazy">{% else %}<span class="article-card__emoji"><img src="{% static 'img/cat-infos.webp' %}" alt="" class="cat-icon--lg"></span>{% endif %}
         </div>
         <div class="article-card__body">
-          <span class="article-card__badge">Info</span>
+          <span class="article-card__badge">Infos média</span>
           <div class="article-card__title">{{ a.titre }}</div>
           <div class="article-card__desc">{{ a.contenu }}</div>
           <div class="article-card__meta">
@@ -102,7 +102,7 @@
     </div>
     {% else %}
     <div class="border-2 border-dashed border-gray-300 p-10 text-center">
-      <div class="text-4xl mb-2 grayscale">📰</div>
+      <div class="text-4xl mb-2 grayscale"><img src="{% static 'img/cat-infos.webp' %}" alt="" class="cat-icon--lg"></div>
       <p class="text-gray-400 text-sm font-medium">Aucune actualité validée pour l'instant.</p>
       {% if user.is_authenticated %}
       <a href="{% url 'deposer_info' %}" class="mt-3 inline-block text-xs font-bold underline text-gray-700">
@@ -116,7 +116,7 @@
   <!-- ── NOUVEAUTÉ ─────────────────────────────────────────────────── -->
   <section class="mb-16" id="nouveautes">
     <div class="rubrique-section-header">
-      <h2>Nouveautés Business</h2>
+      <h2>Nouveautés / À tester absolument</h2>
       <span class="rubrique-section-badge">PRO</span>
     </div>
     {% if nouveautes %}
@@ -124,10 +124,10 @@
       {% for n in nouveautes %}
       <a href="{% url 'nouveaute_detail' n.pk %}" class="article-card">
         <div class="article-card__image">
-          {% if n.photo %}<img src="{{ n.photo }}" alt="{{ n.titre }}" loading="lazy">{% else %}<span class="article-card__emoji">🚀</span>{% endif %}
+          {% if n.photo %}<img src="{{ n.photo }}" alt="{{ n.titre }}" loading="lazy">{% else %}<span class="article-card__emoji"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="" class="cat-icon--lg"></span>{% endif %}
         </div>
         <div class="article-card__body">
-          <span class="article-card__badge">Nouveauté</span>
+          <span class="article-card__badge">Nouveautés</span>
           <div class="article-card__title">{{ n.titre }}</div>
           <div class="article-card__desc">{{ n.contenu }}</div>
           <div class="article-card__meta">
@@ -140,7 +140,7 @@
     </div>
     {% else %}
     <div class="border-2 border-dashed border-gray-300 p-10 text-center">
-      <div class="text-4xl mb-2 grayscale">🚀</div>
+      <div class="text-4xl mb-2 grayscale"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="" class="cat-icon--lg"></div>
       <p class="text-gray-400 text-sm font-medium">Aucune nouveauté validée pour l'instant.</p>
       {% if user.is_pro %}
       <a href="{% url 'deposer_nouveaute' %}" class="mt-3 inline-block text-xs font-bold underline text-gray-700">
@@ -155,17 +155,17 @@
   <div class="border-2 border-gray-900 p-8 text-center">
     <h2 class="text-2xl font-bold text-gray-900 mb-2">Vous êtes un professionnel ?</h2>
     <p class="text-gray-500 mb-6 text-sm max-w-md mx-auto">
-      Publiez vos promos et nouveautés sur TBG — la plateforme n°1 de Polynésie française.
+      Publiez vos promotions et nouveautés sur TBG — la plateforme n°1 de Polynésie française.
     </p>
     <div class="flex flex-col sm:flex-row gap-3 justify-center">
       {% if user.is_pro %}
       <a href="{% url 'deposer_promo' %}"
          class="bg-gray-900 text-white font-bold px-6 py-3 hover:bg-black transition text-sm">
-        💰 Déposer une promo
+        <img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"> Déposer une promotion
       </a>
       <a href="{% url 'deposer_nouveaute' %}"
          class="border-2 border-gray-900 text-gray-900 font-bold px-6 py-3 hover:bg-gray-100 transition text-sm">
-        🚀 Publier une nouveauté
+        <img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Publier une nouveauté
       </a>
       {% else %}
       <a href="{% url 'deposer_annonce' %}"

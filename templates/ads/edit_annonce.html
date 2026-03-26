@@ -70,26 +70,17 @@
               </div>
             </div>
 
-            <!-- Localisation structuree -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Localisation (sélecteur interactif) -->
+            <div>
+              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Localisation</label>
+              <div id="loc-selector-edit"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Commune</label>
-                <input type="text" name="commune" id="id_commune" class="form-input" list="communes-list"
-                  value="{{ annonce.commune }}" placeholder="Tapez votre commune..." autocomplete="off">
-                <datalist id="communes-list"></datalist>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Quartier / Section</label>
-                <input type="text" name="quartier" id="id_quartier" class="form-input" list="quartiers-list"
-                  value="{{ annonce.quartier }}" placeholder="Optionnel..." autocomplete="off">
-                <datalist id="quartiers-list"></datalist>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision</label>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision lieu</label>
                 <input type="text" name="precision_lieu" value="{{ annonce.precision_lieu }}" class="form-input" placeholder="Ex: PK18...">
               </div>
             </div>
-            <input type="hidden" name="localisation" value="{{ annonce.localisation }}">
 
             <!-- Description -->
             <div>
@@ -168,43 +159,31 @@
 {% endblock %}
 
 {% block extra_js %}
+{% load static %}
 {{ sous_categories_data|json_script:"sous-cats-data" }}
-{{ communes_par_archipel|json_script:"communes-edit" }}
-{{ quartiers_par_commune|json_script:"quartiers-edit" }}
+
+<script src="{% static 'js/location-selector.js' %}"></script>
 <script>
-// ── Localisation dynamique (autocomplete) ───────────────────────
-(function initLocEdit() {
-  const COMMUNES = JSON.parse(document.getElementById("communes-edit").textContent);
-  const QUARTIERS = JSON.parse(document.getElementById("quartiers-edit").textContent);
-  const communeInput = document.getElementById('id_commune');
-  const quartierInput = document.getElementById('id_quartier');
-  const communesList = document.getElementById('communes-list');
-  const quartiersList = document.getElementById('quartiers-list');
-  if (!communeInput) return;
-
-  // Remplir datalist communes
-  Object.entries(COMMUNES).forEach(([archipel, communes]) => {
-    communes.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-
-      communesList.appendChild(opt);
-    });
-  });
-
-  // Remplir datalist quartiers selon commune
-  function fillQuartiers(commune) {
-    quartiersList.innerHTML = '';
-    (QUARTIERS[commune] || []).forEach(q => {
-      const opt = document.createElement('option');
-      opt.value = q;
-      quartiersList.appendChild(opt);
+// ── Sélecteur de localisation interactif ────────────────────────
+(function initLocSelector() {
+  var root = document.getElementById('loc-selector-edit');
+  if (!root || !window.LocationSelector) return;
+  var initial = [];
+  var commune = '{{ annonce.commune|escapejs }}';
+  var quartier = '{{ annonce.quartier|default:""|escapejs }}';
+  if (commune) {
+    initial.push({
+      island: null,
+      commune: commune,
+      quartier: quartier || null,
+      label: commune + (quartier ? ' \u2014 ' + quartier : '')
     });
   }
-
-  if (communeInput.value) fillQuartiers(communeInput.value);
-  communeInput.addEventListener('input', function() { fillQuartiers(this.value); });
-  communeInput.addEventListener('change', function() { fillQuartiers(this.value); });
+  new LocationSelector(root, {
+    mode: 'form',
+    staticPrefix: '{% static "img/" %}',
+    initial: initial,
+  });
 })();
 
 // ── Sous-catégories dynamiques ─────────────────────────────────

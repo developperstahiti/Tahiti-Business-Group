@@ -19,18 +19,19 @@ class PubliciteAdmin(admin.ModelAdmin):
     )
 
     def emplacement_badge(self, obj):
-        colors = {
-            'haut': '#ef4444', 'milieu': '#f59e0b', 'bas': '#10b981', 'billboard': '#3b82f6',
-            'cat_haut': '#8b5cf6', 'cat_milieu': '#8b5cf6', 'cat_bas': '#8b5cf6',
-        }
-        labels = {
-            'haut': '🔴 HAUT', 'milieu': '🟡 MILIEU', 'bas': '🟢 BAS', 'billboard': '📺 BILLBOARD',
-            'cat_haut': '📌 CAT HAUT', 'cat_milieu': '📌 CAT MILIEU', 'cat_bas': '📌 CAT BAS',
-        }
+        emp = obj.emplacement
+        if 'billboard' in emp:
+            color = '#3b82f6'
+        elif 'sidebar' in emp:
+            color = '#ef4444'
+        elif 'strip' in emp:
+            color = '#f59e0b'
+        else:
+            color = '#6b7280'
+        label = obj.get_emplacement_display().split('(')[0].strip()
         return format_html(
             '<span style="color:{};font-weight:bold">{}</span>',
-            colors.get(obj.emplacement, '#6b7280'),
-            labels.get(obj.emplacement, obj.emplacement.upper())
+            color, label
         )
     emplacement_badge.short_description = 'Emplacement'
 

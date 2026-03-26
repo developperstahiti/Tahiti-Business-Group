@@ -9,7 +9,7 @@
         class="annonce-card__img lazy w-full h-full absolute inset-0">
       {% else %}
       <div class="w-full h-full absolute inset-0 flex items-center justify-center text-4xl bg-gray-100">
-        {% if annonce.categorie == 'vehicules' %}🚗{% elif annonce.categorie == 'immobilier' %}🏠{% elif annonce.categorie == 'occasion' %}📦{% elif annonce.categorie == 'emploi' %}💼{% elif annonce.categorie == 'services' %}🔧{% else %}📦{% endif %}
+        {% load static %}{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" style="width:32px;height:32px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:32px;height:32px;object-fit:contain">{% endif %}
       </div>
       {% endif %}
       {% if annonce.boost %}
@@ -31,9 +31,13 @@
       <div class="annonce-card__title">{{ annonce.titre }}{% if annonce.verified %}<span class="inline-flex items-center text-emerald-600 text-xs font-bold ml-1" title="Annonce vérifiée">&#10003; Vérifiée</span>{% endif %}</div>
       <div class="annonce-card__price">{{ annonce.get_prix_display_label }}</div>
       <div class="annonce-card__meta">
-        <span>📍 {% firstof annonce.commune annonce.localisation %}</span>
-        <span>👁 {{ annonce.views }}</span>
-        <span>🖱 {{ annonce.clics }}</span>
+        <span>👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
+      </div>
+      {% load notation_tags %}{% vendeur_note annonce.user as vn %}
+      <div class="annonce-card__seller">
+        <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__avatar-link" onclick="event.stopPropagation()">{% if annonce.user.avatar_url %}<img src="{{ annonce.user.avatar_url }}" alt="" class="annonce-card__avatar">{% else %}<span class="annonce-card__avatar annonce-card__avatar--initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>{% endif %}</a>
+        {% if vn.moyenne %}<span class="annonce-card__note">★ {{ vn.moyenne }}</span>{% endif %}
+        <span class="annonce-card__loc">📍 {% firstof annonce.commune annonce.localisation %}</span>
       </div>
     </div>
   </a>

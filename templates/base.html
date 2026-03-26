@@ -99,10 +99,29 @@
     {% endif %}
   </a>
   {% else %}
-  <a href="{% url 'deposer_pub' %}?emplacement=billboard" class="pub-bg-fixed-empty" style="position:relative;display:block;min-height:160px">
-    <canvas class="pub-space-canvas"></canvas>
-    <div class="pub-space-text"><span class="pub-txt-main pub-txt-visible">Votre publicit&eacute; ici</span><span class="pub-txt-phone">89 61 06 13</span></div>
-    <div style="position:absolute;bottom:24px;left:0;right:0;text-align:center;z-index:2;font-size:12px;color:rgba(255,255,255,.6)">100 000 XPF/mois</div>
+  <a href="{% url 'deposer_pub' %}?emplacement=billboard" class="pub-empty block" style="min-height:160px;border-radius:0;flex-direction:row;gap:20px;padding:20px 32px;pointer-events:auto">
+    <span class="pub-star" style="top:8%;left:4%;animation-delay:0s"></span>
+    <span class="pub-star pub-star--lg" style="top:15%;left:18%;animation-delay:.3s"></span>
+    <span class="pub-star" style="top:25%;left:32%;animation-delay:.6s"></span>
+    <span class="pub-star" style="top:10%;left:48%;animation-delay:.9s"></span>
+    <span class="pub-star pub-star--lg" style="top:30%;left:62%;animation-delay:1.2s"></span>
+    <span class="pub-star" style="top:18%;left:78%;animation-delay:1.5s"></span>
+    <span class="pub-star" style="top:8%;left:90%;animation-delay:1.8s"></span>
+    <span class="pub-star" style="top:55%;left:6%;animation-delay:2.1s"></span>
+    <span class="pub-star pub-star--lg" style="top:65%;left:22%;animation-delay:2.4s"></span>
+    <span class="pub-star" style="top:50%;left:38%;animation-delay:2.7s"></span>
+    <span class="pub-star" style="top:70%;left:52%;animation-delay:0.4s"></span>
+    <span class="pub-star pub-star--lg" style="top:60%;left:70%;animation-delay:.8s"></span>
+    <span class="pub-star" style="top:75%;left:84%;animation-delay:1.1s"></span>
+    <span class="pub-star" style="top:45%;left:94%;animation-delay:1.6s"></span>
+    <span class="pub-star" style="top:85%;left:15%;animation-delay:2s"></span>
+    <span class="pub-star" style="top:80%;left:45%;animation-delay:2.5s"></span>
+    <span class="pub-star pub-star--lg" style="top:88%;left:75%;animation-delay:2.9s"></span>
+    <span class="pub-star" style="top:40%;left:10%;animation-delay:1.3s"></span>
+    <div class="pub-empty__zone" style="margin-bottom:0;font-size:10px">Billboard plein écran</div>
+    <div class="pub-empty__title" style="margin-bottom:0;font-size:20px">Votre pub ici</div>
+    <div class="pub-empty__price" style="margin-bottom:0;font-size:14px">100 000 XPF/mois</div>
+    <span class="pub-empty__cta" style="font-size:14px;padding:10px 24px">Réserver →</span>
   </a>
   {% endif %}
 </div>
@@ -146,37 +165,12 @@
 
       <!-- Actions droite -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        {% if user.is_authenticated and user.is_pro %}
-        <div class="hidden sm:block deposer-wrap" id="deposerWrap">
-          <button class="deposer-btn" id="deposerBtn" onclick="toggleDeposerMenu(event)" aria-haspopup="true" aria-expanded="false">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-            </svg>
-            Déposer
-            <svg class="deposer-chevron w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-          <div class="deposer-menu" id="deposerMenu" role="menu">
-            <a href="{% url 'deposer_annonce' %}" class="deposer-menu__item" role="menuitem">
-              <span class="deposer-menu__icon">📋</span> Annonce
-            </a>
-            <a href="{% url 'deposer_promo' %}" class="deposer-menu__item" role="menuitem">
-              <span class="deposer-menu__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" style="display:inline-block;vertical-align:middle"><circle cx="12" cy="12" r="11" fill="#e53e3e"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial,sans-serif">-%</text></svg></span> Promo
-            </a>
-            <a href="{% url 'deposer_nouveaute' %}" class="deposer-menu__item" role="menuitem">
-              <span class="deposer-menu__icon">✨</span> Nouveauté
-            </a>
-          </div>
-        </div>
-        {% else %}
-        <a href="{% url 'deposer_annonce' %}" class="hidden sm:inline-flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm">
+        <a href="{% url 'deposer_annonce' %}" class="hidden sm:inline-flex items-center gap-1.5 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm" style="background:#111111" onmouseover="this.style.background='#333333'" onmouseout="this.style.background='#111111'">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
           </svg>
           Déposer
         </a>
-        {% endif %}
 
         <!-- Hamburger catégories (mobile) -->
         <button class="hamburger-btn" onclick="openCatMenu()" aria-label="Catégories" id="hamburgerBtn">
@@ -229,8 +223,7 @@
           </div>
         </div>
         {% else %}
-        <a href="{% url 'login' %}" class="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-100 transition font-medium">Connexion</a>
-        <a href="{% url 'register' %}" class="hidden sm:inline-block text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition font-semibold shadow-sm">Inscription</a>
+        <a href="{% url 'login' %}" class="text-sm text-gray-800 hover:text-gray-900 px-4 py-2.5 rounded-xl border border-gray-300 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 transition font-bold shadow-sm">Connexion</a>
         {% endif %}
       </div>
     </div>
@@ -240,33 +233,16 @@
   <div id="cat-zone-2" class="border-b border-gray-200" style="overflow-x:clip">
     <nav class="max-w-7xl mx-auto px-4 cat-nav" aria-label="Catégories">
 
-      <!-- 1. Promo (PRO uniquement pour déposer) -->
-      <div class="cat-nav-item">
-        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" style="display:inline-block;vertical-align:middle"><circle cx="12" cy="12" r="11" fill="#e53e3e"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial,sans-serif">-%</text></svg> Promo
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </a>
-        <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Promos professionnels</div>
-          <a href="{% url 'rubriques_index' %}">Voir les promos</a>
-          {% if user.is_pro %}
-          <a href="{% url 'deposer_promo' %}">➕ Déposer une promo</a>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- 2. Info -->
+      <!-- 1. Info -->
       <div class="cat-nav-item">
         <a href="{% url 'page_info' %}" class="cat-nav-link">
-          📰 Info
+          <img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Infos média
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </a>
         <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Informations</div>
+          <div class="cat-dropdown__header">Infos média / Article de presse</div>
           <a href="{% url 'page_info' %}">Comment utiliser</a>
           <a href="{% url 'page_info' %}#tarifs">Tarifs publicités</a>
           <a href="{% url 'page_info' %}#contact">Nous contacter</a>
@@ -274,10 +250,44 @@
         </div>
       </div>
 
-      <!-- 3. Immobilier -->
+      <!-- 2. Nouveauté (PRO uniquement pour publier) -->
+      <div class="cat-nav-item">
+        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
+          <img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Nouveautés
+          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </a>
+        <div class="cat-dropdown">
+          <div class="cat-dropdown__header">Nouveautés / À tester absolument</div>
+          <a href="{% url 'rubriques_index' %}">Voir les nouveautés</a>
+          {% if user.is_pro %}
+          <a href="{% url 'deposer_nouveaute' %}">➕ Publier une nouveauté</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 3. Promo (PRO uniquement pour déposer) -->
+      <div class="cat-nav-item">
+        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
+          <img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"> Promotion
+          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </a>
+        <div class="cat-dropdown">
+          <div class="cat-dropdown__header">Promotion / Offre spéciale</div>
+          <a href="{% url 'rubriques_index' %}">Voir les promotions</a>
+          {% if user.is_pro %}
+          <a href="{% url 'deposer_promo' %}">➕ Déposer une promotion</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 4. Immobilier -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="cat-nav-link">
-          🏠 Immobilier
+          <img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon"> Immobilier
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
@@ -287,19 +297,19 @@
           <a href="{% url 'liste_annonces' %}?categorie=immobilier">Toutes</a>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=vente" class="text-emerald-600 font-semibold">A vendre</a>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=location" class="text-blue-600 font-semibold">A louer</a>
-          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements">Appartements &amp; studios</a>
-          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons">Maisons &amp; villas</a>
-          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains">Terrains &amp; lots</a>
-          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-bureaux">Bureaux &amp; commerces</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements">Appartements et studios</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons">Maisons et villas</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains">Terrains et lots</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-bureaux">Bureaux et commerces</a>
           <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-saisonnieres">Saisonnières (Arue/Papeete)</a>
-          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-parkings">Parkings &amp; garages</a>
+          <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-parkings">Parkings et garages</a>
         </div>
       </div>
 
       <!-- 4. Véhicule -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="cat-nav-link">
-          🚗 Véhicule
+          <img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon"> Véhicule
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
@@ -307,93 +317,42 @@
         <div class="cat-dropdown">
           <div class="cat-dropdown__header">Véhicules</div>
           <a href="{% url 'liste_annonces' %}?categorie=vehicules">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-4x4">Voitures / 4 roues</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-voitures">Voitures</a>
           <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-2roues">2 roues (scooters/motos)</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux">Bateaux &amp; jet-skis</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires">Utilitaires &amp; camions</a>
-          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces">Pièces auto &amp; accessoires</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux">Bateaux et jet-skis</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires">Utilitaires et camions</a>
+          <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces">Pièces auto et accessoires</a>
         </div>
       </div>
 
-      <!-- 5. Occasion (fusion Électronique + Autres) -->
+      <!-- 5. Occasion -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=occasion" class="cat-nav-link">
-          📦 Occasion
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
+          <img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon"> Occasion / Bon Plan
         </a>
-        <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Occasion</div>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-telephones">Téléphones &amp; accessoires</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-ordinateurs">Ordinateurs &amp; tablettes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-pc">PC &amp; Informatique</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-tv">TV &amp; Audio</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-video">Jeux vidéo</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-electromenager">Électroménager</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-meubles">Meubles &amp; Déco</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-vetements">Vêtements &amp; Mode</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-sport">Sport &amp; Loisirs</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-puericulture">Puériculture</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-jouets">Jeux &amp; Jouets</a>
-          <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-divers">Divers</a>
-        </div>
-      </div>
-
-      <!-- 6. Nouveauté (PRO uniquement pour publier) -->
-      <div class="cat-nav-item">
-        <a href="{% url 'rubriques_index' %}" class="cat-nav-link">
-          🚀 Nouveauté
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </a>
-        <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Nouveautés business</div>
-          <a href="{% url 'rubriques_index' %}">Voir les nouveautés</a>
-          {% if user.is_pro %}
-          <a href="{% url 'deposer_nouveaute' %}">➕ Publier une nouveauté</a>
-          {% endif %}
-        </div>
       </div>
 
       <!-- 7. Emploi -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=emploi" class="cat-nav-link">
-          💼 Emploi
+          <img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"> Offre et Demande d'emploi
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
         </a>
         <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Emploi</div>
+          <div class="cat-dropdown__header">Offre et Demande d'emploi</div>
           <a href="{% url 'liste_annonces' %}?categorie=emploi">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-commerciaux">Commerciaux</a>
-          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-informatique">Informatique &amp; Dév</a>
-          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-hotellerie">Hôtellerie &amp; Resto</a>
-          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-btp">BTP &amp; Construction</a>
-          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-services">Services à la personne</a>
+          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-offre">Offres d'emploi</a>
+          <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-recherche">Recherche d'emploi</a>
         </div>
       </div>
 
       <!-- 8. Services -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=services" class="cat-nav-link">
-          🔧 Services
-          <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
+          <img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon"> Service / Prestation
         </a>
-        <div class="cat-dropdown">
-          <div class="cat-dropdown__header">Services</div>
-          <a href="{% url 'liste_annonces' %}?categorie=services">Toutes</a>
-          <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-travaux">Travaux &amp; BTP</a>
-          <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-cours">Cours &amp; Formation</a>
-          <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-transport">Transport</a>
-          <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-sante">Santé &amp; Beauté</a>
-          <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-jardinage">Jardinage</a>
-        </div>
       </div>
 
       {% if user.is_staff %}
@@ -423,93 +382,57 @@
   </div>
   <div class="slide-menu__body">
     <!-- Rubriques -->
-    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" style="display:inline-block;vertical-align:middle"><circle cx="12" cy="12" r="11" fill="#e53e3e"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial,sans-serif">-%</text></svg></span> Promos & Rubriques</a>
+    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"></span> Promotions et Rubriques</a>
 
     <!-- Catégories avec sous-catégories en accordéon -->
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">🚗</span> Véhicules
+        <span class="slide-cat-icon"><img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon"></span> Véhicules
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
         <a href="{% url 'liste_annonces' %}?categorie=vehicules" class="slide-sub-link">Tout Véhicules</a>
-        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-4x4" class="slide-sub-link">Voitures / 4 roues</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-voitures" class="slide-sub-link">Voitures</a>
         <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-2roues" class="slide-sub-link">2 roues (scooters/motos)</a>
-        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux" class="slide-sub-link">Bateaux & jet-skis</a>
-        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires" class="slide-sub-link">Utilitaires & camions</a>
-        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces" class="slide-sub-link">Pièces auto & accessoires</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-bateaux" class="slide-sub-link">Bateaux et jet-skis</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-utilitaires" class="slide-sub-link">Utilitaires et camions</a>
+        <a href="{% url 'liste_annonces' %}?categorie=vehicules&sous_cat=vehicules-pieces" class="slide-sub-link">Pièces et accessoires</a>
       </div>
     </div>
 
-    <div class="slide-accordion">
-      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">📦</span> Occasion
-        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="slide-accordion__panel">
-        <a href="{% url 'liste_annonces' %}?categorie=occasion" class="slide-sub-link">Tout Occasion</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-telephones" class="slide-sub-link">Téléphones & accessoires</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-ordinateurs" class="slide-sub-link">Ordinateurs & tablettes</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-pc" class="slide-sub-link">PC & Informatique</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-tv" class="slide-sub-link">TV & Audio</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-video" class="slide-sub-link">Jeux vidéo</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-electromenager" class="slide-sub-link">Électroménager</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-meubles" class="slide-sub-link">Meubles & Déco</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-vetements" class="slide-sub-link">Vêtements & Mode</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-sport" class="slide-sub-link">Sport & Loisirs</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-puericulture" class="slide-sub-link">Puériculture</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-jeux-jouets" class="slide-sub-link">Jeux & Jouets</a>
-        <a href="{% url 'liste_annonces' %}?categorie=occasion&sous_cat=occasion-divers" class="slide-sub-link">Divers</a>
-      </div>
-    </div>
+    <a href="{% url 'liste_annonces' %}?categorie=occasion" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon"></span> Occasion / Bon Plan</a>
 
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">🏠</span> Immobilier
+        <span class="slide-cat-icon"><img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon"></span> Immobilier
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
         <a href="{% url 'liste_annonces' %}?categorie=immobilier" class="slide-sub-link">Tout Immobilier</a>
         <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=vente" class="slide-sub-link" style="color:#059669;font-weight:600">A vendre</a>
         <a href="{% url 'liste_annonces' %}?categorie=immobilier&transaction=location" class="slide-sub-link" style="color:#2563eb;font-weight:600">A louer</a>
-        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements" class="slide-sub-link">Appartements & studios</a>
-        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons" class="slide-sub-link">Maisons & villas</a>
-        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains" class="slide-sub-link">Terrains & lots</a>
-        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-bureaux" class="slide-sub-link">Bureaux & commerces</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-appartements" class="slide-sub-link">Appartements et studios</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-maisons" class="slide-sub-link">Maisons et villas</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-terrains" class="slide-sub-link">Terrains et lots</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-bureaux" class="slide-sub-link">Bureaux et commerces</a>
         <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-saisonnieres" class="slide-sub-link">Saisonnières</a>
-        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-parkings" class="slide-sub-link">Parkings & garages</a>
+        <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-parkings" class="slide-sub-link">Parkings et garages</a>
       </div>
     </div>
 
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">💼</span> Emploi
+        <span class="slide-cat-icon"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"></span> Offre et Demande d'emploi
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
         <a href="{% url 'liste_annonces' %}?categorie=emploi" class="slide-sub-link">Tout Emploi</a>
-        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-commerciaux" class="slide-sub-link">Commerciaux</a>
-        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-informatique" class="slide-sub-link">Informatique & Dév</a>
-        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-hotellerie" class="slide-sub-link">Hôtellerie & Resto</a>
-        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-btp" class="slide-sub-link">BTP & Construction</a>
-        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-services" class="slide-sub-link">Services à la personne</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-offre" class="slide-sub-link">Offres d'emploi</a>
+        <a href="{% url 'liste_annonces' %}?categorie=emploi&sous_cat=emploi-recherche" class="slide-sub-link">Recherche d'emploi</a>
       </div>
     </div>
 
-    <div class="slide-accordion">
-      <button type="button" class="slide-cat-link slide-accordion__toggle" onclick="toggleSlideAccordion(this)">
-        <span class="slide-cat-icon">🔧</span> Services
-        <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="slide-accordion__panel">
-        <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-sub-link">Tout Services</a>
-        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-travaux" class="slide-sub-link">Travaux & BTP</a>
-        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-cours" class="slide-sub-link">Cours & Formation</a>
-        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-transport" class="slide-sub-link">Transport</a>
-        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-sante" class="slide-sub-link">Santé & Beauté</a>
-        <a href="{% url 'liste_annonces' %}?categorie=services&sous_cat=services-jardinage" class="slide-sub-link">Jardinage</a>
-      </div>
-    </div>
+    <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon"></span> Service / Prestation</a>
 
     {% if user.is_staff %}
     <div class="slide-menu__sep"></div>
@@ -566,18 +489,18 @@
       <div>
         <h4 class="text-xs font-bold uppercase tracking-wider mb-3 text-gray-900">Catégories</h4>
         <ul class="space-y-1.5 text-sm text-gray-500">
-          <li><a href="{% url 'liste_annonces' %}?categorie=vehicules" class="hover:text-blue-600 transition">🚗 Véhicules</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=immobilier" class="hover:text-blue-600 transition">🏠 Immobilier</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=occasion" class="hover:text-blue-600 transition">📦 Occasion</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=emploi" class="hover:text-blue-600 transition">💼 Emploi</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=services" class="hover:text-blue-600 transition">🔧 Services</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=vehicules" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon"> Véhicules</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=immobilier" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon"> Immobilier</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=occasion" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon"> Occasion / Bon Plan</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=emploi" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"> Offre et Demande d'emploi</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=services" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon"> Service / Prestation</a></li>
         </ul>
       </div>
 
       <div>
         <h4 class="text-xs font-bold uppercase tracking-wider mb-3 text-gray-900">Publicité</h4>
         <ul class="space-y-1.5 text-sm text-gray-500">
-          <li><a href="{% url 'tarifs_pubs' %}" class="hover:text-blue-600 transition">Tarifs &amp; emplacements</a></li>
+          <li><a href="{% url 'tarifs_pubs' %}" class="hover:text-blue-600 transition">Tarifs et emplacements</a></li>
           <li><a href="{% url 'demande_pub' %}" class="hover:text-blue-600 transition">Réserver un emplacement</a></li>
           <li class="pt-2 border-t border-gray-100 space-y-1">
             <div class="text-xs">Billboard — <strong class="text-gray-800">100 000 XPF/mois</strong></div>
@@ -601,6 +524,42 @@
 </footer>
 
 </div><!-- /#main-frame -->
+
+<!-- SIDEBAR GAUCHE ─ pub unique (desktop ≥1025px uniquement) -->
+<div id="left-sidebar-pub">
+  <div class="pub-slot overflow-hidden" style="border-radius:10px">
+    {% if pub_sidebar_gauche %}
+      {% if pub_sidebar_gauche.lien %}<a href="{{ pub_sidebar_gauche.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
+      {% if pub_sidebar_gauche.is_video %}
+        <video src="{{ pub_sidebar_gauche.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+      {% elif pub_sidebar_gauche.get_image %}
+        <img src="{{ pub_sidebar_gauche.get_image }}" alt="{{ pub_sidebar_gauche.titre }}" class="w-full h-auto block" loading="lazy">
+      {% endif %}
+      {% if pub_sidebar_gauche.lien %}</a>{% endif %}
+    {% else %}
+    <a href="{% url 'deposer_pub' %}?emplacement=sidebar_gauche" class="pub-empty block" style="border-radius:12px">
+      <span class="pub-star" style="top:5%;left:10%;animation-delay:0s"></span>
+      <span class="pub-star pub-star--lg" style="top:12%;left:45%;animation-delay:.4s"></span>
+      <span class="pub-star" style="top:8%;left:78%;animation-delay:.8s"></span>
+      <span class="pub-star" style="top:22%;left:25%;animation-delay:1.2s"></span>
+      <span class="pub-star pub-star--lg" style="top:28%;left:70%;animation-delay:1.6s"></span>
+      <span class="pub-star" style="top:38%;left:12%;animation-delay:2s"></span>
+      <span class="pub-star" style="top:42%;left:55%;animation-delay:2.4s"></span>
+      <span class="pub-star pub-star--lg" style="top:48%;left:85%;animation-delay:2.8s"></span>
+      <span class="pub-star" style="top:58%;left:20%;animation-delay:.5s"></span>
+      <span class="pub-star" style="top:65%;left:60%;animation-delay:1s"></span>
+      <span class="pub-star pub-star--lg" style="top:72%;left:38%;animation-delay:1.5s"></span>
+      <span class="pub-star" style="top:78%;left:80%;animation-delay:2.2s"></span>
+      <span class="pub-star" style="top:85%;left:15%;animation-delay:2.6s"></span>
+      <span class="pub-star" style="top:90%;left:50%;animation-delay:3s"></span>
+      <div class="pub-empty__zone">Sidebar Gauche</div>
+      <div class="pub-empty__title" style="font-size:14px">Votre pub ici</div>
+      <div class="pub-empty__price">35 000 XPF/mois</div>
+      <span class="pub-empty__cta" style="font-size:12px;padding:6px 16px">Réserver →</span>
+    </a>
+    {% endif %}
+  </div>
+</div>
 
 <!-- SIDEBAR DROITE ─ pubs hors cadre (desktop ≥1025px uniquement) -->
 <div id="right-sidebar-pubs">
@@ -627,21 +586,12 @@
     <span>Annonces</span>
   </a>
 
-  {% if user.is_authenticated and user.is_pro %}
-  <button class="bottom-nav__item bottom-nav__item--deposer" id="deposerBtnMobile" onclick="toggleDeposerMenuMobile(event)" aria-haspopup="true">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-    </svg>
-    <span style="font-size:9px;font-weight:700;letter-spacing:.3px;margin-top:2px;opacity:.85">Publie une annonce</span>
-  </button>
-  {% else %}
   <a href="{% url 'deposer_annonce' %}" class="bottom-nav__item bottom-nav__item--deposer">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
     </svg>
     <span style="font-size:9px;font-weight:700;letter-spacing:.3px;margin-top:2px;opacity:.85">Publie une annonce</span>
   </a>
-  {% endif %}
 
   <a href="{% url 'mes_messages' %}" class="bottom-nav__item">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -744,33 +694,6 @@ function toggleSlideAccordion(btn) {
 }
 </script>
 
-<script>
-// ── Déposer dropdown PRO ──────────────────────────────────────────────
-function _closeAllDeposerMenus() {
-  const wrap = document.getElementById('deposerWrap');
-  if (wrap) { wrap.classList.remove('open'); }
-  const mobileMenu = document.getElementById('deposerMenuMobile');
-  if (mobileMenu) { mobileMenu.classList.remove('open'); }
-}
-function toggleDeposerMenu(e) {
-  e.stopPropagation();
-  const wrap = document.getElementById('deposerWrap');
-  if (!wrap) return;
-  const isOpen = wrap.classList.toggle('open');
-  document.getElementById('deposerBtn').setAttribute('aria-expanded', isOpen);
-  const mobileMenu = document.getElementById('deposerMenuMobile');
-  if (mobileMenu) mobileMenu.classList.remove('open');
-}
-function toggleDeposerMenuMobile(e) {
-  e.stopPropagation();
-  const menu = document.getElementById('deposerMenuMobile');
-  if (!menu) return;
-  menu.classList.toggle('open');
-  const wrap = document.getElementById('deposerWrap');
-  if (wrap) wrap.classList.remove('open');
-}
-document.addEventListener('click', _closeAllDeposerMenus);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') _closeAllDeposerMenus(); });
 </script>
 
 <script>
@@ -839,25 +762,13 @@ function submitContact(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact(); });
 </script>
 
-{% if user.is_authenticated and user.is_pro %}
-<div class="deposer-menu deposer-menu--mobile" id="deposerMenuMobile" role="menu">
-  <a href="{% url 'deposer_annonce' %}" class="deposer-menu__item" role="menuitem">
-    <span class="deposer-menu__icon">📋</span> Annonce
-  </a>
-  <a href="{% url 'deposer_promo' %}" class="deposer-menu__item" role="menuitem">
-    <span class="deposer-menu__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" style="display:inline-block;vertical-align:middle"><circle cx="12" cy="12" r="11" fill="#e53e3e"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial,sans-serif">-%</text></svg></span> Promo
-  </a>
-  <a href="{% url 'deposer_nouveaute' %}" class="deposer-menu__item" role="menuitem">
-    <span class="deposer-menu__icon">✨</span> Nouveauté
-  </a>
-</div>
-{% endif %}
 
 <script>
-/* ── Orbes lumineux bleu/violet + texte alterné ── */
+/* ── Animations pub supprimées — encarts désormais statiques ── */
 (function () {
   'use strict';
-  var BG = '#06030f';
+  /* Canvas et text fade ne sont plus utilisés */
+  return;
 
   /* Palette de couleurs bleu → violet */
   var COLORS = [

@@ -9,29 +9,64 @@ from django.db import models
 from PIL import Image as PILImage, ImageOps as PILImageOps
 
 EMPLACEMENTS = [
+    # Billboard
     ("billboard", "Billboard plein écran (100 000 XPF/mois)"),
-    ("strip_1",   "Strip 1 - Après Promos (8 000 XPF/mois)"),
-    ("strip_2",   "Strip 2 - Milieu page (8 000 XPF/mois)"),
-    ("strip_3",   "Strip 3 - Fin de page (8 000 XPF/mois)"),
-    ("haut",      "Sidebar Haut (40 000 XPF/mois)"),
-    ("milieu",    "Sidebar Milieu (28 000 XPF/mois)"),
-    ("bas",       "Sidebar Bas (20 000 XPF/mois)"),
-    ("cat_haut",   "Catégorie — Haut (15 000 XPF/mois)"),
-    ("cat_milieu", "Catégorie — Milieu (12 000 XPF/mois)"),
-    ("cat_bas",    "Catégorie — Bas (10 000 XPF/mois)"),
+    # Sidebar droite
+    ("sidebar_haut",   "Sidebar Droite — Haut (40 000 XPF/mois)"),
+    ("sidebar_milieu", "Sidebar Droite — Milieu (28 000 XPF/mois)"),
+    ("sidebar_bas",    "Sidebar Droite — Bas (20 000 XPF/mois)"),
+    # Sidebar gauche
+    ("sidebar_gauche", "Sidebar Gauche (35 000 XPF/mois)"),
+    # Strips Accueil
+    ("strip_accueil_haut",   "Strip Accueil — Haut (8 000 XPF/mois)"),
+    ("strip_accueil_milieu", "Strip Accueil — Milieu (8 000 XPF/mois)"),
+    ("strip_accueil_bas",    "Strip Accueil — Bas (8 000 XPF/mois)"),
+    # Strips Immobilier
+    ("strip_immo_haut",   "Strip Immobilier — Haut (12 000 XPF/mois)"),
+    ("strip_immo_milieu", "Strip Immobilier — Milieu (10 000 XPF/mois)"),
+    ("strip_immo_bas",    "Strip Immobilier — Bas (8 000 XPF/mois)"),
+    # Strips Véhicules
+    ("strip_vehicules_haut",   "Strip Véhicules — Haut (12 000 XPF/mois)"),
+    ("strip_vehicules_milieu", "Strip Véhicules — Milieu (10 000 XPF/mois)"),
+    ("strip_vehicules_bas",    "Strip Véhicules — Bas (8 000 XPF/mois)"),
+    # Strips Occasion
+    ("strip_occasion_haut",   "Strip Occasion — Haut (12 000 XPF/mois)"),
+    ("strip_occasion_milieu", "Strip Occasion — Milieu (10 000 XPF/mois)"),
+    ("strip_occasion_bas",    "Strip Occasion — Bas (8 000 XPF/mois)"),
+    # Strips Emploi
+    ("strip_emploi_haut",   "Strip Emploi — Haut (12 000 XPF/mois)"),
+    ("strip_emploi_milieu", "Strip Emploi — Milieu (10 000 XPF/mois)"),
+    ("strip_emploi_bas",    "Strip Emploi — Bas (8 000 XPF/mois)"),
+    # Strips Services
+    ("strip_services_haut",   "Strip Services — Haut (12 000 XPF/mois)"),
+    ("strip_services_milieu", "Strip Services — Milieu (10 000 XPF/mois)"),
+    ("strip_services_bas",    "Strip Services — Bas (8 000 XPF/mois)"),
 ]
 
 PRIX_PAR_EMPLACEMENT = {
     "billboard": 100000,
-    "strip_1":    8000,
-    "strip_2":    8000,
-    "strip_3":    8000,
-    "haut":      40000,
-    "milieu":    28000,
-    "bas":       20000,
-    "cat_haut":   15000,
-    "cat_milieu": 12000,
-    "cat_bas":    10000,
+    "sidebar_haut":   40000,
+    "sidebar_milieu": 28000,
+    "sidebar_bas":    20000,
+    "sidebar_gauche": 35000,
+    "strip_accueil_haut":   8000,
+    "strip_accueil_milieu": 8000,
+    "strip_accueil_bas":    8000,
+    "strip_immo_haut":   12000,
+    "strip_immo_milieu": 10000,
+    "strip_immo_bas":     8000,
+    "strip_vehicules_haut":   12000,
+    "strip_vehicules_milieu": 10000,
+    "strip_vehicules_bas":     8000,
+    "strip_occasion_haut":   12000,
+    "strip_occasion_milieu": 10000,
+    "strip_occasion_bas":     8000,
+    "strip_emploi_haut":   12000,
+    "strip_emploi_milieu": 10000,
+    "strip_emploi_bas":     8000,
+    "strip_services_haut":   12000,
+    "strip_services_milieu": 10000,
+    "strip_services_bas":     8000,
 }
 
 DUREE_CHOICES = [
@@ -73,16 +108,15 @@ def calculer_prix(emplacement, duree_semaines):
 DIMS_PAR_EMPLACEMENT = {
     "billboard":        (1400, 300),
     "billboard_milieu": (1400, 90),
-    "strip_1":          (1400, 90),
-    "strip_2":          (1400, 90),
-    "strip_3":          (1400, 90),
-    "haut":             (600, 300),
-    "milieu":           (600, 270),
-    "bas":              (600, 240),
-    "cat_haut":         (1200, 150),
-    "cat_milieu":       (1200, 150),
-    "cat_bas":          (1200, 150),
+    "sidebar_haut":     (600, 300),
+    "sidebar_milieu":   (600, 270),
+    "sidebar_bas":      (600, 240),
+    "sidebar_gauche":   (300, 600),
 }
+# Tous les strips ont les mêmes dimensions
+for _s in PRIX_PAR_EMPLACEMENT:
+    if _s.startswith('strip_'):
+        DIMS_PAR_EMPLACEMENT[_s] = (1200, 150)
 
 # Formats d'image supportés par Pillow (les SVG et autres vecteurs sont exclus)
 _SUPPORTED_MIME_PREFIXES = ('image/jpeg', 'image/png', 'image/webp', 'image/gif',
@@ -92,9 +126,9 @@ _SUPPORTED_MIME_PREFIXES = ('image/jpeg', 'image/png', 'image/webp', 'image/gif'
 CAT_CHOICES = [
     ('vehicules',  'Véhicules'),
     ('immobilier', 'Immobilier'),
-    ('occasion',   'Occasion'),
-    ('emploi',     'Emploi'),
-    ('services',   'Services'),
+    ('occasion',   'Occasion / Bon Plan'),
+    ('emploi',     'Offre et Demande d\'emploi'),
+    ('services',   'Service / Prestation'),
 ]
 
 
@@ -106,7 +140,7 @@ class Publicite(models.Model):
     video        = models.FileField(upload_to='pubs/videos/', blank=True, null=True)
     video_url    = models.URLField(blank=True, help_text="URL externe d'une vidéo")
     lien         = models.URLField(blank=True)
-    emplacement  = models.CharField(max_length=20, choices=EMPLACEMENTS)
+    emplacement  = models.CharField(max_length=30, choices=EMPLACEMENTS)
     categorie    = models.CharField(max_length=20, choices=CAT_CHOICES, blank=True, default='',
                                     help_text="Catégorie ciblée (uniquement pour emplacements cat_*)")
     prix         = models.IntegerField(default=0)
@@ -301,7 +335,7 @@ class DemandePublicite(models.Model):
     email                = models.EmailField()
     tel                  = models.CharField(max_length=20, blank=True)
     entreprise           = models.CharField(max_length=200, blank=True)
-    emplacement_souhaite = models.CharField(max_length=20, choices=EMPLACEMENTS)
+    emplacement_souhaite = models.CharField(max_length=30, choices=EMPLACEMENTS)
     message              = models.TextField(blank=True)
     traite               = models.BooleanField(default=False)
     created_at           = models.DateTimeField(auto_now_add=True)

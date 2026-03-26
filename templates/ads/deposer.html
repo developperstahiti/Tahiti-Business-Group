@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
-{% block title %}Déposer une annonce{% endblock %}
+{% block title %}Deposer une annonce{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
@@ -11,176 +12,195 @@
       <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
         <!-- Header -->
         <div class="deposer-form-header bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
-          <h1 class="text-2xl font-black">Déposer une annonce</h1>
-          <p class="text-blue-200 mt-1 text-sm">Gratuit • Visible immédiatement en Polynésie</p>
+          <h1 class="text-2xl font-black">Deposer une annonce</h1>
+          <p class="text-blue-200 mt-1 text-sm">Gratuit - Visible immediatement en Polynesie</p>
         </div>
 
         <div class="p-6 md:p-8">
           {% if not user.is_authenticated %}
           <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex gap-3 items-start">
-            <span class="text-blue-500 text-lg">ℹ️</span>
+            <span class="text-blue-500 text-lg">&#8505;&#65039;</span>
             <div>
               <div class="font-semibold text-blue-900 mb-1">Connectez-vous pour continuer</div>
               <div class="text-sm text-blue-700">
                 <a href="{% url 'login' %}?next={% url 'deposer_annonce' %}" class="underline font-medium">Se connecter</a>
-                ou <a href="{% url 'register' %}" class="underline font-medium">créer un compte gratuitement</a>
+                ou <a href="{% url 'register' %}" class="underline font-medium">creer un compte gratuitement</a>
               </div>
             </div>
           </div>
           {% endif %}
 
-          <form id="deposer-form" method="post" enctype="multipart/form-data" class="space-y-5">
+          <form id="deposer-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            <!-- Hidden fields managed by JS -->
+            <input type="hidden" name="categorie" id="h-categorie" value="">
+            <input type="hidden" name="sous_categorie" id="h-sous-categorie" value="">
+            <input type="hidden" name="type_transaction" id="h-type-transaction" value="non_applicable">
+            <input type="hidden" name="prix_label" id="h-prix-label" value="">
+            <input type="hidden" name="prix_unite" id="h-prix-unite" value="">
+            <input type="hidden" name="localisation" id="h-localisation" value="Papeete">
+            <input type="hidden" name="prix" id="h-prix" value="0">
 
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Titre de l'annonce *</label>
-              {{ form.titre }}
-              {% if form.titre.errors %}<p class="text-red-500 text-xs mt-1">{{ form.titre.errors.0 }}</p>{% endif %}
-            </div>
+            <!-- ═══ ETAPE 1 — CATEGORIE ═══════════════════════════════════ -->
+            <div class="dep-step" id="step-categorie">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Catégorie *</label>
-                {{ form.categorie }}
+              <div class="dep-cat-grid" id="cat-grid">
+                <button type="button" class="dep-cat-card" data-cat="immobilier">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-immobilier.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Immobilier</span>
+                </button>
+                <button type="button" class="dep-cat-card" data-cat="vehicules">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-vehicule.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Vehicules</span>
+                </button>
+                <button type="button" class="dep-cat-card" data-cat="occasion">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-occasion.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Occasion / Bon Plan</span>
+                </button>
+                <button type="button" class="dep-cat-card" data-cat="emploi">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-emploi.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Offre et Demande d'emploi</span>
+                </button>
+                <button type="button" class="dep-cat-card" data-cat="services">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-service.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Service / Prestation</span>
+                </button>
               </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Sous-catégorie</label>
-                <select name="sous_categorie" id="id_sous_categorie" class="form-input">
-                  <option value="">— Toutes / Général</option>
-                </select>
-              </div>
-            </div>
 
-            <!-- Vente / Location (immobilier uniquement) -->
-            <div id="transaction-row" class="hidden">
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Type de transaction *</label>
-              <div class="flex gap-4">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 16px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;transition:background .15s"
-                  onmouseover="this.style.background='#ecfdf5'" onmouseout="this.style.background='#fff'">
-                  <input type="radio" name="type_transaction" value="vente">
-                  <span style="font-size:14px;font-weight:600;color:#047857">Vente</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 16px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;transition:background .15s"
-                  onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">
-                  <input type="radio" name="type_transaction" value="location">
-                  <span style="font-size:14px;font-weight:600;color:#1d4ed8">Location</span>
-                </label>
-              </div>
-            </div>
 
-            <!-- Champs adaptatifs selon sous-catégorie -->
-            <div id="specs-container"></div>
-
-            <!-- Localisation structuree -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Commune *</label>
-                <input type="text" name="commune" id="id_commune" class="form-input" list="communes-list" required
-                  placeholder="Tapez votre commune..." autocomplete="off">
-                <datalist id="communes-list"></datalist>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Quartier / Section</label>
-                <input type="text" name="quartier" id="id_quartier" class="form-input" list="quartiers-list"
-                  placeholder="Optionnel..." autocomplete="off">
-                <datalist id="quartiers-list"></datalist>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision</label>
-                <input type="text" name="precision_lieu" class="form-input" placeholder="Ex: PK18, Plateau des ananas...">
-              </div>
-            </div>
-            <input type="hidden" name="localisation" id="id_localisation_hidden" value="">
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="prix-row">
-              <div>
-                <label id="prix-label" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Prix (XPF)</label>
-                {{ form.prix }}
-                <p class="text-xs text-gray-400 mt-1" id="prix-hint">Laissez 0 pour "Prix sur demande"</p>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Unité de prix</label>
-                {{ form.prix_unite }}
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Affichage prix</label>
-                {{ form.prix_label }}
-                <p class="text-xs text-gray-400 mt-1">Rempli automatiquement avec le prix</p>
+              <div class="dep-rubrique-grid">
+                {% if user.is_authenticated and user.is_pro %}
+                <a href="{% url 'deposer_info' %}" class="dep-cat-card dep-cat-card--rubrique">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Infos média / Article de presse</span>
+                </a>
+                <a href="{% url 'deposer_promo' %}" class="dep-cat-card dep-cat-card--rubrique">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Promotion / Offre spéciale</span>
+                </a>
+                <a href="{% url 'deposer_nouveaute' %}" class="dep-cat-card dep-cat-card--rubrique">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Nouveautés / À tester absolument</span>
+                </a>
+                {% else %}
+                <a href="{% url 'deposer_info' %}" class="dep-cat-card dep-cat-card--rubrique">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Infos média / Article de presse</span>
+                </a>
+                <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" title="Compte professionnel requis pour deposer une rubrique">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Promotion / Offre spéciale</span>
+                  <span class="dep-lock-badge">&#128274; Pro</span>
+                </div>
+                <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" title="Compte professionnel requis pour deposer une rubrique">
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt=""></span>
+                  <span class="dep-cat-name">Nouveautés / À tester absolument</span>
+                  <span class="dep-lock-badge">&#128274; Pro</span>
+                </div>
+                {% endif %}
               </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Description *</label>
-              {{ form.description }}
-              {% if form.description.errors %}<p class="text-red-500 text-xs mt-1">{{ form.description.errors.0 }}</p>{% endif %}
+            <!-- ═══ ETAPE 2a — TYPE DE TRANSACTION (immobilier only) ════════ -->
+            <div class="dep-step dep-step--hidden" id="step-transaction">
+              <div id="transaction-container"></div>
             </div>
 
-            <!-- Upload photos -->
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">
-                Photos — converties automatiquement en WebP 🚀
-              </label>
-              <div id="dropzone"
-                class="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer"
-                onclick="document.getElementById('photoInput').click()">
-                <div class="dz-icon text-4xl mb-2">📷</div>
-                <div class="font-semibold text-gray-700 text-sm">Cliquez ou glissez vos photos ici</div>
-                <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP • Max 5 photos • Auto-convertis en WebP</div>
-                <input type="file" id="photoInput" name="photos" multiple accept="image/*"
-                  class="hidden" onchange="previewPhotos(this)">
+            <!-- ═══ ETAPE 2b — SOUS-CATEGORIE ═════════════════════════════ -->
+            <div class="dep-step dep-step--row dep-step--hidden" id="step-sous-cat">
+              <label class="dep-label" id="sous-cat-label">Sous-categorie</label>
+              <div class="dep-step-content dep-chips-scroll" id="sous-cat-chips"></div>
+            </div>
+
+            <!-- ═══ ETAPE 3 — CHAMPS SPECIFIQUES ═════════════════════════ -->
+            <div class="dep-step dep-step--hidden" id="step-specs">
+              <div id="specs-container"></div>
+            </div>
+
+            <!-- ═══ ETAPE 4 — LOCALISATION ═══════════════════════════════ -->
+            <div class="dep-step dep-step--row" id="step-localisation">
+              <label class="dep-label">Localisation *</label>
+              <div class="dep-step-content" id="loc-selector-form"></div>
+            </div>
+
+            <!-- ═══ ETAPE 5 — TITRE ═════════════════════════════════════ -->
+            <div class="dep-step dep-step--row" id="step-titre">
+              <label class="dep-label" for="id_titre">Titre *</label>
+              <div class="dep-step-content">
+                <input type="text" name="titre" id="id_titre" class="form-input" maxlength="200"
+                       placeholder="Donnez un titre accrocheur a votre annonce...">
               </div>
-              <div id="photoPreview" class="flex gap-3 flex-wrap mt-3"></div>
             </div>
 
-            <!-- ── Module Boost ───────────────────────────────────────── -->
+            <!-- ═══ ETAPE 6 — DESCRIPTION ═══════════════════════════════ -->
+            <div class="dep-step dep-step--row" id="step-description">
+              <label class="dep-label" for="id_description">Description *</label>
+              <div class="dep-step-content">
+                <textarea name="description" id="id_description" rows="5" class="form-input dep-textarea"
+                          placeholder="Decrivez votre article ou service en detail..."></textarea>
+                <div class="dep-char-count" id="desc-count">0 caractere(s) <span class="dep-char-hint">(50 min. recommandes)</span></div>
+              </div>
+            </div>
+
+            <!-- ═══ ETAPE 7 — PHOTOS ═══════════════════════════════════ -->
+            <div class="dep-step dep-step--row" id="step-photos">
+              <label class="dep-label">Photos <span class="dep-label-hint">(1ere = principale)</span></label>
+              <div class="dep-step-content">
+                <div id="dropzone" class="dep-dropzone" onclick="document.getElementById('photoInput').click()">
+                  <div class="dep-dz-icon">&#128247;</div>
+                  <div class="dep-dz-text">Cliquez ou glissez vos photos ici</div>
+                  <div class="dep-dz-hint">JPG, PNG, WebP - Max 5 photos</div>
+                  <input type="file" id="photoInput" name="photos" multiple accept="image/*" class="hidden" onchange="previewPhotos(this)">
+                </div>
+                <div id="photoPreview" class="dep-photo-previews"></div>
+              </div>
+            </div>
+
+            <!-- ═══ ETAPE 8 — BOOST (slider flamme) ════════════════════ -->
             {% if user.is_authenticated %}
-            <div id="boost-wrap">
-              <div id="boost-header">
-                <span id="boost-flame-display">💤</span>
-                <div id="boost-header-text">
-                  <span id="boost-title">Booster mon annonce</span>
-                  <span id="boost-subtitle">Passe en tête de liste</span>
+            <div class="dep-step" id="step-boost">
+              <div id="boost-wrap">
+                <div id="boost-header">
+                  <span id="boost-flame-display">&#128164;</span>
+                  <div id="boost-header-text">
+                    <span id="boost-title">Booster mon annonce</span>
+                    <span id="boost-subtitle">Passe en tete de liste</span>
+                  </div>
+                  <span id="boost-badge"></span>
                 </div>
-                <span id="boost-badge"></span>
-              </div>
 
-              <div id="boost-slider-zone">
-                <input type="range" id="boost-slider" min="0" max="2" step="1" value="0" oninput="boostUpdate(parseInt(this.value))">
-                <div id="boost-labels">
-                  <span class="boost-lbl" data-pos="0">Pas de boost</span>
-                  <span class="boost-lbl" data-pos="1">7 jours</span>
-                  <span class="boost-lbl" data-pos="2">1 mois</span>
+                <div id="boost-slider-zone">
+                  <input type="range" id="boost-slider" min="0" max="2" step="1" value="0" oninput="boostUpdate(parseInt(this.value))">
+                  <div id="boost-labels">
+                    <span class="boost-lbl" data-pos="0">Pas de boost</span>
+                    <span class="boost-lbl" data-pos="1">7 jours — 500 XPF</span>
+                    <span class="boost-lbl" data-pos="2">1 mois — 1 500 XPF</span>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Input caché soumis avec le formulaire -->
-              <input type="hidden" name="boost_duree" id="boost-duree-hidden" value="">
+                <input type="hidden" name="boost_duree" id="boost-duree-hidden" value="">
 
-              <!-- Estimation de vues -->
-              <div id="boost-estimate" style="display:none">
-                <span id="boost-estimate-icon">👁</span>
-                <span id="boost-estimate-text"></span>
-              </div>
-
-              <!-- Textarea visible uniquement si boost sélectionné -->
-              <div id="boost-msg" style="display:none">
-                <p id="boost-msg-label">Message pour notre équipe <span style="color:#ef4444">*</span></p>
-                <textarea name="boost_demande" id="boost-textarea" rows="3"
-                  placeholder="Décris ton annonce en quelques mots pour que notre équipe puisse la mettre en avant..."></textarea>
-                <p id="boost-msg-hint">Notre équipe te contactera pour valider et encaisser le paiement.</p>
+                <div id="boost-recap" style="display:none">
+                  <div id="boost-recap-inner" style="margin:0 20px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+                    <div>
+                      <span id="boost-recap-duree" style="font-size:13px;font-weight:700;color:#166534"></span>
+                      <span style="font-size:12px;color:#166534;margin-left:6px">&#8212; Paiement par carte bancaire</span>
+                    </div>
+                    <span id="boost-recap-prix" style="font-size:18px;font-weight:800;color:#166534"></span>
+                  </div>
+                </div>
               </div>
             </div>
             {% endif %}
-            <!-- ── Fin Boost ──────────────────────────────────────────── -->
 
+            <!-- ═══ BOUTON SOUMISSION ═════════════════════════════════ -->
             {% if user.is_authenticated %}
-            <button type="submit" class="btn btn-accent w-full justify-center py-3.5 text-base font-black">
-              ✓ Publier l'annonce gratuitement
+            <button type="submit" class="dep-submit" id="dep-submit-btn" disabled>
+              Publier mon annonce &#8594;
             </button>
             {% else %}
-            <a href="{% url 'login' %}?next={% url 'deposer_annonce' %}"
-              class="btn btn-primary w-full justify-center py-3.5 text-base">
-              Se connecter pour publier
+            <a href="{% url 'login' %}?next={% url 'deposer_annonce' %}" class="dep-submit dep-submit--link">
+              Se connecter pour publier &#8594;
             </a>
             {% endif %}
           </form>
@@ -193,52 +213,302 @@
 
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── Dropzone photos ── */
-#dropzone {
+/* ══ DEPOSER — STEPS LAYOUT ═══════════════════════════════════════════ */
+.dep-step { margin-bottom: 20px; }
+.dep-step--hidden { display: none; }
+.dep-step--show {
+  animation: depSlideIn .3s ease-out;
+}
+.dep-step--show:not(.dep-step--row) { display: block; }
+.dep-step--row.dep-step--show { display: flex; }
+@keyframes depSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Layout horizontal : label a gauche, contenu a droite ──────── */
+.dep-step--row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.dep-step--row > .dep-label {
+  flex: 0 0 140px;
+  margin-bottom: 0;
+  padding-top: 10px;
+}
+.dep-step--row > .dep-step-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dep-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #374151;
+  margin-bottom: 8px;
+}
+.dep-label-hint {
+  font-weight: 500;
+  text-transform: none;
+  color: #9ca3af;
+  letter-spacing: 0;
+}
+
+/* ══ CATEGORIE CARDS ══════════════════════════════════════════════════ */
+.dep-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.dep-cat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .2s, opacity .2s;
+  overflow: hidden;
+}
+.dep-cat-card:hover {
+  border-color: #9ca3af;
+  background: #fafafa;
+}
+.dep-cat-icon { width: 120px; height: 120px; display:flex; align-items:center; justify-content:center; }
+.dep-cat-icon img { width:100%; height:100%; object-fit:contain; }
+.dep-cat-name { font-size: 13px; font-weight: 700; color: #111827; text-align:center; }
+
+/* Selected state */
+.dep-cat-card--selected {
+  border-color: #111 !important;
+  border-width: 3px;
+  background: #f5f5f5 !important;
+  transform: scale(1.03);
+}
+/* Dimmed (non-selected when one is chosen) */
+.dep-cat-card--dimmed {
+  opacity: 0.45;
+}
+.dep-cat-card--dimmed:hover { opacity: 0.7; }
+
+/* ══ RUBRIQUE CARDS ══════════════════════════════════════════════════ */
+.dep-rubrique-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.dep-cat-card--rubrique {
+  text-decoration: none;
+  border-color: #c7d2fe;
+  background: #eef2ff;
+}
+.dep-cat-card--rubrique:hover {
+  border-color: #818cf8;
+  background: #e0e7ff;
+}
+.dep-cat-card--locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  position: relative;
+}
+.dep-cat-card--locked:hover {
+  border-color: #e5e7eb;
+  background: #eef2ff;
+  opacity: 0.55;
+}
+.dep-lock-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6366f1;
+  background: #e0e7ff;
+  border-radius: 6px;
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+
+/* ══ SOUS-CATEGORIE CHIPS ════════════════════════════════════════════ */
+.dep-chips-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dep-chip {
+  padding: 8px 16px;
   background: #f9fafb;
-  border-color: #d1d5db;
-  transition: background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
 }
-#dropzone:hover {
-  background: #eff6ff !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 4px rgba(59,130,246,.10);
-  transform: translateY(-2px);
+.dep-chip:hover {
+  background: #eff6ff;
+  border-color: #60a5fa;
+  color: #2563eb;
 }
-#dropzone.dz-over {
-  background: #dbeafe !important;
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 6px rgba(37,99,235,.15);
-  transform: translateY(-2px);
-}
-#dropzone .dz-icon { transition: transform .2s ease; }
-#dropzone:hover .dz-icon,
-#dropzone.dz-over .dz-icon { transform: scale(1.15); }
-
-/* ── Animation specs container ── */
-#specs-container {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-#specs-container.specs-hidden {
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
+.dep-chip--active {
+  background: #111 !important;
+  border-color: #111 !important;
+  color: #fff !important;
 }
 
-/* ── Hint exemple inline ── */
-.champ-exemple {
+/* ══ SPECS — RADIO BUTTONS VISUELS ═══════════════════════════════════ */
+.dep-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.dep-radio-btn {
+  padding: 10px 18px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all .15s;
+}
+.dep-radio-btn:hover { border-color: #9ca3af; background: #fafafa; }
+.dep-radio-btn--active {
+  border-color: #111 !important;
+  background: #111 !important;
+  color: #fff !important;
+}
+
+/* ══ TOGGLE SWITCH (specs) ═══════════════════════════════════════════ */
+.dep-toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px; height: 26px;
+}
+.dep-toggle input { opacity: 0; width: 0; height: 0; }
+.dep-toggle-slider {
+  position: absolute; inset: 0;
+  background: #d1d5db;
+  border-radius: 26px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.dep-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 3px; bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+}
+.dep-toggle input:checked + .dep-toggle-slider { background: #3b82f6; }
+.dep-toggle input:checked + .dep-toggle-slider::before { transform: translateX(22px); }
+
+/* ══ SPECS FIELDS GRID ═══════════════════════════════════════════════ */
+.dep-fields-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+.dep-fields-grid > div {
+  flex: 1 1 160px;
+  min-width: 130px;
+}
+.dep-field-full { flex: 1 1 100% !important; }
+
+/* ── Stack : 1 champ = 1 ligne ──────────────────────────────────── */
+.dep-fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ══ TEXTAREA + CHAR COUNT ═══════════════════════════════════════════ */
+.dep-textarea { min-height: 150px; resize: vertical; }
+.dep-char-count {
+  text-align: right;
   font-size: 11px;
   color: #9ca3af;
-  font-style: italic;
-  margin-left: 4px;
+  margin-top: 4px;
 }
+.dep-char-hint { color: #d1d5db; }
+.dep-char-count--ok { color: #16a34a; }
 
-/* ══ MODULE BOOST — SLIDER ═════════════════════════════════════ */
+/* ══ DROPZONE ════════════════════════════════════════════════════════ */
+.dep-dropzone {
+  background: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 14px;
+  padding: 32px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, transform .15s;
+}
+.dep-dropzone:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+}
+.dep-dropzone.dz-over {
+  background: #dbeafe;
+  border-color: #2563eb;
+}
+.dep-dz-icon { font-size: 36px; margin-bottom: 6px; }
+.dep-dz-text { font-size: 14px; font-weight: 600; color: #374151; }
+.dep-dz-hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+/* ══ PHOTO PREVIEWS ══════════════════════════════════════════════════ */
+.dep-photo-previews { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.photo-thumb {
+  position: relative;
+  width: 80px; height: 80px;
+}
+.photo-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  cursor: grab;
+}
+.photo-thumb .photo-num {
+  position: absolute; top: -6px; left: -6px;
+  background: #3b82f6; color: #fff;
+  font-size: 10px; font-weight: 800;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.photo-thumb .photo-del {
+  position: absolute; top: -6px; right: -6px;
+  background: #ef4444; color: #fff;
+  font-size: 10px; font-weight: 800;
+  width: 20px; height: 20px;
+  border-radius: 50%; border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.photo-thumb .photo-del:hover { background: #dc2626; }
+
+/* ══ MODULE BOOST — SLIDER ═══════════════════════════════════════════ */
 #boost-wrap {
   border: 1.5px solid #e5e7eb;
   border-radius: 16px;
@@ -254,8 +524,6 @@
   border-color: #ef4444;
   box-shadow: 0 0 0 4px rgba(239,68,68,.15);
 }
-
-/* Header */
 #boost-header {
   display: flex;
   align-items: center;
@@ -289,8 +557,6 @@
   border-radius: 20px;
   transition: background .3s, color .3s;
 }
-
-/* Slider zone */
 #boost-slider-zone {
   padding: 4px 20px 16px;
 }
@@ -326,8 +592,6 @@
   border: 3px solid #fff;
   box-shadow: 0 1px 6px rgba(0,0,0,.25);
 }
-
-/* Labels sous le slider */
 #boost-labels {
   display: flex;
   justify-content: space-between;
@@ -340,29 +604,6 @@
   transition: color .25s, font-weight .25s;
 }
 .boost-lbl.active { color: #111827; font-weight: 800; }
-
-/* Textarea */
-#boost-msg { padding: 0 20px 16px; }
-#boost-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  color: #111827;
-  border: 1.5px solid #fcd34d;
-  border-radius: 8px;
-  background: #fffbeb;
-  resize: vertical;
-}
-#boost-textarea:focus { outline: none; border-color: #f59e0b; }
-#boost-msg-hint {
-  font-size: 11px;
-  color: #92400e;
-  margin-top: 6px;
-  font-style: italic;
-}
-
-/* Animation flamme */
 @keyframes flicker {
   0%,100% { transform: scaleY(1)    rotate(-1deg); }
   25%      { transform: scaleY(1.1)  rotate(1.5deg); }
@@ -387,535 +628,560 @@
   filter: drop-shadow(0 0 14px rgba(239,68,68,.9));
 }
 
-/* Estimation de vues */
-#boost-estimate {
-  margin: 0 20px 12px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #166534;
-  animation: boost-in .2s ease;
+/* ══ SUBMIT BUTTON ═══════════════════════════════════════════════════ */
+.dep-submit {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: #111;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .2s;
+  margin-top: 8px;
 }
-#boost-estimate-icon { font-size: 15px; }
-#boost-estimate.estimate-big {
-  background: #fff7ed;
-  border-color: #fed7aa;
-  color: #9a3412;
+.dep-submit:hover { background: #333; }
+.dep-submit:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
-
-/* Label textarea */
-#boost-msg-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: #374151;
-  margin-bottom: 6px;
+.dep-submit--link {
+  text-decoration: none;
+  display: flex; align-items: center; justify-content: center;
 }
 
+/* ══ RESPONSIVE ══════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .dep-cat-grid { grid-template-columns: repeat(3, 1fr); }
+  .dep-rubrique-grid { grid-template-columns: repeat(3, 1fr); }
+  .dep-step--row { flex-direction: column; gap: 6px; }
+  .dep-step--row > .dep-label { flex: none; padding-top: 0; }
+  .dep-fields-grid > div { flex: 1 1 100%; }
+}
 </style>
 {% endblock %}
 
 {% block extra_js %}
+{% load static %}
 {{ sous_categories_data|json_script:"sous-cats-data" }}
-{{ communes_par_archipel|json_script:"communes-data" }}
-{{ quartiers_par_commune|json_script:"quartiers-data" }}
+
+<script src="{% static 'js/location-selector.js' %}"></script>
 <script>
+/* ══════════════════════════════════════════════════════════════════════
+   DEPOSER — FORMULAIRE INTERACTIF
+   ══════════════════════════════════════════════════════════════════════ */
 
-// ─── Localisation dynamique (commune / quartier) ────────────────────────────
-const COMMUNES_DATA = JSON.parse(document.getElementById("communes-data").textContent);
-const QUARTIERS_DATA = JSON.parse(document.getElementById("quartiers-data").textContent);
+// ─── State ───────────────────────────────────────────────────────────
+var _selectedCat = '';
+var _selectedSousCat = '';
+var _photoFiles = [];
 
-(function initLocalisation() {
-  const communeInput = document.getElementById('id_commune');
-  const quartierInput = document.getElementById('id_quartier');
-  const communesList = document.getElementById('communes-list');
-  const quartiersList = document.getElementById('quartiers-list');
-  const hiddenLoc = document.getElementById('id_localisation_hidden');
-  if (!communeInput) return;
+// ─── Data ────────────────────────────────────────────────────────────
+var SOUS_CATS = JSON.parse(document.getElementById('sous-cats-data').textContent);
 
-  // Remplir la datalist des communes
-  Object.entries(COMMUNES_DATA).forEach(([archipel, communes]) => {
-    communes.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-      communesList.appendChild(opt);
-    });
-  });
-
-  // Quand la commune change, mettre a jour les quartiers
-  function updateQuartiers() {
-    const commune = communeInput.value;
-    quartiersList.innerHTML = '';
-    const qlist = QUARTIERS_DATA[commune] || [];
-    qlist.forEach(q => {
-      const opt = document.createElement('option');
-      opt.value = q;
-      quartiersList.appendChild(opt);
-    });
-    if (hiddenLoc) hiddenLoc.value = commune;
-  }
-
-  communeInput.addEventListener('input', updateQuartiers);
-  communeInput.addEventListener('change', updateQuartiers);
-
-  quartierInput.addEventListener('input', function() {
-    if (hiddenLoc && this.value) {
-      hiddenLoc.value = communeInput.value + ' - ' + this.value;
-    } else if (hiddenLoc) {
-      hiddenLoc.value = communeInput.value;
-    }
-  });
-})();
-
-// ─── Sous-catégories dynamiques ────────────────────────────────────────────────
-const SOUS_CATS_DEP = JSON.parse(document.getElementById("sous-cats-data").textContent);
-
-function updateSousCatsDep(cat) {
-  const sel = document.getElementById('id_sous_categorie');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">— Toutes / Général</option>';
-  const opts = SOUS_CATS_DEP[cat] || [];
-  opts.forEach(({value, label}) => {
-    const opt = document.createElement('option');
-    opt.value = value; opt.textContent = label;
-    sel.appendChild(opt);
-  });
-  // Auto-sélectionne la première sous-catégorie pour afficher les specs immédiatement
-  const firstSousCat = opts.length > 0 ? opts[0].value : '';
-  if (firstSousCat) sel.value = firstSousCat;
-  renderSpecs(firstSousCat);
-  adaptPrix(cat, firstSousCat);
-}
-
-function togglePrix(cat) {
-  const row = document.getElementById('prix-row');
-  if (row) row.style.display = cat === 'emploi' ? 'none' : '';
-}
-
-// Adapte le label Prix selon la catégorie/sous-catégorie
-function adaptPrix(cat, sousCat) {
-  const row = document.getElementById('prix-row');
-  if (!row) return;
-  const lbl  = document.getElementById('prix-label');
-  const hint = document.getElementById('prix-hint');
-  const inp  = row.querySelector('input');
-  row.style.display = '';
-  if (cat === 'emploi') {
-    if (lbl)  lbl.textContent  = 'Salaire brut (XPF / mois)';
-    if (inp)  inp.placeholder  = 'Ex: 200 000';
-    if (hint) hint.textContent = 'Laissez 0 si salaire à négocier';
-  } else if (cat === 'vehicules') {
-    if (lbl)  lbl.textContent  = 'Tarif (XPF)';
-    if (inp)  inp.placeholder  = 'Ex: 1 800 000';
-    if (hint) hint.textContent = 'Laissez 0 pour "Prix à négocier"';
-  } else if (cat === 'immobilier') {
-    const isLoc    = ['immo-appartements','immo-maisons','immo-bureaux'].includes(sousCat);
-    const isSaison = sousCat === 'immo-saisonnieres';
-    const isPark   = sousCat === 'immo-parkings';
-    const isTerrain = sousCat === 'immo-terrains';
-    if (lbl)  lbl.textContent  = isSaison ? 'Tarif de base (XPF)' : (isLoc || isPark ? 'Loyer / mois (XPF)' : 'Prix de vente (XPF)');
-    if (inp)  inp.placeholder  = isSaison ? '150 000' : isLoc ? '80 000' : isPark ? '15 000' : isTerrain ? '5 000 000' : '25 000 000';
-    if (hint) hint.textContent = isLoc || isPark || isSaison ? 'Loyer mensuel hors charges' : 'Prix de vente total';
-  } else if (cat === 'services') {
-    if (lbl)  lbl.textContent  = 'Tarif de base (XPF)';
-    if (inp)  inp.placeholder  = 'Ex: 5 000';
-    if (hint) hint.textContent = 'Laissez 0 pour "Devis sur demande"';
-  } else {
-    if (lbl)  lbl.textContent  = 'Prix (XPF)';
-    if (inp)  inp.placeholder  = '';
-    if (hint) hint.textContent = 'Laissez 0 pour "Prix sur demande"';
-  }
-}
-
-// ─── Formulaire adaptatif — définitions par sous-catégorie ───────────────────
-const SPECS_DEF = {
-
-  // VÉHICULES
-  'vehicules-4x4': [
-    { name: 'annee',       label: 'Année',              type: 'number', placeholder: 'Ex: 2019' },
-    { name: 'kilometrage', label: 'Kilométrage (km)',    type: 'number', placeholder: 'Ex: 45 000' },
-    { name: 'carburant',   label: 'Carburant',           type: 'select', options: ['Essence','Diesel','Hybride','Électrique','GPL'] },
-    { name: 'boite',       label: 'Boîte de vitesse',    type: 'select', options: ['Manuelle','Automatique'] },
-    { name: 'nb_places',   label: 'Places',              type: 'number', placeholder: 'Ex: 5' },
-    { name: 'etat',        label: 'État général',        type: 'select', options: ['Excellent','Bon','Correct','À réparer'] },
-  ],
-  'vehicules-2roues': [
-    { name: 'annee',      label: 'Année',           type: 'number', placeholder: 'Ex: 2021' },
-    { name: 'cylindree',  label: 'Cylindrée (cc)',   type: 'number', placeholder: 'Ex: 125' },
-    { name: 'kilometrage',label: 'Kilométrage (km)', type: 'number', placeholder: 'Ex: 8 000' },
-    { name: 'permis',     label: 'Permis requis',    type: 'select', options: ['Non requis (50cc)','A1 (125cc)','A2','A (moto)'] },
-    { name: 'etat',       label: 'État',             type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'vehicules-bateaux': [
-    { name: 'annee',      label: 'Année',             type: 'number', placeholder: 'Ex: 2018' },
-    { name: 'longueur_m', label: 'Longueur (m)',       type: 'number', placeholder: 'Ex: 6' },
-    { name: 'moteur_hp',  label: 'Puissance (CV)',      type: 'number', placeholder: 'Ex: 40' },
-    { name: 'type_bateau',label: 'Type',               type: 'select', options: ['Hors-bord','Voilier','Catamaran','Jet-ski','Pneumatique','Autre'] },
-    { name: 'etat',       label: 'État',               type: 'select', options: ['Excellent','Bon','Correct','À réviser'] },
-  ],
-  'vehicules-utilitaires': [
-    { name: 'annee',        label: 'Année',            type: 'number', placeholder: 'Ex: 2017' },
-    { name: 'kilometrage',  label: 'Kilométrage (km)',  type: 'number', placeholder: 'Ex: 120 000' },
-    { name: 'carburant',    label: 'Carburant',         type: 'select', options: ['Diesel','Essence','Électrique'] },
-    { name: 'charge_kg',    label: 'Charge utile (kg)', type: 'number', placeholder: 'Ex: 1 500' },
-    { name: 'ptac_kg',      label: 'PTAC (kg)',          type: 'number', placeholder: 'Ex: 3 500' },
-  ],
-  'vehicules-pieces': [
-    { name: 'marque',         label: 'Marque véhicule',     type: 'text',   placeholder: 'Ex: Toyota, Peugeot…' },
-    { name: 'modele',         label: 'Modèle / référence',  type: 'text',   placeholder: 'Ex: Corolla, 308…' },
-    { name: 'annee_compat',   label: 'Année de compatibilité', type: 'number', placeholder: 'Ex: 2015' },
-    { name: 'etat',           label: 'État de la pièce',    type: 'select', options: ['Neuve','Occasion TBE','Occasion bon état','Pour pièces'] },
-  ],
-
-  // IMMOBILIER
-  'immo-appartements': [
-    { name: 'surface_m2',  label: 'Surface (m²)',          type: 'number', placeholder: 'Ex: 65' },
-    { name: 'nb_pieces',   label: 'Nombre de pièces',      type: 'number', placeholder: 'Ex: 3' },
-    { name: 'etage',       label: 'Étage',                 type: 'number', placeholder: 'Ex: 2' },
-    { name: 'meuble',      label: 'Meublé',                type: 'checkbox' },
-    { name: 'parking',     label: 'Parking inclus',        type: 'checkbox' },
-    { name: 'caution_xpf', label: 'Caution (XPF)',         type: 'number', placeholder: 'Ex: 160 000' },
-  ],
-  'immo-maisons': [
-    { name: 'surface_m2',  label: 'Surface habitable (m²)', type: 'number', placeholder: 'Ex: 120' },
-    { name: 'terrain_m2',  label: 'Surface terrain (m²)',   type: 'number', placeholder: 'Ex: 500' },
-    { name: 'nb_pieces',   label: 'Nombre de pièces',       type: 'number', placeholder: 'Ex: 4' },
-    { name: 'piscine',     label: 'Piscine',                type: 'checkbox' },
-    { name: 'climatise',   label: 'Climatisé',              type: 'checkbox' },
-    { name: 'parking',     label: 'Parking / garage',       type: 'checkbox' },
-  ],
-  'immo-terrains': [
-    { name: 'surface_m2',  label: 'Surface (m²)',     type: 'number', placeholder: 'Ex: 1 000' },
-    { name: 'viabilise',   label: 'Viabilisé',        type: 'checkbox' },
-    { name: 'acces_route', label: 'Accès route',      type: 'checkbox' },
-    { name: 'zone',        label: 'Zone',             type: 'select', options: ['Résidentielle','Agricole','Commerciale','Mixte'] },
-  ],
-  'immo-bureaux': [
-    { name: 'surface_m2',  label: 'Surface (m²)',        type: 'number', placeholder: 'Ex: 80' },
-    { name: 'nb_bureaux',  label: 'Nombre de bureaux',   type: 'number', placeholder: 'Ex: 4' },
-    { name: 'parking',     label: 'Parking inclus',      type: 'checkbox' },
-    { name: 'ascenseur',   label: 'Ascenseur',           type: 'checkbox' },
-    { name: 'caution_xpf', label: 'Caution (XPF)',       type: 'number', placeholder: 'Ex: 240 000' },
-  ],
-  'immo-saisonnieres': [
-    { name: 'surface_m2',    label: 'Surface (m²)',          type: 'number', placeholder: 'Ex: 50' },
-    { name: 'nb_couchages',  label: 'Nombre de couchages',   type: 'number', placeholder: 'Ex: 4' },
-    { name: 'tarif_semaine', label: 'Tarif / semaine (XPF)', type: 'number', placeholder: 'Ex: 50 000' },
-    { name: 'piscine',       label: 'Piscine',               type: 'checkbox' },
-    { name: 'climatise',     label: 'Climatisé',             type: 'checkbox' },
-  ],
-  'immo-parkings': [
-    { name: 'type_parking', label: 'Type',      type: 'select', options: ['Extérieur','Intérieur / box','Sous-sol'] },
-    { name: 'securise',     label: 'Sécurisé',  type: 'checkbox' },
-    { name: 'acces_24h',    label: 'Accès 24h/24', type: 'checkbox' },
-  ],
-
-  // EMPLOI (commun à toutes les sous-catégories — voir patch ci-dessous)
-  // ÉLECTRONIQUE
-  'elec-telephones': [
-    { name: 'marque',    label: 'Marque',       type: 'text',   placeholder: 'Ex: Samsung, Apple…' },
-    { name: 'modele',    label: 'Modèle',       type: 'text',   placeholder: 'Ex: iPhone 15' },
-    { name: 'stockage',  label: 'Stockage (Go)', type: 'select', options: ['32','64','128','256','512','1 024'] },
-    { name: 'etat',      label: 'État',         type: 'select', options: ['Neuf (sous blister)','Neuf déballé','Très bon','Bon','Passable'] },
-    { name: 'facture',   label: 'Facture incluse', type: 'checkbox' },
-  ],
-  'elec-ordinateurs': [
-    { name: 'ram_gb',      label: 'RAM (Go)',      type: 'select', options: ['4','8','16','32','64'] },
-    { name: 'stockage_gb', label: 'Stockage (Go)', type: 'select', options: ['128','256','512','1 000','2 000'] },
-    { name: 'processeur',  label: 'Processeur',    type: 'text',   placeholder: 'Ex: Intel i5 12e gen' },
-    { name: 'os',          label: 'Système',       type: 'select', options: ['Windows 11','Windows 10','macOS','Linux'] },
-    { name: 'etat',        label: 'État',          type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'elec-pc': [
-    { name: 'usage',         label: 'Usage principal', type: 'select', options: ['Gaming','Pro / Workstation','Bureautique','Serveur','Polyvalent'] },
-    { name: 'ram_gb',        label: 'RAM (Go)',         type: 'select', options: ['8','16','32','64','128'] },
-    { name: 'stockage_gb',   label: 'Stockage (Go)',    type: 'select', options: ['256','512','1 000','2 000','4 000'] },
-    { name: 'processeur',    label: 'Processeur',       type: 'text',   placeholder: 'Ex: Ryzen 5 5600X' },
-    { name: 'gpu',           label: 'Carte graphique',  type: 'text',   placeholder: 'Ex: RTX 4060, RX 7600' },
-    { name: 'refroidissement',label: 'Refroidissement', type: 'select', options: ['Air (ventirad)','Watercooling AIO','Watercooling custom','Passif'] },
-    { name: 'etat',          label: 'État',             type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'elec-tv': [
-    { name: 'marque',        label: 'Marque',         type: 'text',   placeholder: 'Ex: Samsung, LG, Sony…' },
-    { name: 'taille_pouces', label: 'Taille (pouces)', type: 'number', placeholder: 'Ex: 55' },
-    { name: 'smart_tv',      label: 'Smart TV',       type: 'checkbox' },
-    { name: 'resolution',    label: 'Résolution',     type: 'select', options: ['HD','Full HD','4K','8K'] },
-    { name: 'etat',          label: 'État',           type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'elec-jeux': [
-    { name: 'console',      label: 'Console',         type: 'select', options: ['PS5','PS4','Xbox Series','Xbox One','Nintendo Switch','PC','Autre'] },
-    { name: 'jeux_inclus',  label: 'Jeux inclus',     type: 'text',   placeholder: 'Ex: FIFA 24, GTA V…' },
-    { name: 'etat',         label: 'État',            type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'elec-electromenager': [
-    { name: 'marque',  label: 'Marque',     type: 'text',   placeholder: 'Ex: Samsung, LG, Bosch…' },
-    { name: 'type_app',label: 'Type',       type: 'select', options: ['Réfrigérateur','Lave-linge','Lave-vaisselle','Micro-ondes','Climatiseur','Autre'] },
-    { name: 'etat',    label: 'État',       type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-    { name: 'notice',  label: 'Notice incluse', type: 'checkbox' },
-  ],
-
-  // SERVICES
-  'services-travaux': [
-    { name: 'type_travaux',  label: 'Type de travaux',   type: 'select', options: ['Maçonnerie','Peinture','Électricité','Plomberie','Carrelage','Toiture','Autre'] },
-    { name: 'deplacement',   label: 'Zone de déplacement', type: 'text', placeholder: 'Ex: Papeete + 20 km' },
-    { name: 'devis_gratuit', label: 'Devis gratuit',      type: 'checkbox' },
-    { name: 'materiel',      label: 'Matériel fourni',    type: 'checkbox' },
-    { name: 'tva',           label: 'Assujetti TVA',      type: 'checkbox' },
-  ],
-  'services-cours': [
-    { name: 'matiere',     label: 'Matière / discipline', type: 'text',   placeholder: 'Ex: Maths, Anglais, Guitare…' },
-    { name: 'niveau',      label: 'Niveau',               type: 'select', options: ['Primaire','Collège','Lycée','Supérieur','Adultes','Tous niveaux'] },
-    { name: 'format',      label: 'Format',               type: 'select', options: ['À domicile','En ligne','Sur place','Les deux'] },
-    { name: 'tarif_h',     label: 'Tarif / heure (XPF)',  type: 'number', placeholder: 'Ex: 3 000' },
-  ],
-  'services-transport': [
-    { name: 'type_trajet',  label: 'Type de trajet',     type: 'select', options: ['Aéroport','Interurbain','Colis','Déménagement','Autre'] },
-    { name: 'capacite_kg',  label: 'Capacité (kg/m³)',   type: 'text',   placeholder: 'Ex: 500 kg' },
-    { name: 'tarif_km',     label: 'Tarif / km (XPF)',   type: 'number', placeholder: 'Ex: 150' },
-  ],
-  'services-sante': [
-    { name: 'service',    label: 'Type de service',     type: 'text',   placeholder: 'Ex: Massage, Coiffure, Soin…' },
-    { name: 'diplome',    label: 'Diplômé(e)',           type: 'checkbox' },
-    { name: 'domicile',   label: 'À domicile',           type: 'checkbox' },
-  ],
-  'services-jardinage': [
-    { name: 'frequence',   label: 'Fréquence',           type: 'select', options: ['Une fois','Hebdomadaire','Mensuel','À la demande'] },
-    { name: 'materiel',    label: 'Matériel fourni',     type: 'checkbox' },
-    { name: 'surface_m2',  label: 'Surface max (m²)',    type: 'number', placeholder: 'Ex: 300' },
-  ],
-
-  // AUTRES
-  'autres-meubles': [
-    { name: 'materiau',    label: 'Matériau',      type: 'select', options: ['Bois','Métal','Tissu','Plastique','Verre','Autre'] },
-    { name: 'dimensions',  label: 'Dimensions',    type: 'text',   placeholder: 'Ex: 180×90×80 cm' },
-    { name: 'livraison',   label: 'Livraison possible', type: 'checkbox' },
-    { name: 'etat',        label: 'État',          type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'autres-vetements': [
-    { name: 'taille',  label: 'Taille',   type: 'select', options: ['XS','S','M','L','XL','XXL','Autre'] },
-    { name: 'marque',  label: 'Marque',   type: 'text',   placeholder: 'Ex: Zara, Nike…' },
-    { name: 'etat',    label: 'État',     type: 'select', options: ['Neuf avec étiquette','Neuf sans étiquette','Très bon','Bon','Acceptable'] },
-  ],
-  'autres-sport': [
-    { name: 'type_sport',  label: 'Sport / activité',  type: 'text',   placeholder: 'Ex: Surf, Tennis, Running…' },
-    { name: 'niveau',      label: 'Niveau visé',        type: 'select', options: ['Débutant','Intermédiaire','Avancé','Tous niveaux'] },
-    { name: 'etat',        label: 'État',               type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'autres-puericulture': [
-    { name: 'age_enfant', label: 'Âge enfant',   type: 'select', options: ['0-3 mois','3-6 mois','6-12 mois','1-2 ans','2-4 ans','4-6 ans','6+ ans'] },
-    { name: 'marque',     label: 'Marque',        type: 'text',   placeholder: 'Ex: Chicco, Babymoov…' },
-    { name: 'etat',       label: 'État',          type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
-  'autres-jeux': [
-    { name: 'age_min',   label: 'Âge minimum',   type: 'select', options: ['0-2 ans','3-5 ans','6-9 ans','10-14 ans','15+ ans','Tout âge'] },
-    { name: 'type_jeu',  label: 'Type',           type: 'select', options: ['Jeu de société','Figurine / Lego','Jeu électronique','Jeu de plein air','Peluche','Puzzle','Autre'] },
-    { name: 'marque',    label: 'Marque',         type: 'text',   placeholder: 'Ex: Lego, Hasbro, Mattel…' },
-    { name: 'complet',   label: 'Complet (toutes pièces)', type: 'checkbox' },
-    { name: 'etat',      label: 'État',           type: 'select', options: ['Neuf','Très bon','Bon','Passable'] },
-  ],
+var PLACEHOLDERS = {
+  immobilier: { titre: 'Ex: Bel appartement T3 vue mer a Punaauia...', desc: 'Decrivez le bien : surface, nombre de pieces, equipements, quartier...' },
+  vehicules:  { titre: 'Ex: Toyota Hilux 2020 tres bon etat...', desc: 'Decrivez le vehicule : marque, modele, kilometrage, equipements...' },
+  occasion:   { titre: 'Ex: iPhone 15 Pro comme neuf...', desc: 'Decrivez l\'objet : etat, marque, modele, raison de la vente...' },
+  emploi:     { titre: 'Ex: Recherche cuisinier experimente...', desc: 'Decrivez le poste : missions, profil recherche, horaires, avantages...' },
+  services:   { titre: 'Ex: Peintre professionnel, devis gratuit...', desc: 'Decrivez votre service : competences, experience, zone d\'intervention...' },
 };
 
-// ─── Emploi : champs spécifiques par sous-catégorie ──────────────────────────
-SPECS_DEF['emploi-commerciaux'] = [
-  { name: 'type_contrat',    label: 'Type de contrat',   type: 'select', options: ['CDI','CDD','Intérim','Stage','Alternance','Freelance'] },
-  { name: 'salaire_fixe',    label: 'Salaire fixe (XPF)',  type: 'number', placeholder: 'Ex: 180 000' },
-  { name: 'salaire_variable',label: 'Variable / commissions', type: 'number', placeholder: 'Ex: 50 000' },
-  { name: 'deplacements',    label: 'Déplacements fréquents', type: 'checkbox' },
-];
-SPECS_DEF['emploi-informatique'] = [
-  { name: 'type_contrat',  label: 'Type de contrat',  type: 'select', options: ['CDI','CDD','Freelance','Stage','Alternance'] },
-  { name: 'langages',      label: 'Langages requis',  type: 'text',   placeholder: 'Ex: Python, JavaScript, Java' },
-  { name: 'stack',         label: 'Stack / framework',type: 'text',   placeholder: 'Ex: React, Django, Laravel' },
-  { name: 'remote_ok',     label: 'Télétravail possible', type: 'checkbox' },
-];
-SPECS_DEF['emploi-hotellerie'] = [
-  { name: 'type_contrat',  label: 'Type de contrat',    type: 'select', options: ['CDI','CDD','Saisonnier','Intérim'] },
-  { name: 'horaires',      label: 'Horaires',            type: 'select', options: ['Journée','Matin','Soir','Nuit','Rotation 3x8','Week-end'] },
-  { name: 'experience_ans',label: 'Expérience requise',  type: 'number', placeholder: 'Ex: 2' },
-  { name: 'langues',       label: 'Langues requises',    type: 'text',   placeholder: 'Ex: Français, Anglais' },
-];
-SPECS_DEF['emploi-btp'] = [
-  { name: 'type_contrat',  label: 'Type de contrat',    type: 'select', options: ['CDI','CDD','Intérim','Sous-traitance'] },
-  { name: 'type_chantier', label: 'Type de chantier',   type: 'text',   placeholder: 'Ex: Résidentiel, Génie civil' },
-  { name: 'salaire_jour',  label: 'Salaire / jour (XPF)', type: 'number', placeholder: 'Ex: 15 000' },
-  { name: 'debut',         label: 'Début souhaité',      type: 'text',   placeholder: 'Ex: Immédiat, Mars 2025' },
-];
-SPECS_DEF['emploi-services'] = [
-  { name: 'type_contrat',  label: 'Type de contrat',    type: 'select', options: ['CDI','CDD','Intérim','Stage'] },
-  { name: 'diplome_requis',label: 'Diplôme requis',      type: 'text',   placeholder: 'Ex: CAP, BTS, Licence…' },
-  { name: 'references',    label: 'Références exigées',  type: 'checkbox' },
-  { name: 'domicile',      label: 'Travail à domicile',  type: 'checkbox' },
-];
+// ─── Categorie selection ─────────────────────────────────────────────
+var catCards = document.querySelectorAll('.dep-cat-card');
+catCards.forEach(function(card) {
+  card.addEventListener('click', function() {
+    var cat = card.dataset.cat;
 
-// ─── Rendu des champs adaptatifs ──────────────────────────────────────────────
-function renderSpecs(souscat) {
-  const container = document.getElementById('specs-container');
-  if (!container) return;
+    // Reset all cards
+    catCards.forEach(function(c) {
+      c.classList.remove('dep-cat-card--selected', 'dep-cat-card--dimmed');
+    });
 
-  // Adapter le label Prix
-  const cat = document.getElementById('id_categorie') ? document.getElementById('id_categorie').value : '';
-  adaptPrix(cat, souscat);
+    // Select this card
+    card.classList.add('dep-cat-card--selected');
+    catCards.forEach(function(c) {
+      if (c !== card) c.classList.add('dep-cat-card--dimmed');
+    });
 
-  const fields = SPECS_DEF[souscat];
-  if (!fields || fields.length === 0) {
-    container.classList.add('specs-hidden');
-    setTimeout(() => { container.innerHTML = ''; container.classList.remove('specs-hidden'); }, 250);
-    return;
-  }
-  container.classList.add('specs-hidden');
-  setTimeout(() => {
-    container.classList.remove('specs-hidden');
-  }, 30);
+    // Update state
+    _selectedCat = cat;
+    _selectedSousCat = '';
+    document.getElementById('h-categorie').value = cat;
+    document.getElementById('h-sous-categorie').value = '';
+    document.getElementById('h-type-transaction').value = 'non_applicable';
 
-  let html = '<div class="border-t border-gray-200 pt-5 mt-1">';
-  html += '<p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Caractéristiques optionnelles</p>';
-  html += '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">';
+    // Update placeholders
+    var ph = PLACEHOLDERS[cat] || {};
+    var titreInput = document.getElementById('id_titre');
+    var descInput = document.getElementById('id_description');
+    if (titreInput && ph.titre) titreInput.placeholder = ph.titre;
+    if (descInput && ph.desc) descInput.placeholder = ph.desc;
 
-  fields.forEach(f => {
-    if (f.type === 'checkbox') {
-      // Checkbox : rendu inline sur une colonne entière
-      html += '<div class="flex items-center gap-2 pt-4 sm:pt-6">';
-      html += `<input type="checkbox" name="spec_${f.name}" value="Oui" id="spec_${f.name}" class="w-4 h-4 accent-gray-900">`;
-      html += `<label for="spec_${f.name}" class="text-sm font-medium text-gray-700">${f.label}</label>`;
-      html += '</div>';
-    } else {
-      html += '<div>';
-      const ex = f.placeholder ? `<span class='champ-exemple'>Ex: ${f.placeholder}</span>` : '';
-      html += `<label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">${f.label}${ex}</label>`;
-      if (f.type === 'select') {
-        html += `<select name="spec_${f.name}" class="form-input"><option value="">— Choisir</option>`;
-        f.options.forEach(o => { html += `<option value="${o}">${o}</option>`; });
-        html += '</select>';
-      } else {
-        html += `<input type="${f.type}" name="spec_${f.name}" class="form-input" placeholder="${f.placeholder || ''}">`;
-      }
-      html += '</div>';
+    // Update sub-category label: "Type" for immobilier, "Sous-categorie" otherwise
+    var sousCatLabel = document.getElementById('sous-cat-label');
+    if (sousCatLabel) {
+      sousCatLabel.textContent = (cat === 'immobilier') ? 'Type' : 'Sous-categorie';
     }
+
+    // Immobilier: show transaction step first, hide sous-cat and specs until transaction is chosen
+    if (cat === 'immobilier') {
+      renderTransactionStep();
+      showStep('step-sous-cat', false);
+      showStep('step-specs', false);
+    } else {
+      // Hide transaction step for non-immobilier categories
+      showStep('step-transaction', false);
+
+      // Render sous-categories
+      renderSousCats(cat);
+
+      // If no sub-categories, show specs directly for this category
+      var items = SOUS_CATS[cat] || [];
+      if (!items.length) {
+        renderSpecs(cat, '');
+      } else {
+        showStep('step-specs', false);
+      }
+    }
+
+    // Validate
+    validateForm();
+  });
+});
+
+// ─── Transaction step (immobilier only) ──────────────────────────────
+function renderTransactionStep() {
+  var container = document.getElementById('transaction-container');
+  if (!container) return;
+  var html = '';
+  html += '<label class="dep-label">Type de transaction *</label>';
+  html += '<div class="dep-radio-group" id="rg-transaction">';
+  html += '<button type="button" class="dep-radio-btn" data-val="vente" onclick="selectTransaction(this)">&#127991;&#65039; Vente</button>';
+  html += '<button type="button" class="dep-radio-btn" data-val="location" onclick="selectTransaction(this)">&#128273; Location</button>';
+  html += '<button type="button" class="dep-radio-btn" data-val="autre" onclick="selectTransaction(this)">&#128260; Autre</button>';
+  html += '</div>';
+  container.innerHTML = html;
+  showStep('step-transaction', true);
+}
+
+function selectTransaction(btn) {
+  var group = document.getElementById('rg-transaction');
+  if (!group) return;
+  group.querySelectorAll('.dep-radio-btn').forEach(function(b) { b.classList.remove('dep-radio-btn--active'); });
+  btn.classList.add('dep-radio-btn--active');
+  var val = btn.dataset.val;
+  document.getElementById('h-type-transaction').value = val;
+
+  // Show sous-categories (labeled "Type") only if not already visible
+  var sousCatStep = document.getElementById('step-sous-cat');
+  if (!sousCatStep || sousCatStep.classList.contains('dep-step--hidden')) {
+    renderSousCats('immobilier');
+  }
+
+  // Render specs container (creates #immo-fields), then fill it with current transaction fields
+  renderSpecs('immobilier', _selectedSousCat);
+
+  validateForm();
+}
+
+// ─── Sous-categories ─────────────────────────────────────────────────
+function renderSousCats(cat) {
+  var container = document.getElementById('sous-cat-chips');
+  var step = document.getElementById('step-sous-cat');
+  container.innerHTML = '';
+
+  var items = SOUS_CATS[cat] || [];
+  if (!items.length) { showStep('step-sous-cat', false); return; }
+
+  items.forEach(function(item) {
+    var chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'dep-chip';
+    chip.textContent = item.label;
+    chip.dataset.value = item.value;
+    chip.addEventListener('click', function() {
+      // Deselect all
+      container.querySelectorAll('.dep-chip').forEach(function(c) { c.classList.remove('dep-chip--active'); });
+      chip.classList.add('dep-chip--active');
+      _selectedSousCat = item.value;
+      document.getElementById('h-sous-categorie').value = item.value;
+      // Render specs
+      renderSpecs(_selectedCat, item.value);
+      validateForm();
+    });
+    container.appendChild(chip);
   });
 
-  html += '</div></div>';
+  showStep('step-sous-cat', true);
+}
+
+// ─── Specs (champs dynamiques) ───────────────────────────────────────
+function renderSpecs(cat, sousCat) {
+  var container = document.getElementById('specs-container');
+  var step = document.getElementById('step-specs');
+  container.innerHTML = '';
+
+  var html = '';
+
+  // IMMOBILIER — transaction type is rendered in its own step above;
+  // here we only render the remaining immobilier-specific fields
+  if (cat === 'immobilier') {
+    html += '<div id="immo-fields"></div>';
+  }
+
+  // VEHICULES
+  else if (cat === 'vehicules') {
+    html += '<div class="dep-fields-stack">';
+    html += radioFieldInline('spec_etat', 'Etat', ['Neuf', 'Occasion', 'Pour pieces']);
+    html += fieldNumber('prix', 'Prix (XPF)', 'Ex: 1 800 000');
+    html += '</div>';
+  }
+
+  // OCCASION
+  else if (cat === 'occasion') {
+    html += '<div class="dep-fields-stack">';
+    html += radioFieldInline('spec_etat', 'Etat', ['&#10024; Neuf', '&#128077; Tres bon', '&#128076; Bon', '&#128295; Correct']);
+    html += toggleField('spec_livraison', 'Livraison possible');
+    html += fieldNumber('prix', 'Prix (XPF)', 'Ex: 25 000');
+    html += '</div>';
+  }
+
+  // EMPLOI
+  else if (cat === 'emploi') {
+    html += '<div class="dep-fields-stack">';
+    html += radioFieldInline('spec_type_contrat', 'Type de contrat', ['CDI', 'CDD', 'Interim', 'Freelance', 'Stage']);
+    html += fieldNumber('spec_salaire', 'Salaire (XPF/mois)', 'Optionnel');
+    html += fieldSelect('spec_experience', 'Experience requise', ['Debutant accepte', '1-2 ans', '3-5 ans', '+5 ans']);
+    html += '</div>';
+  }
+
+  // SERVICES
+  else if (cat === 'services') {
+    html += '<div class="dep-fields-stack">';
+    html += radioFieldInline('spec_intervention', 'Type d\'intervention', ['A domicile', 'En atelier', 'Les deux']);
+    html += toggleField('spec_deplacement', 'Deplacement possible');
+    html += '<div>';
+    html += '<label class="dep-label">Tarif</label>';
+    html += '<div style="display:flex;gap:8px">';
+    html += '<input type="number" name="prix" class="form-input" style="flex:1" placeholder="Ex: 5 000">';
+    html += '<select name="prix_unite" class="form-input" style="width:120px" onchange="document.getElementById(\'h-prix-unite\').value=this.value">';
+    html += '<option value="heure">/ heure</option><option value="jour">/ jour</option><option value="">Forfait</option>';
+    html += '</select></div></div>';
+    html += '</div>';
+  }
+
+  if (html) {
+    container.innerHTML = html;
+    showStep('step-specs', true);
+
+    // For immobilier, render sub-fields based on currently selected transaction type
+    if (cat === 'immobilier') {
+      var currentTx = document.getElementById('h-type-transaction').value;
+      if (currentTx && currentTx !== 'non_applicable') {
+        renderImmoFields(currentTx);
+      }
+    }
+  } else {
+    showStep('step-specs', false);
+  }
+}
+
+// Render immobilier sub-fields based on transaction type
+function renderImmoFields(txType) {
+  var container = document.getElementById('immo-fields');
+  if (!container) return;
+  var html = '<div class="dep-fields-stack" style="margin-top:14px">';
+
+  if (txType === 'vente') {
+    html += fieldNumber('prix', 'Prix de vente (XPF)', 'Ex: 25 000 000');
+  } else if (txType === 'location') {
+    html += fieldNumber('prix', 'Loyer / mois (XPF)', 'Ex: 80 000');
+    html += toggleField('spec_charges_incluses', 'Charges incluses');
+  } else if (txType === 'autre') {
+    html += fieldNumber('prix', 'Prix (XPF)', 'Ex: 5 000 000');
+  }
+
+  html += '</div>';
   container.innerHTML = html;
 }
 
-// Écouter sous-catégorie
-
-const sousCatSel = document.getElementById('id_sous_categorie');
-if (sousCatSel) {
-  sousCatSel.addEventListener('change', () => { renderSpecs(sousCatSel.value); });
+// ─── Field helpers ───────────────────────────────────────────────────
+function fieldText(name, label, ph) {
+  return '<div><label class="dep-label">' + label + '</label>' +
+         '<input type="text" name="' + name + '" class="form-input" placeholder="' + (ph||'') + '"></div>';
 }
-
-// ─── Init catégorie (après SPECS_DEF + renderSpecs) ─────────────────────────
-const catSelDep = document.getElementById('id_categorie');
-if (catSelDep) {
-  catSelDep.addEventListener('change', () => {
-    updateSousCatsDep(catSelDep.value);
-    const txRow = document.getElementById('transaction-row');
-    if (txRow) txRow.classList.toggle('hidden', catSelDep.value !== 'immobilier');
+function fieldNumber(name, label, ph) {
+  return '<div><label class="dep-label">' + label + '</label>' +
+         '<input type="number" name="' + name + '" class="form-input" placeholder="' + (ph||'') + '"></div>';
+}
+function fieldSelect(name, label, options) {
+  var html = '<div><label class="dep-label">' + label + '</label><select name="' + name + '" class="form-input"><option value="">-- Choisir</option>';
+  options.forEach(function(o) { html += '<option value="' + o + '">' + o + '</option>'; });
+  return html + '</select></div>';
+}
+function radioFieldInline(name, label, options, extraClass) {
+  var html = '<label class="dep-label">' + label + '</label><div class="dep-radio-group" id="rg-' + name + '">';
+  options.forEach(function(o) {
+    var val = o.replace(/<[^>]*>/g, '').trim();
+    html += '<button type="button" class="dep-radio-btn" data-val="' + val + '" onclick="selectRadio(\'rg-' + name + '\',\'' + name + '\',this)">' + o + '</button>';
   });
-  updateSousCatsDep(catSelDep.value);
-  // Init: afficher si immobilier pre-selectionne
-  const txRowInit = document.getElementById('transaction-row');
-  if (txRowInit && catSelDep.value === 'immobilier') txRowInit.classList.remove('hidden');
+  return html + '</div>';
+}
+function toggleField(name, label) {
+  return '<div style="display:inline-flex;align-items:center;gap:12px;padding:8px 0">' +
+         '<span style="font-size:13px;font-weight:600;color:#374151">' + label + '</span>' +
+         '<label class="dep-toggle"><input type="checkbox" name="' + name + '" value="Oui">' +
+         '<span class="dep-toggle-slider"></span></label></div>';
 }
 
-// ─── Gestion photos avec drag & drop upload + réordonnancement ───────────────
-var _photoFiles = []; // stocke les fichiers sélectionnés
+// ─── Radio button selection ──────────────────────────────────────────
+function selectRadio(groupId, hiddenName, btn) {
+  var group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.dep-radio-btn').forEach(function(b) { b.classList.remove('dep-radio-btn--active'); });
+  btn.classList.add('dep-radio-btn--active');
 
+  var val = btn.dataset.val;
+
+  // Special handling for hidden fields
+  var hidden = document.getElementById(hiddenName);
+  if (hidden) {
+    hidden.value = val;
+  } else {
+    // Create a hidden input for spec_ fields
+    var existing = document.querySelector('input[name="' + hiddenName + '"][type="hidden"]');
+    if (!existing) {
+      var inp = document.createElement('input');
+      inp.type = 'hidden'; inp.name = hiddenName; inp.value = val;
+      document.getElementById('deposer-form').appendChild(inp);
+    } else {
+      existing.value = val;
+    }
+  }
+
+  // Immobilier: update sub-fields when transaction type changes
+  if (groupId === 'rg-transaction') {
+    renderImmoFields(val);
+  }
+}
+
+// ─── Show/hide steps ─────────────────────────────────────────────────
+function showStep(id, show) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (show) {
+    el.classList.remove('dep-step--hidden');
+    el.classList.add('dep-step--show');
+  } else {
+    el.classList.add('dep-step--hidden');
+    el.classList.remove('dep-step--show');
+  }
+}
+
+// ─── Location selector ───────────────────────────────────────────────
+(function initLocSelector() {
+  var root = document.getElementById('loc-selector-form');
+  if (!root || !window.LocationSelector) return;
+  new LocationSelector(root, {
+    mode: 'form',
+    staticPrefix: '{% static "img/" %}',
+    initial: [],
+  });
+})();
+
+// ─── Description char count ──────────────────────────────────────────
+(function() {
+  var desc = document.getElementById('id_description');
+  var counter = document.getElementById('desc-count');
+  if (!desc || !counter) return;
+  desc.addEventListener('input', function() {
+    var len = desc.value.length;
+    counter.innerHTML = len + ' caractere(s) <span class="dep-char-hint">(50 min. recommandes)</span>';
+    counter.classList.toggle('dep-char-count--ok', len >= 50);
+  });
+})();
+
+// ─── Photo upload ────────────────────────────────────────────────────
 function previewPhotos(input) {
   if (!input.files) return;
-  Array.from(input.files).forEach(f => {
+  Array.from(input.files).forEach(function(f) {
     if (_photoFiles.length < 5) _photoFiles.push(f);
   });
   _renderPhotoPreviews();
 }
 
 function _renderPhotoPreviews() {
-  const preview = document.getElementById('photoPreview');
+  var preview = document.getElementById('photoPreview');
   preview.innerHTML = '';
-  _photoFiles.forEach((file, idx) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'photo-thumb relative';
+  _photoFiles.forEach(function(file, idx) {
+    var wrap = document.createElement('div');
+    wrap.className = 'photo-thumb';
     wrap.draggable = true;
     wrap.dataset.idx = idx;
-    const img = document.createElement('img');
-    img.className = 'w-20 h-20 object-cover rounded-xl border-2 border-gray-200 shadow-sm cursor-grab';
-    const reader = new FileReader();
-    reader.onload = e => { img.src = e.target.result; };
+
+    var img = document.createElement('img');
+    var reader = new FileReader();
+    reader.onload = function(e) { img.src = e.target.result; };
     reader.readAsDataURL(file);
-    // Badge numéro
-    const num = document.createElement('div');
-    num.className = 'absolute -top-1.5 -left-1.5 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black';
+
+    var num = document.createElement('div');
+    num.className = 'photo-num';
     num.textContent = idx + 1;
-    // Bouton supprimer
-    const del = document.createElement('button');
+
+    var del = document.createElement('button');
     del.type = 'button';
-    del.className = 'absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-black transition';
-    del.textContent = '✕';
-    del.onclick = () => { _photoFiles.splice(idx, 1); _renderPhotoPreviews(); };
+    del.className = 'photo-del';
+    del.textContent = '\u2715';
+    del.onclick = function() { _photoFiles.splice(idx, 1); _renderPhotoPreviews(); };
+
     wrap.appendChild(img);
     wrap.appendChild(num);
     wrap.appendChild(del);
-    // Drag events pour réordonnancement
-    wrap.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', idx); wrap.style.opacity = '0.4'; });
-    wrap.addEventListener('dragend', () => { wrap.style.opacity = '1'; });
-    wrap.addEventListener('dragover', e => { e.preventDefault(); wrap.classList.add('ring-2', 'ring-blue-400'); });
-    wrap.addEventListener('dragleave', () => { wrap.classList.remove('ring-2', 'ring-blue-400'); });
-    wrap.addEventListener('drop', e => {
+
+    // Drag events for reordering
+    wrap.addEventListener('dragstart', function(e) { e.dataTransfer.setData('text/plain', idx); wrap.style.opacity = '0.4'; });
+    wrap.addEventListener('dragend', function() { wrap.style.opacity = '1'; });
+    wrap.addEventListener('dragover', function(e) { e.preventDefault(); img.style.borderColor = '#3b82f6'; });
+    wrap.addEventListener('dragleave', function() { img.style.borderColor = '#e5e7eb'; });
+    wrap.addEventListener('drop', function(e) {
       e.preventDefault();
-      wrap.classList.remove('ring-2', 'ring-blue-400');
-      const from = parseInt(e.dataTransfer.getData('text/plain'));
-      const to = idx;
-      if (from !== to) {
-        const item = _photoFiles.splice(from, 1)[0];
-        _photoFiles.splice(to, 0, item);
+      img.style.borderColor = '#e5e7eb';
+      var from = parseInt(e.dataTransfer.getData('text/plain'));
+      if (from !== idx) {
+        var item = _photoFiles.splice(from, 1)[0];
+        _photoFiles.splice(idx, 0, item);
         _renderPhotoPreviews();
       }
     });
+
     preview.appendChild(wrap);
   });
-  // Sync les fichiers dans l'input pour le submit
   _syncPhotoInput();
 }
 
 function _syncPhotoInput() {
-  // Sync via DataTransfer pour le submit normal
   try {
     var dt = new DataTransfer();
     _photoFiles.forEach(function(f) { dt.items.add(f); });
     document.getElementById('photoInput').files = dt.files;
-  } catch(e) { /* fallback géré au submit */ }
+  } catch(e) {}
 }
 
-// ─── Interception SYSTÉMATIQUE du submit ─────────────────────────────────────
+// Dropzone drag & drop
+var dz = document.getElementById('dropzone');
+if (dz) {
+  ['dragover','dragenter'].forEach(function(ev) {
+    dz.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('dz-over'); });
+  });
+  ['dragleave','drop'].forEach(function(ev) {
+    dz.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dz.classList.remove('dz-over'); });
+  });
+  dz.addEventListener('drop', function(e) {
+    Array.from(e.dataTransfer.files).forEach(function(f) {
+      if (_photoFiles.length < 5 && f.type.startsWith('image/')) _photoFiles.push(f);
+    });
+    _renderPhotoPreviews();
+  });
+}
+
+// ─── Boost slider (flamme) ────────────────────────────────────────────
+function boostUpdate(pos) {
+  var hidden   = document.getElementById('boost-duree-hidden');
+  var flame    = document.getElementById('boost-flame-display');
+  var wrap     = document.getElementById('boost-wrap');
+  var badge    = document.getElementById('boost-badge');
+  var recap    = document.getElementById('boost-recap');
+  var recapDuree = document.getElementById('boost-recap-duree');
+  var recapPrix  = document.getElementById('boost-recap-prix');
+  var slider   = document.getElementById('boost-slider');
+  var lbls     = document.querySelectorAll('.boost-lbl');
+
+  if (pos === 0) {
+    if (hidden)   hidden.value = '';
+    if (flame)  { flame.textContent = '\uD83D\uDCA4'; flame.className = ''; flame.removeAttribute('style'); }
+    if (wrap)   { wrap.className = ''; }
+    if (badge)  { badge.textContent = ''; badge.style.background = ''; badge.style.color = ''; }
+    if (slider)   slider.style.background = '#e5e7eb';
+    if (recap)    recap.style.display = 'none';
+  } else if (pos === 1) {
+    if (hidden)   hidden.value = '7jours';
+    if (flame)  { flame.textContent = '\uD83D\uDD25'; flame.removeAttribute('style'); flame.className = 'flame-mid'; }
+    if (wrap)   { wrap.className = 'boost-active'; }
+    if (badge)  { badge.textContent = '500 XPF'; badge.style.background = '#fff7ed'; badge.style.color = '#c2410c'; }
+    if (slider)   slider.style.background = 'linear-gradient(to right,#f97316 50%,#e5e7eb 50%)';
+    if (recap)    recap.style.display = 'block';
+    if (recapDuree) recapDuree.textContent = 'Boost 7 jours';
+    if (recapPrix)  recapPrix.textContent = '500 XPF';
+  } else if (pos === 2) {
+    if (hidden)   hidden.value = '1mois';
+    if (flame)  { flame.textContent = '\uD83D\uDD25'; flame.removeAttribute('style'); flame.className = 'flame-max'; }
+    if (wrap)   { wrap.className = 'boost-max'; }
+    if (badge)  { badge.textContent = '1 500 XPF'; badge.style.background = '#fef2f2'; badge.style.color = '#b91c1c'; }
+    if (slider)   slider.style.background = '#ef4444';
+    if (recap)    recap.style.display = 'block';
+    if (recapDuree) recapDuree.textContent = 'Boost 1 mois';
+    if (recapPrix)  recapPrix.textContent = '1 500 XPF';
+  }
+
+  lbls.forEach(function(l) {
+    l.classList.toggle('active', parseInt(l.dataset.pos) === pos);
+  });
+}
+// Init boost
+boostUpdate(0);
+
+// ─── Form validation ─────────────────────────────────────────────────
+function validateForm() {
+  var btn = document.getElementById('dep-submit-btn');
+  if (!btn) return;
+  var cat = document.getElementById('h-categorie').value;
+  var titre = document.getElementById('id_titre').value.trim();
+  var desc = document.getElementById('id_description').value.trim();
+  // Location: check hidden inputs from location selector
+  var commune = document.querySelector('input[name="commune"]');
+  var hasLoc = commune && commune.value;
+
+  btn.disabled = !(cat && titre && desc);
+}
+
+// Listen for changes
+['id_titre', 'id_description'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', validateForm);
+});
+
+// ─── Auto-fill prix_label ────────────────────────────────────────────
+document.addEventListener('input', function(e) {
+  if (e.target.name === 'prix') {
+    var v = parseInt(e.target.value) || 0;
+    var label = document.getElementById('h-prix-label');
+    if (label) label.value = v > 0 ? v.toLocaleString('fr-FR').replace(/\u202F/g, ' ') + ' XPF' : '';
+  }
+});
+
+// ─── Form submission (fetch to handle photos) ────────────────────────
 (function() {
   var form = document.getElementById('deposer-form');
   if (!form) return;
 
   form.addEventListener('submit', function(e) {
-    // TOUJOURS intercepter pour garantir l'envoi des photos
     e.preventDefault();
 
-    var submitBtn = form.querySelector('button[type="submit"]');
+    var submitBtn = document.getElementById('dep-submit-btn');
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Publication en cours...';
     }
 
-    // Construire le FormData avec TOUS les champs + photos manuellement
     var fd = new FormData(form);
-    // Supprimer l'entrée photos (potentiellement vide de l'input file)
     fd.delete('photos');
-    // Ajouter chaque photo depuis notre tableau JS
-    console.log('[photos] Envoi de', _photoFiles.length, 'photo(s)');
-    _photoFiles.forEach(function(f, i) {
-      console.log('[photos]  #' + i, f.name, f.size, f.type);
+    _photoFiles.forEach(function(f) {
       fd.append('photos', f, f.name);
     });
 
@@ -926,102 +1192,31 @@ function _syncPhotoInput() {
       redirect: 'follow'
     }).then(function(resp) {
       if (resp.redirected) {
-        // Succès — Django a redirigé vers la page de détail
         window.location.href = resp.url;
+        return;
+      }
+      var ct = resp.headers.get('content-type') || '';
+      if (ct.indexOf('application/json') !== -1) {
+        return resp.json().then(function(data) {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          }
+        });
       } else {
-        // Erreur de validation — afficher le formulaire avec les erreurs
         return resp.text().then(function(html) {
-          document.open();
-          document.write(html);
-          document.close();
+          document.open(); document.write(html); document.close();
         });
       }
     }).catch(function(err) {
-      console.error('[photos] Erreur fetch:', err);
-      alert('Erreur lors de la publication. Veuillez réessayer.');
+      console.error('Erreur:', err);
+      alert('Erreur lors de la publication. Veuillez reessayer.');
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Publier mon annonce';
+        submitBtn.textContent = 'Publier mon annonce \u2192';
       }
     });
   });
 })();
 
-// ─── Boost Slider ─────────────────────────────────────────────────────────────
-function boostUpdate(pos) {
-  var hidden   = document.getElementById('boost-duree-hidden');
-  var flame    = document.getElementById('boost-flame-display');
-  var wrap     = document.getElementById('boost-wrap');
-  var badge    = document.getElementById('boost-badge');
-  var msg      = document.getElementById('boost-msg');
-  var estimate = document.getElementById('boost-estimate');
-  var estimTxt = document.getElementById('boost-estimate-text');
-  var slider   = document.getElementById('boost-slider');
-  var lbls     = document.querySelectorAll('.boost-lbl');
-
-  if (pos === 0) {
-    if (hidden)   hidden.value           = '';
-    if (flame)  { flame.textContent      = '\uD83D\uDCA4'; flame.style.fontSize = '2.2rem'; flame.style.animation = 'none'; flame.style.filter = ''; }
-    if (wrap)   { wrap.style.borderColor = '#e5e7eb'; wrap.style.boxShadow = ''; }
-    if (badge)  { badge.textContent      = ''; badge.style.background = ''; badge.style.color = ''; }
-    if (slider)   slider.style.background = '#e5e7eb';
-    if (estimate) estimate.style.display  = 'none';
-    if (msg)      msg.style.display       = 'none';
-
-  } else if (pos === 1) {
-    if (hidden)   hidden.value           = '7jours';
-    if (flame)  { flame.textContent      = '\uD83D\uDD25'; flame.style.fontSize = '2.6rem'; flame.style.animation = 'flicker 1s ease-in-out infinite'; flame.style.filter = 'drop-shadow(0 0 6px rgba(249,115,22,.7))'; }
-    if (wrap)   { wrap.style.borderColor = '#f97316'; wrap.style.boxShadow = '0 0 0 3px rgba(249,115,22,.12)'; }
-    if (badge)  { badge.textContent      = '7 jours'; badge.style.background = '#fff7ed'; badge.style.color = '#c2410c'; }
-    if (slider)   slider.style.background = 'linear-gradient(to right,#f97316 50%,#e5e7eb 50%)';
-    if (estimate) { estimate.style.display = 'flex'; estimate.style.background = '#f0fdf4'; estimate.style.borderColor = '#bbf7d0'; estimate.style.color = '#166534'; }
-    if (estimTxt) estimTxt.textContent   = 'Estimé : +800 à 1 500 vues supplémentaires en 7 jours';
-    if (msg)      msg.style.display      = 'block';
-
-  } else if (pos === 2) {
-    if (hidden)   hidden.value           = '1mois';
-    if (flame)  { flame.textContent      = '\uD83D\uDD25'; flame.style.fontSize = '3.2rem'; flame.style.animation = 'flicker-big .55s ease-in-out infinite'; flame.style.filter = 'drop-shadow(0 0 14px rgba(239,68,68,.9))'; }
-    if (wrap)   { wrap.style.borderColor = '#ef4444'; wrap.style.boxShadow = '0 0 0 4px rgba(239,68,68,.15)'; }
-    if (badge)  { badge.textContent      = '1 mois'; badge.style.background = '#fef2f2'; badge.style.color = '#b91c1c'; }
-    if (slider)   slider.style.background = '#ef4444';
-    if (estimate) { estimate.style.display = 'flex'; estimate.style.background = '#fff7ed'; estimate.style.borderColor = '#fed7aa'; estimate.style.color = '#9a3412'; }
-    if (estimTxt) estimTxt.textContent   = 'Estimé : +3 000 à 6 000 vues supplémentaires en 1 mois';
-    if (msg)      msg.style.display      = 'block';
-  }
-
-  lbls.forEach(function(l) {
-    l.classList.toggle('active', parseInt(l.dataset.pos) === pos);
-  });
-}
-// Init au chargement
-document.addEventListener('DOMContentLoaded', function() { boostUpdate(0); });
-
-// Auto-remplir "Affichage prix" quand l'utilisateur tape un prix
-(function() {
-  const prixInput = document.getElementById('id_prix');
-  const labelInput = document.getElementById('id_prix_label');
-  if (!prixInput || !labelInput) return;
-  prixInput.addEventListener('input', () => {
-    const v = parseInt(prixInput.value) || 0;
-    labelInput.value = v > 0 ? v.toLocaleString('fr-FR').replace(/\u202F/g, ' ') + ' XPF' : '';
-  });
-})();
-
-// Drag & drop upload sur la dropzone
-const dz = document.getElementById('dropzone');
-if (dz) {
-  ['dragover','dragenter'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('dz-over'); });
-  });
-  ['dragleave','drop'].forEach(ev => {
-    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove('dz-over'); });
-  });
-  dz.addEventListener('drop', e => {
-    Array.from(e.dataTransfer.files).forEach(f => {
-      if (_photoFiles.length < 5 && f.type.startsWith('image/')) _photoFiles.push(f);
-    });
-    _renderPhotoPreviews();
-  });
-}
 </script>
 {% endblock %}

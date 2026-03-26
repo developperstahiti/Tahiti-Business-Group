@@ -4,9 +4,9 @@ from django.conf import settings
 CATEGORIES = [
     ('vehicules',    'Véhicules'),
     ('immobilier',   'Immobilier'),
-    ('occasion',     'Occasion'),
-    ('emploi',       'Emploi'),
-    ('services',     'Services'),
+    ('occasion',     'Occasion / Bon Plan'),
+    ('emploi',       'Offre et Demande d\'emploi'),
+    ('services',     'Service / Prestation'),
 ]
 
 STATUTS = [
@@ -24,48 +24,45 @@ BOOST_DUREE_CHOICES = [
 
 # Sous-catégories style Leboncoin — source unique de vérité
 SOUS_CATEGORIES = {
-    'vehicules': [
-        ('vehicules-4x4',         'Voitures / 4 roues'),
-        ('vehicules-2roues',      '2 roues (scooters/motos)'),
-        ('vehicules-bateaux',     'Bateaux & jet-skis'),
-        ('vehicules-utilitaires', 'Utilitaires & camions'),
-        ('vehicules-pieces',      'Pièces auto & accessoires'),
-    ],
     'immobilier': [
-        ('immo-appartements', 'Appartements & studios'),
-        ('immo-maisons',      'Maisons & villas'),
-        ('immo-terrains',     'Terrains & lots'),
-        ('immo-bureaux',      'Bureaux & commerces'),
-        ('immo-saisonnieres', 'Saisonnières (Arue/Papeete)'),
-        ('immo-parkings',     'Parkings & garages'),
+        ('immo-appartements', 'Appartements et studios'),
+        ('immo-maisons',      'Maisons et villas'),
+        ('immo-terrains',     'Terrains et lots'),
+        ('immo-bureaux',      'Bureaux et commerces'),
+        ('immo-saisonnieres', 'Saisonnières'),
+        ('immo-parkings',     'Parkings et garages'),
+    ],
+    'vehicules': [
+        ('vehicules-voitures',    'Voitures'),
+        ('vehicules-2roues',      'Motos et scooters'),
+        ('vehicules-bateaux',     'Bateaux et jet-skis'),
+        ('vehicules-utilitaires', 'Utilitaires et camions'),
+        ('vehicules-pieces',      'Pièces et accessoires'),
     ],
     'occasion': [
-        ('occasion-telephones',     'Téléphones & accessoires'),
-        ('occasion-ordinateurs',    'Ordinateurs & tablettes'),
-        ('occasion-pc',             'PC & Informatique'),
-        ('occasion-tv',             'TV & Audio'),
+        ('occasion-telephones',     'Téléphones'),
+        ('occasion-informatique',   'Informatique'),
+        ('occasion-tv',             'TV et Audio'),
         ('occasion-jeux-video',     'Jeux vidéo'),
         ('occasion-electromenager', 'Électroménager'),
-        ('occasion-meubles',        'Meubles & Déco'),
-        ('occasion-vetements',      'Vêtements & Mode'),
-        ('occasion-sport',          'Sport & Loisirs'),
+        ('occasion-meubles',        'Meubles et Déco'),
+        ('occasion-vetements',      'Vêtements'),
+        ('occasion-sport',          'Sport et Loisirs'),
         ('occasion-puericulture',   'Puériculture'),
-        ('occasion-jeux-jouets',    'Jeux & Jouets'),
+        ('occasion-jouets',         'Jouets'),
         ('occasion-divers',         'Divers'),
     ],
     'emploi': [
-        ('emploi-commerciaux',  'Commerciaux'),
-        ('emploi-informatique', 'Informatique & Dév'),
-        ('emploi-hotellerie',   'Hôtellerie & Resto'),
-        ('emploi-btp',          'BTP & Construction'),
-        ('emploi-services',     'Services à la personne'),
+        ('emploi-offre',     'Offre d\'emploi'),
+        ('emploi-recherche', 'Recherche d\'emploi'),
     ],
     'services': [
-        ('services-travaux',   'Travaux & BTP'),
-        ('services-cours',     'Cours & Formation'),
+        ('services-travaux',   'Travaux et BTP'),
+        ('services-cours',     'Cours et Formation'),
         ('services-transport', 'Transport'),
-        ('services-sante',     'Santé & Beauté'),
+        ('services-sante',     'Santé et Beauté'),
         ('services-jardinage', 'Jardinage'),
+        ('services-autres',    'Autres services'),
     ],
 }
 
@@ -115,6 +112,7 @@ class Annonce(models.Model):
         choices=[('', 'Sans boost'), ('active', 'Actif'), ('pending', 'En attente'), ('expired', 'Expiré')]
     )
     boost_expires_at = models.DateTimeField(null=True, blank=True)
+    boost_payment_ref = models.CharField(max_length=30, blank=True, default='')
     verified       = models.BooleanField(default=False)
     views          = models.PositiveIntegerField(default=0)  # impressions (vu a l'ecran)
     clics          = models.PositiveIntegerField(default=0)  # clics (ouverture detail)
@@ -197,6 +195,42 @@ class Signalement(models.Model):
 
     def __str__(self):
         return f"Signal #{self.pk} — {self.annonce.titre}"
+
+
+class Notation(models.Model):
+    vendeur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notations_recues',
+    )
+    acheteur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notations_donnees',
+    )
+    annonce = models.ForeignKey(Annonce, on_delete=models.CASCADE, related_name='notations')
+    note = models.IntegerField()  # 1 à 5
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Notation'
+        verbose_name_plural = 'Notations'
+        unique_together = ['acheteur', 'vendeur', 'annonce']
+        ordering = ['-date_creation']
+
+    def __str__(self):
+        return f"{self.acheteur} → {self.vendeur} : {self.note}/5 ({self.annonce.titre})"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.acheteur_id == self.vendeur_id:
+            raise ValidationError("Un utilisateur ne peut pas se noter lui-même.")
+        if self.note < 1 or self.note > 5:
+            raise ValidationError("La note doit être comprise entre 1 et 5.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class AlerteAnnonce(models.Model):

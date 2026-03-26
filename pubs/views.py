@@ -108,18 +108,18 @@ def pub_toggle(request, pk):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def tarifs_pubs(request):
-    pubs_haut   = Publicite.objects.filter(emplacement='haut', actif=True).first()
-    pubs_milieu = Publicite.objects.filter(emplacement='milieu', actif=True).first()
-    pubs_bas    = Publicite.objects.filter(emplacement='bas', actif=True).first()
+    pub_haut   = Publicite.objects.filter(emplacement='sidebar_haut', actif=True).first()
+    pub_milieu = Publicite.objects.filter(emplacement='sidebar_milieu', actif=True).first()
+    pub_bas    = Publicite.objects.filter(emplacement='sidebar_bas', actif=True).first()
 
     return render(request, 'pubs/tarifs.html', {
-        'pubs_haut':   pubs_haut,
-        'pubs_milieu': pubs_milieu,
-        'pubs_bas':    pubs_bas,
+        'pub_haut':   pub_haut,
+        'pub_milieu': pub_milieu,
+        'pub_bas':    pub_bas,
         'tarifs': [
-            {'emplacement': 'Haut de sidebar', 'prix': 40000, 'desc': 'Meilleure visibilité, premier regard', 'slug': 'haut'},
-            {'emplacement': 'Milieu de sidebar', 'prix': 28000, 'desc': 'Position centrale, très efficace', 'slug': 'milieu'},
-            {'emplacement': 'Bas de sidebar', 'prix': 20000, 'desc': 'Présence permanente, tarif abordable', 'slug': 'bas'},
+            {'emplacement': 'Sidebar Droite — Haut', 'prix': 40000, 'desc': 'Meilleure visibilité, premier regard', 'slug': 'sidebar_haut'},
+            {'emplacement': 'Sidebar Droite — Milieu', 'prix': 28000, 'desc': 'Position centrale, très efficace', 'slug': 'sidebar_milieu'},
+            {'emplacement': 'Sidebar Droite — Bas', 'prix': 20000, 'desc': 'Présence permanente, tarif abordable', 'slug': 'sidebar_bas'},
         ],
     })
 

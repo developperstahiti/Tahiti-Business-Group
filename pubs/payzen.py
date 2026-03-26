@@ -128,6 +128,46 @@ def verify_signature(post_data):
 REST_API_URL = 'https://secure.osb.pf/api-payment/V4/Charge/CreatePayment'
 
 
+def create_generic_form_token(amount_xpf, order_id, customer_email, customer_name, ipn_url, request):
+    """Crée un formToken PayZen générique (boost, pub, etc.).
+
+    Retourne (form_token, public_key).
+    """
+    password = _get_rest_password()
+    shop_id = settings.PAYZEN_SHOP_ID
+    credentials = base64.b64encode(f"{shop_id}:{password}".encode()).decode()
+
+    payload = {
+        'amount': amount_xpf,
+        'currency': 'XPF',
+        'orderId': order_id,
+        'customer': {
+            'email': customer_email,
+            'billingDetails': {'firstName': customer_name},
+        },
+        'ipnTargetUrl': ipn_url,
+    }
+
+    body = json.dumps(payload).encode('utf-8')
+    req = Request(REST_API_URL, data=body, method='POST')
+    req.add_header('Content-Type', 'application/json')
+    req.add_header('Authorization', f'Basic {credentials}')
+
+    try:
+        with urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+    except URLError as e:
+        logger.error("PayZen REST API error: %s", e)
+        raise RuntimeError(f"Erreur de connexion PayZen : {e}")
+
+    if data.get('status') != 'SUCCESS':
+        error_msg = data.get('answer', {}).get('errorMessage', str(data))
+        logger.error("PayZen CreatePayment failed: %s", error_msg)
+        raise RuntimeError(f"Erreur PayZen : {error_msg}")
+
+    return data['answer']['formToken'], _get_public_key()
+
+
 def create_embedded_form_token(publicite, request):
     """Appelle l'API REST PayZen pour créer un formToken (formulaire embarqué).
 

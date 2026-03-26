@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 
 {% block title %}Déposer une publicité{% endblock %}
@@ -149,25 +150,35 @@
         <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
           <div class="text-xs font-bold text-gray-500 uppercase mb-3">Emplacements disponibles</div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="emplacementCards">
-            <button type="button" data-emp="haut" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
-              <div class="text-lg mb-1">📢</div>
-              <div class="text-xs font-bold">Sidebar Haut</div>
-              <div class="text-xs text-emerald-600 font-bold mt-1">40 000 XPF/mois</div>
-            </button>
-            <button type="button" data-emp="milieu" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
-              <div class="text-lg mb-1">🎯</div>
-              <div class="text-xs font-bold">Sidebar Milieu</div>
-              <div class="text-xs text-emerald-600 font-bold mt-1">28 000 XPF/mois</div>
-            </button>
-            <button type="button" data-emp="bas" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
-              <div class="text-lg mb-1">💼</div>
-              <div class="text-xs font-bold">Sidebar Bas</div>
-              <div class="text-xs text-emerald-600 font-bold mt-1">20 000 XPF/mois</div>
-            </button>
             <button type="button" data-emp="billboard" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
               <div class="text-lg mb-1">📺</div>
               <div class="text-xs font-bold">Billboard</div>
-              <div class="text-xs text-emerald-600 font-bold mt-1">100 000 XPF/mois</div>
+              <div class="text-xs text-emerald-600 font-bold mt-1">100 000 XPF</div>
+            </button>
+            <button type="button" data-emp="sidebar_haut" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
+              <div class="text-lg mb-1">📢</div>
+              <div class="text-xs font-bold">Sidebar — Haut</div>
+              <div class="text-xs text-emerald-600 font-bold mt-1">40 000 XPF</div>
+            </button>
+            <button type="button" data-emp="sidebar_milieu" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
+              <div class="text-lg mb-1">🎯</div>
+              <div class="text-xs font-bold">Sidebar — Milieu</div>
+              <div class="text-xs text-emerald-600 font-bold mt-1">28 000 XPF</div>
+            </button>
+            <button type="button" data-emp="sidebar_bas" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
+              <div class="text-lg mb-1"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"></div>
+              <div class="text-xs font-bold">Sidebar — Bas</div>
+              <div class="text-xs text-emerald-600 font-bold mt-1">20 000 XPF</div>
+            </button>
+            <button type="button" data-emp="sidebar_gauche" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
+              <div class="text-lg mb-1">◀</div>
+              <div class="text-xs font-bold">Sidebar Gauche</div>
+              <div class="text-xs text-emerald-600 font-bold mt-1">35 000 XPF</div>
+            </button>
+            <button type="button" data-emp="strip_accueil_haut" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
+              <div class="text-lg mb-1"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"></div>
+              <div class="text-xs font-bold">Strip Accueil</div>
+              <div class="text-xs text-emerald-600 font-bold mt-1">8 000 XPF</div>
             </button>
           </div>
         </div>

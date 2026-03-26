@@ -43,18 +43,18 @@ def deposer_promo(request):
                 pro_user=request.user, titre=titre, contenu=contenu, lien_promo=lien,
             )
             _attach_photo(request, article, 'promo')
-            messages.success(request, "Votre promo est en attente de validation par l'équipe TBG.")
+            messages.success(request, "Votre promotion est en attente de validation par l'équipe TBG.")
             return redirect('rubriques_index')
     return render(request, TEMPLATE_DEPOSER, {
         'emoji':         '💰',
-        'titre_page':    'Déposer une promo',
+        'titre_page':    'Déposer une promotion',
         'couleur':       'amber',
-        'bouton_label':  'Soumettre la promo',
+        'bouton_label':  'Soumettre la promotion',
         'lien_label':    "Lien vers l'offre (optionnel)",
         'lien_placeholder': 'https://votre-site.pf/promo',
         'titre_placeholder': 'Ex : iPhone 15 -20% chez Hi-Fi Store Punaauia',
         'contenu_placeholder': 'Décrivez la promotion : article(s) concerné(s), réduction, durée, conditions...',
-        'regles': "Réductions réelles uniquement. Toute actualité sans prix sera redirigée vers la rubrique Info.",
+        'regles': "Réductions réelles uniquement. Toute actualité sans prix sera redirigée vers la rubrique Infos média.",
     })
 
 
@@ -80,7 +80,7 @@ def deposer_info(request):
         'lien_placeholder': 'https://www.tahiti-infos.com/...',
         'titre_placeholder': 'Ex : Rappel Toyota — défaut sur les freins ABS',
         'contenu_placeholder': 'Résumez l\'actualité en 2-4 phrases...',
-        'regles': "Actualités factuelles uniquement. Aucun prix, aucune pub déguisée. Si votre article contient des prix/réductions → utilisez la rubrique Promo.",
+        'regles': "Actualités factuelles uniquement. Aucun prix, aucune pub déguisée. Si votre article contient des prix/réductions → utilisez la rubrique Promotion.",
     })
 
 
@@ -102,21 +102,21 @@ def deposer_nouveaute(request):
             return redirect('rubriques_index')
     return render(request, TEMPLATE_DEPOSER, {
         'emoji':         '🚀',
-        'titre_page':    'Publier une nouveauté',
+        'titre_page':    'Publier une nouveauté / À tester absolument',
         'couleur':       'emerald',
         'bouton_label':  'Publier la nouveauté',
         'lien_label':    'Lien de redirection (optionnel)',
         'lien_placeholder': 'https://votre-site.pf ou page Instagram',
         'titre_placeholder': 'Ex : Nouveau restaurant Poke Tahiti à Mahina — ouverture vendredi',
         'contenu_placeholder': 'Décrivez votre nouveauté : lieu, service, horaires, contact...',
-        'regles': "Nouveautés commerciales réelles uniquement. Si votre publication contient une réduction → utilisez la rubrique Promo.",
+        'regles': "Nouveautés commerciales réelles uniquement. Si votre publication contient une réduction → utilisez la rubrique Promotion.",
     })
 
 
 def promo_detail(request, pk):
     article = get_object_or_404(ArticlePromo, pk=pk, statut='valide')
     return render(request, 'rubriques/detail.html', {
-        'article': article, 'emoji': '💰', 'badge': 'Promo',
+        'article': article, 'emoji': '💰', 'badge': 'Promotion',
         'lien': article.lien_promo, 'lien_label': "Voir l'offre",
         'auteur': article.pro_user,
     })
@@ -125,7 +125,7 @@ def promo_detail(request, pk):
 def info_detail(request, pk):
     article = get_object_or_404(ArticleInfo, pk=pk, statut='valide')
     return render(request, 'rubriques/detail.html', {
-        'article': article, 'emoji': '📰', 'badge': 'Info',
+        'article': article, 'emoji': '📰', 'badge': 'Infos média',
         'lien': article.source_media, 'lien_label': 'Lire la source',
         'auteur': article.auteur,
     })
@@ -134,7 +134,7 @@ def info_detail(request, pk):
 def nouveaute_detail(request, pk):
     article = get_object_or_404(ArticleNouveaute, pk=pk, statut='valide')
     return render(request, 'rubriques/detail.html', {
-        'article': article, 'emoji': '🚀', 'badge': 'Nouveauté',
+        'article': article, 'emoji': '🚀', 'badge': 'Nouveautés',
         'lien': article.lien_redirection, 'lien_label': 'En savoir plus',
         'auteur': article.pro_user,
     })

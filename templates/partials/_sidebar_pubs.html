@@ -1,26 +1,42 @@
+{% load static %}
 <!-- SIDEBAR PUBLICITÉS -->
 <aside class="layout-sidebar">
   <div class="space-y-4">
 
     <!-- SLOT HAUT -->
-    <div class="pub-slot {% if pub_haut %}filled{% endif %} overflow-hidden">
-      {% if pub_haut %}
-        {% if pub_haut.lien %}<a href="{{ pub_haut.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% if pub_haut.is_video %}
-          <video src="{{ pub_haut.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
-        {% elif pub_haut.get_image %}
-          <img src="{{ pub_haut.get_image }}" alt="{{ pub_haut.titre }}" class="w-full h-auto block" loading="lazy">
+    <div class="pub-slot {% if pub_sidebar_haut %}filled{% endif %} overflow-hidden">
+      {% if pub_sidebar_haut %}
+        {% if pub_sidebar_haut.lien %}<a href="{{ pub_sidebar_haut.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
+        {% if pub_sidebar_haut.is_video %}
+          <video src="{{ pub_sidebar_haut.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+        {% elif pub_sidebar_haut.get_image %}
+          <img src="{{ pub_sidebar_haut.get_image }}" alt="{{ pub_sidebar_haut.titre }}" class="w-full h-auto block" loading="lazy">
         {% else %}
           <div class="h-40 bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col items-center justify-center text-center p-4">
-            <div class="font-bold text-gray-800">{{ pub_haut.titre }}</div>
+            <div class="font-bold text-gray-800">{{ pub_sidebar_haut.titre }}</div>
           </div>
         {% endif %}
-        {% if pub_haut.lien %}</a>{% endif %}
+        {% if pub_sidebar_haut.lien %}</a>{% endif %}
       {% else %}
-      <a href="{% url 'deposer_pub' %}?emplacement=haut" class="pub-empty block" style="min-height:180px">
-        <canvas class="pub-space-canvas"></canvas>
-        <div class="pub-space-text"><span class="pub-txt-main pub-txt-visible">Votre publicit&eacute; ici</span><span class="pub-txt-phone">89 61 06 13</span></div>
-        <div class="pub-empty__price" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.6)">40 000 XPF/mois</div>
+      <a href="{% url 'deposer_pub' %}?emplacement=sidebar_haut" class="pub-empty block" style="min-height:180px">
+        <span class="pub-star" style="top:5%;left:8%;animation-delay:0s"></span>
+        <span class="pub-star pub-star--lg" style="top:10%;left:50%;animation-delay:.3s"></span>
+        <span class="pub-star" style="top:6%;left:85%;animation-delay:.6s"></span>
+        <span class="pub-star" style="top:20%;left:22%;animation-delay:.9s"></span>
+        <span class="pub-star pub-star--lg" style="top:25%;left:72%;animation-delay:1.2s"></span>
+        <span class="pub-star" style="top:35%;left:10%;animation-delay:1.5s"></span>
+        <span class="pub-star" style="top:40%;left:55%;animation-delay:1.8s"></span>
+        <span class="pub-star pub-star--lg" style="top:45%;left:88%;animation-delay:2.1s"></span>
+        <span class="pub-star" style="top:55%;left:18%;animation-delay:2.4s"></span>
+        <span class="pub-star" style="top:62%;left:65%;animation-delay:2.7s"></span>
+        <span class="pub-star pub-star--lg" style="top:70%;left:35%;animation-delay:.4s"></span>
+        <span class="pub-star" style="top:78%;left:80%;animation-delay:.8s"></span>
+        <span class="pub-star" style="top:85%;left:15%;animation-delay:1.3s"></span>
+        <span class="pub-star" style="top:92%;left:60%;animation-delay:1.7s"></span>
+        <div class="pub-empty__zone">Sidebar Droite — Haut</div>
+        <div class="pub-empty__title" style="font-size:14px">Votre pub ici</div>
+        <div class="pub-empty__price">40 000 XPF/mois</div>
+        <span class="pub-empty__cta" style="font-size:12px;padding:6px 16px">Réserver →</span>
       </a>
       {% endif %}
     </div>
@@ -37,47 +53,77 @@
     </div>
 
     <!-- SLOT MILIEU -->
-    <div class="pub-slot {% if pub_milieu %}filled{% endif %} overflow-hidden">
-      {% if pub_milieu %}
-        {% if pub_milieu.lien %}<a href="{{ pub_milieu.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% if pub_milieu.is_video %}
-          <video src="{{ pub_milieu.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
-        {% elif pub_milieu.get_image %}
-          <img src="{{ pub_milieu.get_image }}" alt="{{ pub_milieu.titre }}" class="w-full h-auto block" loading="lazy">
+    <div class="pub-slot {% if pub_sidebar_milieu %}filled{% endif %} overflow-hidden">
+      {% if pub_sidebar_milieu %}
+        {% if pub_sidebar_milieu.lien %}<a href="{{ pub_sidebar_milieu.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
+        {% if pub_sidebar_milieu.is_video %}
+          <video src="{{ pub_sidebar_milieu.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+        {% elif pub_sidebar_milieu.get_image %}
+          <img src="{{ pub_sidebar_milieu.get_image }}" alt="{{ pub_sidebar_milieu.titre }}" class="w-full h-auto block" loading="lazy">
         {% else %}
           <div class="h-36 bg-gradient-to-br from-amber-50 to-yellow-50 flex flex-col items-center justify-center text-center p-4">
-            <div class="font-bold text-gray-800">{{ pub_milieu.titre }}</div>
+            <div class="font-bold text-gray-800">{{ pub_sidebar_milieu.titre }}</div>
           </div>
         {% endif %}
-        {% if pub_milieu.lien %}</a>{% endif %}
+        {% if pub_sidebar_milieu.lien %}</a>{% endif %}
       {% else %}
-      <a href="{% url 'deposer_pub' %}?emplacement=milieu" class="pub-empty block" style="min-height:160px">
-        <canvas class="pub-space-canvas"></canvas>
-        <div class="pub-space-text"><span class="pub-txt-main pub-txt-visible">Votre publicit&eacute; ici</span><span class="pub-txt-phone">89 61 06 13</span></div>
-        <div class="pub-empty__price" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.6)">28 000 XPF/mois</div>
+      <a href="{% url 'deposer_pub' %}?emplacement=sidebar_milieu" class="pub-empty block" style="min-height:160px">
+        <span class="pub-star" style="top:6%;left:12%;animation-delay:.1s"></span>
+        <span class="pub-star pub-star--lg" style="top:10%;left:55%;animation-delay:.5s"></span>
+        <span class="pub-star" style="top:8%;left:82%;animation-delay:.9s"></span>
+        <span class="pub-star" style="top:22%;left:28%;animation-delay:1.3s"></span>
+        <span class="pub-star pub-star--lg" style="top:28%;left:75%;animation-delay:1.7s"></span>
+        <span class="pub-star" style="top:38%;left:15%;animation-delay:2.1s"></span>
+        <span class="pub-star" style="top:42%;left:60%;animation-delay:2.5s"></span>
+        <span class="pub-star pub-star--lg" style="top:50%;left:85%;animation-delay:2.9s"></span>
+        <span class="pub-star" style="top:58%;left:20%;animation-delay:.4s"></span>
+        <span class="pub-star" style="top:65%;left:50%;animation-delay:.8s"></span>
+        <span class="pub-star pub-star--lg" style="top:72%;left:38%;animation-delay:1.4s"></span>
+        <span class="pub-star" style="top:80%;left:78%;animation-delay:2s"></span>
+        <span class="pub-star" style="top:88%;left:10%;animation-delay:2.6s"></span>
+        <span class="pub-star" style="top:92%;left:65%;animation-delay:3.1s"></span>
+        <div class="pub-empty__zone">Sidebar Droite — Milieu</div>
+        <div class="pub-empty__title" style="font-size:14px">Votre pub ici</div>
+        <div class="pub-empty__price">28 000 XPF/mois</div>
+        <span class="pub-empty__cta" style="font-size:12px;padding:6px 16px">Réserver →</span>
       </a>
       {% endif %}
     </div>
 
     <!-- SLOT BAS -->
-    <div class="pub-slot {% if pub_bas %}filled{% endif %} overflow-hidden">
-      {% if pub_bas %}
-        {% if pub_bas.lien %}<a href="{{ pub_bas.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
-        {% if pub_bas.is_video %}
-          <video src="{{ pub_bas.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
-        {% elif pub_bas.get_image %}
-          <img src="{{ pub_bas.get_image }}" alt="{{ pub_bas.titre }}" class="w-full h-auto block" loading="lazy">
+    <div class="pub-slot {% if pub_sidebar_bas %}filled{% endif %} overflow-hidden">
+      {% if pub_sidebar_bas %}
+        {% if pub_sidebar_bas.lien %}<a href="{{ pub_sidebar_bas.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
+        {% if pub_sidebar_bas.is_video %}
+          <video src="{{ pub_sidebar_bas.get_video }}" class="w-full h-auto block" autoplay muted loop playsinline></video>
+        {% elif pub_sidebar_bas.get_image %}
+          <img src="{{ pub_sidebar_bas.get_image }}" alt="{{ pub_sidebar_bas.titre }}" class="w-full h-auto block" loading="lazy">
         {% else %}
           <div class="h-32 bg-gradient-to-br from-emerald-50 to-green-50 flex flex-col items-center justify-center text-center p-4">
-            <div class="font-bold text-gray-800">{{ pub_bas.titre }}</div>
+            <div class="font-bold text-gray-800">{{ pub_sidebar_bas.titre }}</div>
           </div>
         {% endif %}
-        {% if pub_bas.lien %}</a>{% endif %}
+        {% if pub_sidebar_bas.lien %}</a>{% endif %}
       {% else %}
-      <a href="{% url 'deposer_pub' %}?emplacement=bas" class="pub-empty block" style="min-height:140px">
-        <canvas class="pub-space-canvas"></canvas>
-        <div class="pub-space-text"><span class="pub-txt-main pub-txt-visible">Votre publicit&eacute; ici</span><span class="pub-txt-phone">89 61 06 13</span></div>
-        <div class="pub-empty__price" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;z-index:2;font-size:11px;color:rgba(255,255,255,.6)">20 000 XPF/mois</div>
+      <a href="{% url 'deposer_pub' %}?emplacement=sidebar_bas" class="pub-empty block" style="min-height:140px">
+        <span class="pub-star" style="top:5%;left:15%;animation-delay:.2s"></span>
+        <span class="pub-star pub-star--lg" style="top:10%;left:48%;animation-delay:.6s"></span>
+        <span class="pub-star" style="top:7%;left:80%;animation-delay:1s"></span>
+        <span class="pub-star" style="top:20%;left:25%;animation-delay:1.4s"></span>
+        <span class="pub-star pub-star--lg" style="top:30%;left:70%;animation-delay:1.8s"></span>
+        <span class="pub-star" style="top:40%;left:12%;animation-delay:2.2s"></span>
+        <span class="pub-star" style="top:45%;left:58%;animation-delay:2.6s"></span>
+        <span class="pub-star pub-star--lg" style="top:52%;left:88%;animation-delay:.3s"></span>
+        <span class="pub-star" style="top:60%;left:22%;animation-delay:.7s"></span>
+        <span class="pub-star" style="top:68%;left:55%;animation-delay:1.2s"></span>
+        <span class="pub-star pub-star--lg" style="top:75%;left:35%;animation-delay:1.6s"></span>
+        <span class="pub-star" style="top:82%;left:78%;animation-delay:2.3s"></span>
+        <span class="pub-star" style="top:90%;left:18%;animation-delay:2.8s"></span>
+        <span class="pub-star" style="top:88%;left:62%;animation-delay:3.2s"></span>
+        <div class="pub-empty__zone">Sidebar Droite — Bas</div>
+        <div class="pub-empty__title" style="font-size:14px">Votre pub ici</div>
+        <div class="pub-empty__price">20 000 XPF/mois</div>
+        <span class="pub-empty__cta" style="font-size:12px;padding:6px 16px">Réserver →</span>
       </a>
       {% endif %}
     </div>
@@ -90,7 +136,7 @@
         <a href="{% url 'liste_annonces' %}?categorie={{ code }}"
           class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 text-sm text-gray-700 hover:text-blue-600 transition group">
           <span>
-            {% if code == 'vehicules' %}🚗{% elif code == 'immobilier' %}🏠{% elif code == 'occasion' %}📦{% elif code == 'emploi' %}💼{% elif code == 'services' %}🔧{% else %}📦{% endif %}
+            {% if code == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon">{% elif code == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon">{% elif code == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% elif code == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon">{% elif code == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% endif %}
             {{ label }}
           </span>
           <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-blue-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>

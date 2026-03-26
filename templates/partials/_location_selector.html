@@ -1,0 +1,55 @@
+{% comment %}
+  Sélecteur géographique interactif pour la Polynésie française.
+  Usage :
+    {% include 'partials/_location_selector.html' with mode='filter' name='localisation' initial=ville %}
+    {% include 'partials/_location_selector.html' with mode='form' initial_commune=annonce.commune initial_quartier=annonce.quartier %}
+{% endcomment %}
+{% load static %}
+
+<div id="loc-selector-{{ mode|default:'filter' }}" class="loc-selector-root"></div>
+
+<script>
+(function() {
+  var root = document.getElementById('loc-selector-{{ mode|default:"filter" }}');
+  if (!root || !window.LocationSelector) return;
+
+  var mode = '{{ mode|default:"filter" }}';
+  var initial = [];
+
+  {% if mode == 'form' %}
+    {% if initial_commune %}
+    initial.push({
+      island: null,
+      commune: '{{ initial_commune|escapejs }}',
+      quartier: '{{ initial_quartier|default:""|escapejs }}',
+      label: '{{ initial_commune|escapejs }}'
+          {% if initial_quartier %} + ' \u2014 ' + '{{ initial_quartier|escapejs }}'{% endif %}
+    });
+    {% endif %}
+  {% else %}
+    {% if initial %}
+    var raw = '{{ initial|escapejs }}';
+    if (raw) {
+      raw.split(',').forEach(function(v) {
+        v = v.trim();
+        if (!v) return;
+        var parts = v.split(' - ');
+        initial.push({
+          island: null,
+          commune: parts[0],
+          quartier: parts[1] || null,
+          label: v
+        });
+      });
+    }
+    {% endif %}
+  {% endif %}
+
+  new LocationSelector(root, {
+    mode: mode,
+    name: '{{ name|default:"localisation" }}',
+    staticPrefix: '{% static "img/" %}',
+    initial: initial,
+  });
+})();
+</script>

@@ -3,14 +3,19 @@ from ads.models import SOUS_CATEGORIES
 
 
 def sidebar_pubs(request):
+    _q = lambda emp: Publicite.objects.filter(emplacement=emp, actif=True).first()
     ctx = {
-        "pub_billboard": Publicite.objects.filter(emplacement="billboard", actif=True).first(),
-        "pub_strip_1":   Publicite.objects.filter(emplacement="strip_1",   actif=True).first(),
-        "pub_strip_2":   Publicite.objects.filter(emplacement="strip_2",   actif=True).first(),
-        "pub_strip_3":   Publicite.objects.filter(emplacement="strip_3",   actif=True).first(),
-        "pub_haut":      Publicite.objects.filter(emplacement="haut",      actif=True).first(),
-        "pub_milieu":    Publicite.objects.filter(emplacement="milieu",    actif=True).first(),
-        "pub_bas":       Publicite.objects.filter(emplacement="bas",       actif=True).first(),
+        "pub_billboard":     _q("billboard"),
+        # Sidebar droite
+        "pub_sidebar_haut":   _q("sidebar_haut"),
+        "pub_sidebar_milieu": _q("sidebar_milieu"),
+        "pub_sidebar_bas":    _q("sidebar_bas"),
+        # Sidebar gauche
+        "pub_sidebar_gauche": _q("sidebar_gauche"),
+        # Strips accueil
+        "pub_strip_accueil_haut":   _q("strip_accueil_haut"),
+        "pub_strip_accueil_milieu": _q("strip_accueil_milieu"),
+        "pub_strip_accueil_bas":    _q("strip_accueil_bas"),
         "sous_categories": SOUS_CATEGORIES,
         "unread_count":    0,
     }

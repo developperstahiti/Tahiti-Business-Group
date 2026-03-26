@@ -12,139 +12,29 @@
     <!-- CONTENU PRINCIPAL -->
     <div class="layout-main">
 
-      <h1 class="text-2xl font-bold text-gray-800 mb-4">Annonces gratuites en Polynésie française</h1>
-
-      <!-- Annonces récentes -->
-      <div class="over-img flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-gray-900">Annonces récentes</h2>
-        {% if total_count %}<span class="text-sm text-gray-400 font-normal">{{ total_count }} annonce{{ total_count|pluralize }}</span>{% endif %}
-      </div>
-
-      {% if annonces_recentes %}
-      <div class="cat-section-row mb-10">
-        <a href="{% url 'liste_annonces' %}" class="cat-label-card">
-          <div class="cat-label-card__img-wrap"><img src="{% static 'img/cat-recentes.png' %}" alt="Annonces récentes" class="cat-label-card__img"></div>
-          <div class="cat-label-card__title">Annonces récentes</div>
-        </a>
-        <div class="cat-carousel-wrapper cat-section-row__carousel">
-          <div class="cat-carousel">
-            <div class="cat-carousel__track">
-              {% for annonce in annonces_recentes %}
-              <div class="cat-carousel__item">
-                {% include 'partials/_annonce_card.html' %}
-              </div>
-              {% if forloop.counter == 2 %}
-              <!-- ── PUB MOBILE inline · position 3 dans le carousel ─── -->
-              <!-- Caché sur desktop via CSS (.mobile-pub-inject{display:none}) -->
-              <!-- Affiché sur mobile via @media (max-width:768px)            -->
-              <div class="cat-carousel__item mobile-pub-inject">
-                <a href="{% if pub_haut and pub_haut.lien %}{{ pub_haut.lien }}{% else %}{% url 'demande_pub' %}{% endif %}"
-                   {% if pub_haut and pub_haut.lien %}target="_blank" rel="noopener sponsored"{% endif %}
-                   class="mobile-pub-card">
-                  <span class="mobile-pub-card__badge">Sponsorisé</span>
-                  {% if pub_haut %}
-                    {% with img=pub_haut.get_image %}
-                    {% if img %}
-                      <img src="{{ img }}" alt="{{ pub_haut.titre }}" class="mobile-pub-card__img" loading="lazy">
-                    {% else %}
-                      <div class="mobile-pub-card__placeholder">📢</div>
-                    {% endif %}
-                    {% endwith %}
-                    <div class="mobile-pub-card__body">
-                      <div class="mobile-pub-card__title">{{ pub_haut.titre }}</div>
-                      <div class="mobile-pub-card__cta">Découvrir →</div>
-                    </div>
-                  {% else %}
-                    <div class="mobile-pub-card__placeholder">📢</div>
-                    <div class="mobile-pub-card__body">
-                      <div class="mobile-pub-card__title">Votre pub ici</div>
-                      <div class="mobile-pub-card__cta">Réserver →</div>
-                    </div>
-                  {% endif %}
-                </a>
-              </div>
-              {% endif %}
-              {% if forloop.counter == 5 %}
-              <!-- ── PUB MOBILE inline · position 7 dans le carousel ─── -->
-              <div class="cat-carousel__item mobile-pub-inject">
-                <a href="{% if pub_milieu and pub_milieu.lien %}{{ pub_milieu.lien }}{% else %}{% url 'demande_pub' %}{% endif %}"
-                   {% if pub_milieu and pub_milieu.lien %}target="_blank" rel="noopener sponsored"{% endif %}
-                   class="mobile-pub-card">
-                  <span class="mobile-pub-card__badge">Sponsorisé</span>
-                  {% if pub_milieu %}
-                    {% with img=pub_milieu.get_image %}
-                    {% if img %}
-                      <img src="{{ img }}" alt="{{ pub_milieu.titre }}" class="mobile-pub-card__img" loading="lazy">
-                    {% else %}
-                      <div class="mobile-pub-card__placeholder">🎯</div>
-                    {% endif %}
-                    {% endwith %}
-                    <div class="mobile-pub-card__body">
-                      <div class="mobile-pub-card__title">{{ pub_milieu.titre }}</div>
-                      <div class="mobile-pub-card__cta">Découvrir →</div>
-                    </div>
-                  {% else %}
-                    <div class="mobile-pub-card__placeholder">🎯</div>
-                    <div class="mobile-pub-card__body">
-                      <div class="mobile-pub-card__title">Votre pub ici</div>
-                      <div class="mobile-pub-card__cta">Réserver →</div>
-                    </div>
-                  {% endif %}
-                </a>
-              </div>
-              {% endif %}
-              {% endfor %}
-              <div class="cat-carousel__item">
-                <a href="{% url 'liste_annonces' %}" class="cat-voir-tout">
-                  <div class="cat-voir-tout__inner">
-                    <span class="cat-voir-tout__arrow">→</span>
-                    <span class="cat-voir-tout__label">Voir tout</span>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-          <button class="cat-carousel__btn cat-carousel__btn--prev" aria-label="Précédent">‹</button>
-          <button class="cat-carousel__btn cat-carousel__btn--next" aria-label="Suivant">›</button>
-        </div>
-      </div>
-      {% else %}
-      <div class="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-sm mb-10">
-        <div class="text-5xl mb-4">📭</div>
-        <p class="text-gray-500 mb-5">Aucune annonce pour le moment.</p>
-        <a href="{% url 'deposer_annonce' %}" class="btn btn-accent">
-          Déposer la première annonce
-        </a>
-      </div>
-      {% endif %}
-
-      <!-- PUB STRIP après annonces récentes (slot strip_1) -->
-      {% with current_strip=pub_strip_1 %}{% include 'partials/_pub_strip.html' %}{% endwith %}
+      <!-- PUB STRIP (slot strip_1) -->
+      {% with current_strip=pub_strip_accueil_haut strip_label="Strip Accueil — Haut" strip_emp="strip_accueil_haut" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
 
       <!-- Par catégorie (ordre : immo, véhicules, puis le reste) -->
       {% for cat_data in annonces_par_cat %}
       {% if cat_data.annonces %}
       <div class="mb-10">
-        <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-            {% if cat_data.code == 'vehicules' %}🚗{% elif cat_data.code == 'immobilier' %}🏠{% elif cat_data.code == 'occasion' %}📦{% elif cat_data.code == 'emploi' %}💼{% elif cat_data.code == 'services' %}🔧{% else %}📦{% endif %}
+        <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="cat-section-header">
+          <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2" style="margin:0">
+            {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% endif %}
             {{ cat_data.label }}
           </h2>
-          <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition">Voir tout →</a>
-        </div>
+          <span class="text-sm text-blue-600 font-medium">Voir tout →</span>
+        </a>
 
         <!-- Carousel avec carte label -->
         <div class="cat-section-row">
           <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="cat-label-card">
-            <div class="cat-label-card__img-wrap" style="font-size:3rem">
-              {% if cat_data.code == 'vehicules' %}🚗
-              {% elif cat_data.code == 'immobilier' %}🏠
-              {% elif cat_data.code == 'occasion' %}📦
-              {% elif cat_data.code == 'emploi' %}💼
-              {% elif cat_data.code == 'services' %}🔧
-              {% else %}📦{% endif %}
+            <div class="cat-label-card__top">{{ cat_data.label }}</div>
+            <div class="cat-label-card__icon">
+              {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service.webp' %}" alt="" class="cat-icon--card">{% else %}<img src="{% static 'img/cat-occasion.webp' %}" alt="" class="cat-icon--card">{% endif %}
             </div>
-            <div class="cat-label-card__title">{{ cat_data.label }}</div>
+            <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
             <div class="cat-carousel">
@@ -172,19 +62,20 @@
       {% endif %}
 
       {% if forloop.counter == 3 %}
-      {% with current_strip=pub_strip_2 %}{% include 'partials/_pub_strip.html' %}{% endwith %}
+      {% with current_strip=pub_strip_accueil_milieu strip_label="Strip Accueil — Milieu" strip_emp="strip_accueil_milieu" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
 
       <!-- ── ACTUALITÉS & INFOS (après immo + véhicules) ── -->
       {% if infos_home %}
       <div class="mb-10">
         <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-900">📰 Actualités &amp; Infos</h2>
+          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Infos média / Article de presse</h2>
           <a href="{% url 'rubriques_index' %}#info" class="text-sm text-sky-600 hover:text-sky-800 font-medium transition">Voir tout →</a>
         </div>
         <div class="cat-section-row">
           <a href="{% url 'rubriques_index' %}#info" class="cat-label-card">
-            <div class="cat-label-card__img-wrap" style="background:#e0f2fe;display:flex;align-items:center;justify-content:center;font-size:2.5rem">📰</div>
-            <div class="cat-label-card__title">Actualités locales</div>
+            <div class="cat-label-card__top">Infos média</div>
+            <div class="cat-label-card__icon"><img src="{% static 'img/cat-infos.webp' %}" alt="" class="cat-icon--card"></div>
+            <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
             <div class="cat-carousel">
@@ -193,7 +84,7 @@
                 <div class="cat-carousel__item">
                   <div class="info-card" data-href="{% url 'info_detail' a.pk %}" onclick="handleCardClick(this,event)">
                     {% if a.photo %}<img src="{{ a.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
-                    <span class="info-card__badge">📰 Info</span>
+                    <span class="info-card__badge"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Infos média</span>
                     <div class="info-card__title">{{ a.titre }}</div>
                     <div class="info-card__preview">{{ a.contenu }}</div>
                     <div class="info-card__expand">
@@ -228,13 +119,14 @@
       {% if nouveautes_home %}
       <div class="mb-10">
         <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-900">🚀 Nouveautés Business</h2>
+          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Nouveautés / À tester absolument</h2>
           <a href="{% url 'rubriques_index' %}#nouveautes" class="text-sm text-emerald-600 hover:text-emerald-800 font-medium transition">Voir tout →</a>
         </div>
         <div class="cat-section-row">
           <a href="{% url 'rubriques_index' %}#nouveautes" class="cat-label-card">
-            <div class="cat-label-card__img-wrap" style="background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:2.5rem">🚀</div>
-            <div class="cat-label-card__title">Nouveaux business</div>
+            <div class="cat-label-card__top">Nouveautés</div>
+            <div class="cat-label-card__icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="" class="cat-icon--card"></div>
+            <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
             <div class="cat-carousel">
@@ -243,7 +135,7 @@
                 <div class="cat-carousel__item">
                   <div class="nouv-card" data-href="{% url 'nouveaute_detail' n.pk %}" onclick="handleCardClick(this,event)">
                     {% if n.photo %}<img src="{{ n.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
-                    <span class="nouv-card__badge">🚀 Nouveauté</span>
+                    <span class="nouv-card__badge"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Nouveautés</span>
                     <div class="nouv-card__title">{{ n.titre }}</div>
                     <div class="nouv-card__preview">{{ n.contenu }}</div>
                     <div class="nouv-card__expand">
@@ -278,13 +170,14 @@
       {% if promos_home %}
       <div class="promo-carousel mb-10">
         <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-900"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="display:inline-block;vertical-align:middle"><circle cx="12" cy="12" r="11" fill="#e53e3e"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial,sans-serif">-%</text></svg> Promos &amp; Bons plans</h2>
+          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"> Promotion / Offre spéciale</h2>
           <a href="{% url 'rubriques_index' %}" class="text-sm text-amber-600 hover:text-amber-800 font-medium transition">Voir tout →</a>
         </div>
         <div class="cat-section-row">
           <a href="{% url 'rubriques_index' %}" class="cat-label-card">
-            <div class="cat-label-card__img-wrap" style="background:#fef3c7;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48"><circle cx="12" cy="12" r="11" fill="#e53e3e"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial,sans-serif">-%</text></svg></div>
-            <div class="cat-label-card__title">Promos &amp; Bons plans</div>
+            <div class="cat-label-card__top">Promotion</div>
+            <div class="cat-label-card__icon"><img src="{% static 'img/cat-promotion.webp' %}" alt="" class="cat-icon--card"></div>
+            <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
             <div class="cat-carousel">
@@ -293,7 +186,7 @@
                 <div class="cat-carousel__item">
                   <div class="promo-card" data-href="{% url 'promo_detail' p.pk %}" onclick="handleCardClick(this,event)">
                     {% if p.photo %}<img src="{{ p.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
-                    <span class="promo-card__badge"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="display:inline-block;vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="11" fill="#fff"/><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="bold" fill="#e53e3e" font-family="Arial,sans-serif">-%</text></svg> Promo</span>
+                    <span class="promo-card__badge"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Promotion</span>
                     <div class="promo-card__title">{{ p.titre }}</div>
                     <div class="promo-card__preview">{{ p.contenu }}</div>
                     <div class="promo-card__expand">
@@ -329,7 +222,7 @@
 
       {% endif %}
       {% if forloop.counter == 5 %}
-      {% with current_strip=pub_strip_3 %}{% include 'partials/_pub_strip.html' %}{% endwith %}
+      {% with current_strip=pub_strip_accueil_bas strip_label="Strip Accueil — Bas" strip_emp="strip_accueil_bas" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
       {% endif %}
 
       {% endfor %}

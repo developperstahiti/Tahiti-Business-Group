@@ -186,13 +186,29 @@ def admin_dashboard(request):
     from .models import User
 
     SLOTS = [
-        {'key': 'billboard', 'label': 'Billboard',     'desc': 'Plein écran en haut de page',       'prix': 25000, 'icon': '🖼'},
-        {'key': 'strip_1',   'label': 'Strip 1',       'desc': 'Après la section Promos',            'prix': 8000,  'icon': '▬'},
-        {'key': 'strip_2',   'label': 'Strip 2',       'desc': 'Milieu de page (après catégorie 2)', 'prix': 8000,  'icon': '▬'},
-        {'key': 'strip_3',   'label': 'Strip 3',       'desc': 'Fin de page (après catégorie 4)',    'prix': 8000,  'icon': '▬'},
-        {'key': 'haut',      'label': 'Sidebar Haut',  'desc': 'Sidebar – position haute',           'prix': 10000, 'icon': '◻'},
-        {'key': 'milieu',    'label': 'Sidebar Milieu','desc': 'Sidebar – position milieu',          'prix': 7000,  'icon': '◻'},
-        {'key': 'bas',       'label': 'Sidebar Bas',   'desc': 'Sidebar – position basse',           'prix': 5000,  'icon': '◻'},
+        {'key': 'billboard',             'label': 'Billboard',                'desc': 'Plein écran en haut de page',   'prix': 100000, 'icon': '🖼'},
+        {'key': 'sidebar_gauche',        'label': 'Sidebar Gauche',           'desc': 'Colonne gauche (sticky)',       'prix': 35000,  'icon': '◻'},
+        {'key': 'sidebar_haut',          'label': 'Sidebar Droite — Haut',    'desc': 'Colonne droite – haut',        'prix': 40000,  'icon': '◻'},
+        {'key': 'sidebar_milieu',        'label': 'Sidebar Droite — Milieu',  'desc': 'Colonne droite – milieu',      'prix': 28000,  'icon': '◻'},
+        {'key': 'sidebar_bas',           'label': 'Sidebar Droite — Bas',     'desc': 'Colonne droite – bas',         'prix': 20000,  'icon': '◻'},
+        {'key': 'strip_accueil_haut',    'label': 'Strip Accueil — Haut',     'desc': 'Page accueil – haut',          'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_accueil_milieu',  'label': 'Strip Accueil — Milieu',   'desc': 'Page accueil – milieu',        'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_accueil_bas',     'label': 'Strip Accueil — Bas',      'desc': 'Page accueil – bas',           'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_immo_haut',       'label': 'Strip Immobilier — Haut',  'desc': 'Page immobilier – haut',       'prix': 12000,  'icon': '▬'},
+        {'key': 'strip_immo_milieu',     'label': 'Strip Immobilier — Milieu', 'desc': 'Page immobilier – milieu',    'prix': 10000,  'icon': '▬'},
+        {'key': 'strip_immo_bas',        'label': 'Strip Immobilier — Bas',   'desc': 'Page immobilier – bas',        'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_vehicules_haut',  'label': 'Strip Véhicules — Haut',   'desc': 'Page véhicules – haut',       'prix': 12000,  'icon': '▬'},
+        {'key': 'strip_vehicules_milieu','label': 'Strip Véhicules — Milieu',  'desc': 'Page véhicules – milieu',    'prix': 10000,  'icon': '▬'},
+        {'key': 'strip_vehicules_bas',   'label': 'Strip Véhicules — Bas',    'desc': 'Page véhicules – bas',        'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_occasion_haut',   'label': 'Strip Occasion — Haut',    'desc': 'Page occasion – haut',        'prix': 12000,  'icon': '▬'},
+        {'key': 'strip_occasion_milieu', 'label': 'Strip Occasion — Milieu',   'desc': 'Page occasion – milieu',     'prix': 10000,  'icon': '▬'},
+        {'key': 'strip_occasion_bas',    'label': 'Strip Occasion — Bas',     'desc': 'Page occasion – bas',         'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_emploi_haut',     'label': 'Strip Emploi — Haut',      'desc': 'Page emploi – haut',          'prix': 12000,  'icon': '▬'},
+        {'key': 'strip_emploi_milieu',   'label': 'Strip Emploi — Milieu',     'desc': 'Page emploi – milieu',       'prix': 10000,  'icon': '▬'},
+        {'key': 'strip_emploi_bas',      'label': 'Strip Emploi — Bas',       'desc': 'Page emploi – bas',           'prix': 8000,   'icon': '▬'},
+        {'key': 'strip_services_haut',   'label': 'Strip Services — Haut',    'desc': 'Page services – haut',        'prix': 12000,  'icon': '▬'},
+        {'key': 'strip_services_milieu', 'label': 'Strip Services — Milieu',   'desc': 'Page services – milieu',     'prix': 10000,  'icon': '▬'},
+        {'key': 'strip_services_bas',    'label': 'Strip Services — Bas',     'desc': 'Page services – bas',         'prix': 8000,   'icon': '▬'},
     ]
 
     # Associer chaque slot à sa pub active

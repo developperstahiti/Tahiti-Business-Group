@@ -25,4 +25,13 @@ urlpatterns = [
     path('mentions-legales/', views.mentions_legales, name='mentions_legales'),
     path('cgu/', views.cgu, name='cgu'),
     path('api/impressions/', views.track_impressions, name='track_impressions'),
+    # Boost paiement
+    path('boost/paiement/<int:pk>/', views.boost_paiement, name='boost_paiement'),
+    path('boost/paiement/<int:pk>/valider/', views.boost_paiement_valide_js, name='boost_paiement_valide_js'),
+    path('boost/paiement/ipn/', views.boost_ipn, name='boost_ipn'),
+    path('boost/paiement/succes/', views.boost_retour_succes, name='boost_retour_succes'),
+    path('boost/paiement/echec/', views.boost_retour_echec, name='boost_retour_echec'),
+    # Profil vendeur & notation
+    path('vendeur/<int:user_id>/', views.profil_vendeur, name='profil_vendeur'),
+    path('vendeur/<int:user_id>/noter/', views.noter_vendeur, name='noter_vendeur'),
 ]

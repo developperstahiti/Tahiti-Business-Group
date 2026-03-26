@@ -49,9 +49,13 @@ def _clean_specs(post_data):
     return specs
 
 
+_HIDDEN_SOUS_CATS = {'services', 'occasion'}
+
+
 def _sous_cats_data():
     return {
-        cat: [{'value': v, 'label': l} for v, l in items]
+        cat: ([] if cat in _HIDDEN_SOUS_CATS
+              else [{'value': v, 'label': l} for v, l in items])
         for cat, items in SOUS_CATEGORIES.items()
     }
 
@@ -184,6 +188,58 @@ def index(request):
     })
 
 
+_PRETRIAGE_IMMOBILIER = [
+    ('Appartements à louer',  {'sous_categorie': 'immo-appartements', 'type_transaction': 'location'}, 'sous_cat=immo-appartements&transaction=location'),
+    ('Appartements à vendre', {'sous_categorie': 'immo-appartements', 'type_transaction': 'vente'},    'sous_cat=immo-appartements&transaction=vente'),
+    ('Maisons à louer',       {'sous_categorie': 'immo-maisons', 'type_transaction': 'location'},      'sous_cat=immo-maisons&transaction=location'),
+    ('Maisons à vendre',      {'sous_categorie': 'immo-maisons', 'type_transaction': 'vente'},         'sous_cat=immo-maisons&transaction=vente'),
+    ('Terrains à vendre',     {'sous_categorie': 'immo-terrains'},                                     'sous_cat=immo-terrains'),
+    ('Bureaux et commerces',  {'sous_categorie': 'immo-bureaux'},                                      'sous_cat=immo-bureaux'),
+    ('Saisonnières',          {'sous_categorie': 'immo-saisonnieres'},                                 'sous_cat=immo-saisonnieres'),
+    ('Parkings et garages',   {'sous_categorie': 'immo-parkings'},                                     'sous_cat=immo-parkings'),
+]
+
+_PRETRIAGE_VEHICULES = [
+    ('Voitures',                  {'sous_categorie': 'vehicules-voitures'},    'sous_cat=vehicules-voitures'),
+    ('2 roues (scooters/motos)',  {'sous_categorie': 'vehicules-2roues'},      'sous_cat=vehicules-2roues'),
+    ('Bateaux et jet-skis',      {'sous_categorie': 'vehicules-bateaux'},     'sous_cat=vehicules-bateaux'),
+    ('Utilitaires et camions',   {'sous_categorie': 'vehicules-utilitaires'}, 'sous_cat=vehicules-utilitaires'),
+    ('Pièces et accessoires',    {'sous_categorie': 'vehicules-pieces'},      'sous_cat=vehicules-pieces'),
+]
+
+def _pretriage_from_sous_cats(cat_code):
+    """Génère un pré-triage basé sur SOUS_CATEGORIES."""
+    return [
+        (label, {'sous_categorie': code}, f'sous_cat={code}')
+        for code, label in SOUS_CATEGORIES.get(cat_code, [])
+    ]
+
+_PRETRIAGE_MAP = {
+    'immobilier': _PRETRIAGE_IMMOBILIER,
+    'vehicules':  _PRETRIAGE_VEHICULES,
+    'occasion':   [],
+    'services':   [],
+}
+
+
+def _build_pretriage_groups(cat, base_qs, limit=4):
+    """Construit les groupes de pré-triage pour une catégorie."""
+    groups_def = _PRETRIAGE_MAP.get(cat) or _pretriage_from_sous_cats(cat)
+    groups = []
+    for label, filters, qs_params in groups_def:
+        group_qs = base_qs.filter(**filters)
+        total = group_qs.count()
+        if total == 0:
+            continue
+        groups.append({
+            'label': label,
+            'annonces': list(group_qs[:limit]),
+            'total': total,
+            'filter_url': f'?categorie={cat}&{qs_params}',
+        })
+    return groups
+
+
 def liste_annonces(request):
     qs = Annonce.objects.filter(statut='actif').select_related('user')
     q        = request.GET.get('q', '')
@@ -197,6 +253,14 @@ def liste_annonces(request):
 
     if q:
         qs = qs.filter(Q(titre__icontains=q) | Q(description__icontains=q))
+        # Prioritise title matches over description-only matches
+        qs = qs.annotate(
+            _title_match=Case(
+                When(titre__icontains=q, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        )
     if cat:
         qs = qs.filter(categorie=cat)
     if sous_cat:
@@ -204,9 +268,18 @@ def liste_annonces(request):
     if transaction:
         qs = qs.filter(type_transaction=transaction)
     if ville:
-        qs = qs.filter(
-            Q(commune__icontains=ville) | Q(quartier__icontains=ville) | Q(localisation__icontains=ville)
-        )
+        # Support multi-localisation (valeurs séparées par virgule)
+        locs = [v.strip() for v in ville.split(',') if v.strip()]
+        if len(locs) == 1:
+            v = locs[0]
+            qs = qs.filter(
+                Q(commune__icontains=v) | Q(quartier__icontains=v) | Q(localisation__icontains=v)
+            )
+        elif locs:
+            loc_q = Q()
+            for v in locs:
+                loc_q |= Q(commune__icontains=v) | Q(quartier__icontains=v) | Q(localisation__icontains=v)
+            qs = qs.filter(loc_q)
     if prix_min:
         try:
             qs = qs.filter(prix__gte=int(prix_min))
@@ -226,17 +299,30 @@ def liste_annonces(request):
     if request.GET.get('pro'):
         qs = qs.filter(user__role__in=['pro', 'admin'])
 
+    # Prefix for search-relevance: title matches first when a query is active
+    _search_prefix = ('_title_match',) if q else ()
+
     if tri == 'prix_asc':
-        qs = qs.order_by('prix')
+        qs = qs.order_by(*_search_prefix, 'prix')
     elif tri == 'prix_desc':
-        qs = qs.order_by('-prix')
+        qs = qs.order_by(*_search_prefix, '-prix')
     elif tri == 'recent':
-        qs = qs.order_by('-created_at')
+        qs = qs.order_by(*_search_prefix, '-created_at')
     else:
         qs = _apply_boost_sort(qs)
+        if q:
+            # Re-order so title-match priority comes before boost rank
+            qs = qs.order_by('_title_match', '-_boost_rank', '-updated_at')
 
     # Sous-catégories disponibles pour la catégorie active
-    sous_cats_dispo = SOUS_CATEGORIES.get(cat, []) if cat else []
+    sous_cats_dispo = SOUS_CATEGORIES.get(cat, []) if (cat and cat not in _HIDDEN_SOUS_CATS) else []
+
+    # Pré-triage : grouper par sous-cat quand aucun filtre n'est actif
+    has_filters = any([q, sous_cat, ville, prix_min, prix_max, transaction,
+                       request.GET.get('photos'), request.GET.get('pro'), tri])
+    pretriage_groups = []
+    if cat and not has_filters and not request.GET.get('page'):
+        pretriage_groups = _build_pretriage_groups(cat, qs)
 
     paginator = Paginator(qs, 24)
     page = paginator.get_page(request.GET.get('page'))
@@ -253,13 +339,23 @@ def liste_annonces(request):
             'next_page': page.next_page_number() if page.has_next() else None,
         })
 
-    # Pubs spécifiques à la catégorie (3 encarts : haut, milieu, bas)
+    # Pubs spécifiques à la catégorie (3 strips : haut, milieu, bas)
     from pubs.models import Publicite
+    _CAT_STRIP_PREFIX = {
+        'immobilier': 'strip_immo',
+        'vehicules':  'strip_vehicules',
+        'occasion':   'strip_occasion',
+        'emploi':     'strip_emploi',
+        'services':   'strip_services',
+    }
     pub_cat_haut = pub_cat_milieu = pub_cat_bas = None
-    if cat:
-        pub_cat_haut   = Publicite.objects.filter(emplacement='cat_haut',   categorie=cat, actif=True).first()
-        pub_cat_milieu = Publicite.objects.filter(emplacement='cat_milieu', categorie=cat, actif=True).first()
-        pub_cat_bas    = Publicite.objects.filter(emplacement='cat_bas',    categorie=cat, actif=True).first()
+    strip_prefix = _CAT_STRIP_PREFIX.get(cat, '')
+    cat_label_map = dict(CATEGORIES)
+    strip_cat_label = cat_label_map.get(cat, '')
+    if strip_prefix:
+        pub_cat_haut   = Publicite.objects.filter(emplacement=f'{strip_prefix}_haut',   actif=True).first()
+        pub_cat_milieu = Publicite.objects.filter(emplacement=f'{strip_prefix}_milieu', actif=True).first()
+        pub_cat_bas    = Publicite.objects.filter(emplacement=f'{strip_prefix}_bas',    actif=True).first()
 
     return render(request, 'ads/liste.html', {
         'annonces':        page,
@@ -279,10 +375,15 @@ def liste_annonces(request):
         'pub_cat_haut':   pub_cat_haut,
         'pub_cat_milieu': pub_cat_milieu,
         'pub_cat_bas':    pub_cat_bas,
+        'strip_prefix':   strip_prefix,
+        'strip_cat_label': strip_cat_label,
+        'pretriage_groups': pretriage_groups,
     })
 
 
 def annonce_detail(request, pk):
+    from .notation_utils import stats_vendeur, peut_noter
+
     annonce = get_object_or_404(Annonce, pk=pk, statut='actif')
     annonce.increment_views()
 
@@ -302,9 +403,16 @@ def annonce_detail(request, pk):
         statut='actif', categorie=annonce.categorie
     ).exclude(pk=pk).select_related('user')[:4]
 
+    vendeur_stats = stats_vendeur(annonce.user)
+    peut_noter_vendeur = False
+    if request.user.is_authenticated and request.user != annonce.user:
+        peut_noter_vendeur = peut_noter(request.user, annonce.user, annonce)
+
     return render(request, 'ads/detail.html', {
         'annonce':             annonce,
         'annonces_similaires': annonces_similaires,
+        'vendeur_stats':       vendeur_stats,
+        'peut_noter_vendeur':  peut_noter_vendeur,
     })
 
 
@@ -423,7 +531,14 @@ def deposer_annonce(request):
                 pass
 
             if boost_duree in ('7jours', '1mois'):
-                messages.success(request, "Annonce publiée ! Votre demande de boost a bien été envoyée — notre équipe vous contactera pour le paiement.")
+                # Renvoyer une URL JSON pour que le JS redirige vers le paiement
+                annonce.boost_payment_ref = f"BOOST{uuid.uuid4().hex[:8].upper()}"
+                annonce.save(update_fields=['boost_payment_ref'])
+                request.session['boost_pending_pk'] = annonce.pk
+                from django.urls import reverse
+                return JsonResponse({
+                    'redirect': reverse('boost_paiement', kwargs={'pk': annonce.pk})
+                })
             else:
                 messages.success(request, f"Annonce publiée ! {len(photos)} photo(s) ajoutée(s).")
             return redirect('annonce_detail', pk=annonce.pk)
@@ -895,3 +1010,224 @@ def sitemap_xml(request):
         'today': today,
     }, request=request)
     return HttpResponse(xml, content_type='application/xml')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Paiement Boost (PayZen embarqué)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+BOOST_PRIX = {'7jours': 500, '1mois': 1500}
+
+
+@login_required
+def boost_paiement(request, pk):
+    """Affiche le formulaire de paiement embarqué pour le boost."""
+    annonce = get_object_or_404(Annonce, pk=pk, user=request.user, boost_status='pending')
+
+    if request.session.get('boost_pending_pk') != annonce.pk:
+        messages.error(request, "Accès non autorisé.")
+        return redirect('annonce_detail', pk=pk)
+
+    prix = BOOST_PRIX.get(annonce.boost_duree, 500)
+    duree_label = '7 jours' if annonce.boost_duree == '7jours' else '1 mois'
+
+    from pubs.payzen import create_generic_form_token, build_payzen_form
+
+    base_url = request.build_absolute_uri('/')[:-1]
+    ipn_url = f"{base_url}/boost/paiement/ipn/"
+
+    try:
+        form_token, public_key = create_generic_form_token(
+            amount_xpf=prix,
+            order_id=annonce.boost_payment_ref,
+            customer_email=request.user.email,
+            customer_name=request.user.nom or request.user.email,
+            ipn_url=ipn_url,
+            request=request,
+        )
+    except RuntimeError:
+        logger.exception("Boost: embedded form token creation failed")
+        messages.error(request, "Erreur lors de la connexion au service de paiement. Veuillez réessayer.")
+        return redirect('annonce_detail', pk=pk)
+
+    return render(request, 'ads/paiement_boost.html', {
+        'annonce': annonce,
+        'prix': prix,
+        'duree_label': duree_label,
+        'form_token': form_token,
+        'public_key': public_key,
+    })
+
+
+from django.views.decorators.csrf import csrf_exempt as _csrf_exempt
+
+
+@_csrf_exempt
+def boost_paiement_valide_js(request, pk):
+    """Callback JS après paiement réussi côté client."""
+    annonce = get_object_or_404(Annonce, pk=pk)
+    # Le vrai traitement se fait via IPN. Ici on redirige.
+    return JsonResponse({'redirect': f'/annonces/{pk}/'})
+
+
+@_csrf_exempt
+def boost_ipn(request):
+    """IPN PayZen pour le boost — active le boost après paiement vérifié."""
+    import json as _json
+    from pubs.payzen import verify_rest_signature
+
+    if request.method != 'POST':
+        return HttpResponse('Method not allowed', status=405)
+
+    kr_answer = request.POST.get('kr-answer', '')
+    kr_hash = request.POST.get('kr-hash', '')
+
+    if not kr_answer or not kr_hash:
+        return HttpResponse('Missing data', status=400)
+
+    if not verify_rest_signature(kr_answer, kr_hash):
+        logger.warning("Boost IPN: invalid signature")
+        return HttpResponse('Invalid signature', status=400)
+
+    try:
+        answer = _json.loads(kr_answer)
+    except _json.JSONDecodeError:
+        return HttpResponse('Invalid JSON', status=400)
+
+    order_id = answer.get('orderDetails', {}).get('orderId', '')
+    status = answer.get('orderStatus', '')
+
+    try:
+        annonce = Annonce.objects.get(boost_payment_ref=order_id)
+    except Annonce.DoesNotExist:
+        return HttpResponse('Order not found', status=404)
+
+    if status == 'PAID':
+        annonce.boost = True
+        annonce.boost_status = 'active'
+        if annonce.boost_duree == '7jours':
+            annonce.boost_expires_at = timezone.now() + datetime.timedelta(days=7)
+        else:
+            annonce.boost_expires_at = timezone.now() + datetime.timedelta(days=30)
+        annonce.save()
+        logger.info("Boost activé pour annonce #%s (ref=%s)", annonce.pk, order_id)
+    else:
+        annonce.boost_status = ''
+        annonce.boost_duree = ''
+        annonce.save()
+        logger.warning("Boost paiement échoué pour annonce #%s (status=%s)", annonce.pk, status)
+
+    return HttpResponse('OK', status=200)
+
+
+def boost_retour_succes(request):
+    """Page de retour après paiement boost réussi."""
+    pk = request.session.pop('boost_pending_pk', None)
+    if pk:
+        annonce = Annonce.objects.filter(pk=pk).first()
+        if annonce:
+            messages.success(request, f'Paiement accepté ! Votre boost est actif pour "{annonce.titre}".')
+            return redirect('annonce_detail', pk=pk)
+    messages.success(request, "Paiement accepté ! Votre boost est actif.")
+    return redirect('mes_annonces')
+
+
+def boost_retour_echec(request):
+    """Page de retour après paiement boost échoué."""
+    pk = request.session.pop('boost_pending_pk', None)
+    if pk:
+        messages.error(request, "Le paiement n'a pas abouti. Votre annonce est publiée sans boost.")
+        return redirect('annonce_detail', pk=pk)
+    messages.error(request, "Le paiement n'a pas abouti.")
+    return redirect('mes_annonces')
+
+
+# ── Profil vendeur & notation ──────────────────────────────────────
+
+from .models import Notation
+from .notation_utils import peut_noter, note_moyenne, stats_vendeur, distribution_notes
+
+
+def profil_vendeur(request, user_id):
+    """Page publique du profil vendeur avec avis et annonces."""
+    vendeur = get_object_or_404(User, pk=user_id)
+    stats = stats_vendeur(vendeur)
+    annonces = Annonce.objects.filter(user=vendeur, statut='actif').order_by('-created_at')
+    notations = Notation.objects.filter(vendeur=vendeur).order_by('-date_creation').select_related('acheteur', 'annonce')[:10]
+
+    distribution = distribution_notes(vendeur)
+    # Prepare distribution list for template (5 to 1, with percentage)
+    total_notes = stats['total_avis']
+    distribution_list = []
+    for i in range(5, 0, -1):
+        count = distribution[i]
+        pct = round(count * 100 / total_notes) if total_notes > 0 else 0
+        distribution_list.append({'etoiles': i, 'count': count, 'pct': pct})
+
+    annonces_notables = []
+    if request.user.is_authenticated and request.user != vendeur:
+        # Annonces du vendeur sur lesquelles l'utilisateur a envoyé un message
+        annonces_avec_message = Annonce.objects.filter(
+            user=vendeur,
+            messages__from_user=request.user,
+        ).distinct()
+        for annonce in annonces_avec_message:
+            if peut_noter(request.user, vendeur, annonce):
+                annonces_notables.append(annonce)
+
+    return render(request, 'ads/profil_vendeur.html', {
+        'vendeur': vendeur,
+        'stats': stats,
+        'annonces': annonces,
+        'notations': notations,
+        'annonces_notables': annonces_notables,
+        'distribution_list': distribution_list,
+    })
+
+
+@login_required
+def noter_vendeur(request, user_id):
+    """API POST pour soumettre une notation."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'}, status=405)
+
+    vendeur = get_object_or_404(User, pk=user_id)
+
+    if request.user == vendeur:
+        return JsonResponse({'success': False, 'message': 'Vous ne pouvez pas vous noter vous-même.'}, status=400)
+
+    annonce_id = request.POST.get('annonce_id')
+    note_val = request.POST.get('note')
+
+    if not annonce_id or not note_val:
+        return JsonResponse({'success': False, 'message': 'Annonce et note sont requis.'}, status=400)
+
+    try:
+        note_val = int(note_val)
+    except (ValueError, TypeError):
+        return JsonResponse({'success': False, 'message': 'Note invalide.'}, status=400)
+
+    if note_val < 1 or note_val > 5:
+        return JsonResponse({'success': False, 'message': 'La note doit être entre 1 et 5.'}, status=400)
+
+    annonce = get_object_or_404(Annonce, pk=annonce_id, user=vendeur)
+
+    if not peut_noter(request.user, vendeur, annonce):
+        return JsonResponse({'success': False, 'message': 'Vous ne pouvez pas noter ce vendeur pour cette annonce.'}, status=403)
+
+    try:
+        Notation.objects.create(
+            vendeur=vendeur,
+            acheteur=request.user,
+            annonce=annonce,
+            note=note_val,
+        )
+    except Exception:
+        return JsonResponse({'success': False, 'message': 'Vous avez déjà noté ce vendeur pour cette annonce.'}, status=400)
+
+    stats = note_moyenne(vendeur)
+    return JsonResponse({
+        'success': True,
+        'message': 'Merci pour votre avis !',
+        'nouvelle_moyenne': stats['moyenne'],
+    })

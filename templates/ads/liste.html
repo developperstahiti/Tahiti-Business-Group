@@ -14,67 +14,74 @@
   <div class="layout-with-sidebar">
 
     <div class="layout-main">
-      <!-- Header + filtres -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
-        <h1 class="text-xl font-bold text-gray-900 mb-4">
-          {% if cat_active %}
-            {% for code, label in categories %}{% if code == cat_active %}{{ label }}{% endif %}{% endfor %}
-          {% elif q %}Résultats pour "{{ q }}"{% else %}Toutes les annonces{% endif %}
-        </h1>
+      <!-- Header -->
+      <h1 class="text-xl font-bold text-gray-900 mb-4">
+        {% if cat_active %}
+          {% for code, label in categories %}{% if code == cat_active %}{{ label }}{% endif %}{% endfor %}
+        {% elif q %}Résultats pour "{{ q }}"{% else %}Toutes les annonces{% endif %}
+      </h1>
+
+      <!-- Filtres -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
         <form method="get" id="filtres-form">
-          <!-- Ligne 1 : recherche + catégorie + localisation -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <input type="text" name="q" value="{{ q }}" placeholder="Mot-clé..." class="form-input text-sm">
-            <select name="categorie" class="form-input text-sm" id="filter-cat" onchange="updateSousCats(this.value)">
-              <option value="">Toutes catégories</option>
-              {% for code, label in categories %}
-              <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
-              {% endfor %}
-            </select>
-            <input type="text" name="localisation" id="filter-commune" class="form-input text-sm" list="filter-communes-list"
-              value="{{ ville }}" placeholder="Toute la Polynesie..." autocomplete="off">
-            <datalist id="filter-communes-list"></datalist>
-          </div>
-          <!-- Ligne 2 : sous-catégorie + transaction + tri -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-            <select name="sous_cat" class="form-input text-sm" id="filter-sous-cat">
-              <option value="">Sous-catégorie</option>
-              {% for val, lbl in sous_cats_dispo %}
-              <option value="{{ val }}" {% if val == sous_cat %}selected{% endif %}>{{ lbl }}</option>
-              {% endfor %}
-            </select>
-            <select name="transaction" class="form-input text-sm" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}" onchange="this.form.submit()">
-              <option value="">Vente & Location</option>
-              <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente uniquement</option>
-              <option value="location" {% if transaction == 'location' %}selected{% endif %}>Location uniquement</option>
-            </select>
-            <div class="flex items-center gap-2">
-              <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Min" class="form-input text-sm w-24" min="0">
-              <span class="text-gray-400">&mdash;</span>
-              <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Max" class="form-input text-sm w-24" min="0">
-              <span class="text-xs text-gray-400">XPF</span>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-3">
+            <!-- Catégorie -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">Catégorie</label>
+              <select name="categorie" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-cat" onchange="updateSousCats(this.value)">
+                <option value="">Toutes</option>
+                {% for code, label in categories %}
+                <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
             </div>
-            <select name="tri" class="form-input text-sm">
-              <option value="" {% if not tri %}selected{% endif %}>Pertinence</option>
-              <option value="recent" {% if tri == 'recent' %}selected{% endif %}>Plus récentes</option>
-              <option value="prix_asc" {% if tri == 'prix_asc' %}selected{% endif %}>Prix croissant</option>
-              <option value="prix_desc" {% if tri == 'prix_desc' %}selected{% endif %}>Prix décroissant</option>
-            </select>
-            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-              <input type="checkbox" name="photos" value="1" {% if request.GET.photos %}checked{% endif %}
-                     class="rounded border-gray-300" onchange="this.form.submit()">
-              Avec photos uniquement
-            </label>
-            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-              <input type="checkbox" name="pro" value="1" {% if request.GET.pro %}checked{% endif %}
-                     class="rounded border-gray-300" onchange="this.form.submit()">
-              Pro uniquement
-            </label>
+            <!-- Sous-catégorie -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">Sous-catégorie</label>
+              <select name="sous_cat" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-sous-cat">
+                <option value="">Toutes</option>
+                {% for val, lbl in sous_cats_dispo %}
+                <option value="{{ val }}" {% if val == sous_cat %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Localisation (sélecteur interactif) -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">Localisation</label>
+              <div id="loc-selector-filter"></div>
+            </div>
+            <!-- Prix -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">Prix (XPF)</label>
+              <div class="flex items-center gap-1.5">
+                <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Min" min="0"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
+                <span class="text-gray-400 text-xs">—</span>
+                <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Max" min="0"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
+              </div>
+            </div>
           </div>
-          <div class="flex gap-2 flex-wrap">
-            <button type="submit" class="btn btn-primary text-sm">Rechercher</button>
-            <a href="{% url 'liste_annonces' %}" class="btn btn-outline text-sm">Réinitialiser</a>
+          <!-- Options + actions -->
+          <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
+            <div class="flex items-center gap-4 flex-wrap">
+              <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+                <input type="checkbox" name="photos" value="1" {% if request.GET.photos %}checked{% endif %}
+                       class="rounded border-gray-300" onchange="this.form.submit()">
+                Avec photos
+              </label>
+              <select name="transaction" class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}" onchange="this.form.submit()">
+                <option value="">Vente & Location</option>
+                <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente</option>
+                <option value="location" {% if transaction == 'location' %}selected{% endif %}>Location</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-3">
+              <a href="{% url 'liste_annonces' %}{% if cat_active %}?categorie={{ cat_active }}{% endif %}" class="text-sm text-gray-500 hover:text-gray-800 font-medium transition">Réinitialiser</a>
+              <button type="submit" class="text-sm font-bold text-white px-5 py-2 rounded-lg transition" style="background:#111" onmouseover="this.style.background='#333'" onmouseout="this.style.background='#111'">Rechercher</button>
+            </div>
           </div>
+          <input type="hidden" name="tri" value="{{ tri }}">
         </form>
       </div>
 
@@ -84,9 +91,30 @@
 
       <!-- PUB CATÉGORIE — HAUT -->
       {% if cat_active %}
-      {% include 'partials/_pub_cat_encart.html' with pub=pub_cat_haut emplacement='cat_haut' prix_label='15 000 XPF/mois' %}
+      {% with current_strip=pub_cat_haut strip_label="Strip "|add:strip_cat_label|add:" — Haut" strip_emp=strip_prefix|add:"_haut" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
       {% endif %}
 
+      <!-- PRÉ-TRIAGE par sous-catégorie -->
+      {% if pretriage_groups %}
+      <div class="mb-8">
+        {% for group in pretriage_groups %}
+        <div class="mb-8">
+          <div class="flex items-center gap-3 mb-3">
+            <h3 class="text-sm font-bold text-gray-700 whitespace-nowrap">{{ group.label }}</h3>
+            <div class="flex-1 border-t border-gray-200"></div>
+            <a href="{{ group.filter_url }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800 whitespace-nowrap transition">Voir tout ({{ group.total }}) →</a>
+          </div>
+          <div class="ads-grid">
+            {% for annonce in group.annonces %}
+            {% include 'partials/_annonce_card.html' %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if not pretriage_groups %}
       {% if annonces %}
       <div class="ads-grid mb-8" id="annonces-grid">
         {% for annonce in annonces %}
@@ -94,7 +122,7 @@
         {% if forloop.counter == 12 and cat_active %}
         </div>
         <!-- PUB CATÉGORIE — MILIEU -->
-        {% include 'partials/_pub_cat_encart.html' with pub=pub_cat_milieu emplacement='cat_milieu' prix_label='12 000 XPF/mois' %}
+        {% with current_strip=pub_cat_milieu strip_label="Strip "|add:strip_cat_label|add:" — Milieu" strip_emp=strip_prefix|add:"_milieu" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
         <div class="ads-grid mb-8" id="annonces-grid-2">
         {% endif %}
         {% endfor %}
@@ -102,7 +130,7 @@
 
       <!-- PUB CATÉGORIE — BAS -->
       {% if cat_active %}
-      {% include 'partials/_pub_cat_encart.html' with pub=pub_cat_bas emplacement='cat_bas' prix_label='10 000 XPF/mois' %}
+      {% with current_strip=pub_cat_bas strip_label="Strip "|add:strip_cat_label|add:" — Bas" strip_emp=strip_prefix|add:"_bas" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
       {% endif %}
 
       <!-- Charger plus -->
@@ -135,6 +163,7 @@
         <a href="{% url 'liste_annonces' %}" class="btn btn-primary">Voir toutes les annonces</a>
       </div>
       {% endif %}
+      {% endif %}
     </div>
 
     {% with categories=categories %}
@@ -143,11 +172,13 @@
 
   </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
+{% load static %}
 {{ sous_cats_data|json_script:"sous-cats-liste" }}
-{{ communes_par_archipel|json_script:"communes-liste" }}
 
+<script src="{% static 'js/location-selector.js' %}"></script>
 <script>
 const SOUS_CATS = JSON.parse(document.getElementById('sous-cats-liste').textContent);
 function updateSousCats(cat) {
@@ -161,17 +192,26 @@ function updateSousCats(cat) {
     sel.appendChild(opt);
   });
 }
-// Remplir le select communes dynamiquement
-(function initCommuneFilter() {
-  const datalist = document.getElementById('filter-communes-list');
-  const data = JSON.parse(document.getElementById('communes-liste').textContent);
-  Object.entries(data).forEach(([archipel, communes]) => {
-    communes.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
 
-      datalist.appendChild(opt);
+// ── Sélecteur de localisation interactif ────────────────────────────────
+(function initLocSelector() {
+  var root = document.getElementById('loc-selector-filter');
+  if (!root || !window.LocationSelector) return;
+  var initial = [];
+  var raw = '{{ ville|escapejs }}';
+  if (raw) {
+    raw.split(',').forEach(function(v) {
+      v = v.trim();
+      if (!v) return;
+      var parts = v.split(' - ');
+      initial.push({island: null, commune: parts[0], quartier: parts[1] || null, label: v});
     });
+  }
+  new LocationSelector(root, {
+    mode: 'filter',
+    name: 'localisation',
+    staticPrefix: '{% static "img/" %}',
+    initial: initial,
   });
 })();
 
@@ -219,5 +259,4 @@ if (catSel) {
   });
 })();
 </script>
-{% endblock %}
 {% endblock %}
