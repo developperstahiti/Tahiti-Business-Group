@@ -58,6 +58,7 @@ MIDDLEWARE = [
     'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'tahiti_business.middleware.OTPAdminMiddleware',
     'tahiti_business.middleware.SecurityHeadersMiddleware',
     'tahiti_business.middleware.NoCacheHTMLMiddleware',
 ]
