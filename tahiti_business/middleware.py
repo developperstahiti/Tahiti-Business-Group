@@ -1,32 +1,3 @@
-from django.shortcuts import redirect
-from django.contrib import messages as django_messages
-
-
-class OTPAdminMiddleware:
-    """Exige la vérification TOTP pour accéder à l'admin SI l'utilisateur a un device configuré.
-
-    Si aucun device TOTP n'existe, l'accès admin est autorisé normalement
-    (permet la configuration initiale du device depuis l'admin).
-    """
-
-    _ADMIN_PREFIX = '/tbg-gestion-2026/'
-    _SKIP_PATHS = ('/tbg-gestion-2026/login/', '/tbg-gestion-2026/otp-verify/')
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        if request.path.startswith(self._ADMIN_PREFIX):
-            if any(request.path.startswith(p) for p in self._SKIP_PATHS):
-                return self.get_response(request)
-            user = request.user
-            if user.is_authenticated and user.is_staff:
-                from django_otp import user_has_device
-                if user_has_device(user, confirmed=True) and not request.session.get('otp_admin_verified'):
-                    return redirect('/tbg-gestion-2026/otp-verify/?next=' + request.path)
-        return self.get_response(request)
-
-
 class SecurityHeadersMiddleware:
     """Ajoute des headers de securite HTTP a chaque reponse."""
 

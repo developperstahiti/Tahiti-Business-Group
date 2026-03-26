@@ -5,7 +5,6 @@ from django.conf import settings
 from django.views.static import serve
 from django.http import HttpResponse, FileResponse
 from ads.views import sitemap_xml
-from tahiti_business.views import otp_verify
 
 admin.site.site_header = 'TBG Gestion'
 admin.site.site_title = 'TBG Gestion'
@@ -38,7 +37,6 @@ def robots_txt(request):
 urlpatterns = [
     path('admin/<path:p>', lambda r, p=None: HttpResponse(status=404)),
     path('admin/', lambda r: HttpResponse(status=404)),
-    path('tbg-gestion-2026/otp-verify/', otp_verify, name='otp_verify'),
     path('tbg-gestion-2026/', admin.site.urls),
     path('', include('ads.urls')),
     path('users/', include('users.urls')),
