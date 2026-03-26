@@ -23,6 +23,7 @@ urlpatterns = [
     path('mes-alertes/creer/', views.creer_alerte, name='creer_alerte'),
     path('mes-alertes/<int:pk>/supprimer/', views.supprimer_alerte, name='supprimer_alerte'),
     path('mentions-legales/', views.mentions_legales, name='mentions_legales'),
+    path('politique-confidentialite/', views.politique_confidentialite, name='politique_confidentialite'),
     path('cgu/', views.cgu, name='cgu'),
     path('api/impressions/', views.track_impressions, name='track_impressions'),
     # Boost paiement

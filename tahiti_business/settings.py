@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
     'django.contrib.staticfiles',
     'ads',
     'users',
@@ -53,15 +55,14 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'tahiti_business.middleware.SecurityHeadersMiddleware',
     'tahiti_business.middleware.NoCacheHTMLMiddleware',
 ]
 
-# Autoriser l'affichage en iframe depuis n'importe quel site
-# ⚠ SEO : ALLOWALL est necessaire pour l'embedding iframe des pubs.
-#   Passer a 'SAMEORIGIN' si l'embedding externe n'est plus requis.
-X_FRAME_OPTIONS = 'ALLOWALL'
+X_FRAME_OPTIONS = 'DENY'
 
 # Taille max des uploads (50 Mo pour 5 photos de 10 Mo)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 Mo
@@ -107,7 +108,10 @@ else:
 AUTH_USER_MODEL = 'users.User'
 
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 LANGUAGE_CODE = 'fr-fr'
@@ -139,6 +143,19 @@ SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
+# Cookies sécurisés (production)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Expiration session après 30 min d'inactivité
+SESSION_COOKIE_AGE = 1800
+SESSION_SAVE_EVERY_REQUEST = True
 
 # ── Email — Brevo API HTTP (SMTP bloque par Railway) ──
 BREVO_API_V3_KEY = config('BREVO_API_V3_KEY', default='')

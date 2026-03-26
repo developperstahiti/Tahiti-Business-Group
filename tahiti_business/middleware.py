@@ -1,8 +1,32 @@
+class SecurityHeadersMiddleware:
+    """Ajoute des headers de securite HTTP a chaque reponse."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+            "https://cdn.tailwindcss.com https://static.osb.pf; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: blob: https://*.amazonaws.com; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'"
+        )
+        response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+        response['X-Permitted-Cross-Domain-Policies'] = 'none'
+        return response
+
+
 # URL prefixes that correspond to private / authenticated pages.
 _PRIVATE_PREFIXES = (
     '/deposer/',
     '/mes-',
-    '/admin',
+    '/tbg-gestion-2026',
     '/users/',
     '/edit/',
     '/supprimer/',

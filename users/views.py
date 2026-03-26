@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -286,7 +286,7 @@ def test_email(request):
 def moderer_annonce(request, pk):
     if not request.user.is_staff:
         return redirect('index')
-    annonce = Annonce.objects.get(pk=pk)
+    annonce = get_object_or_404(Annonce, pk=pk)
     action = request.POST.get('action')
     if action == 'approuver':
         annonce.statut = 'actif'

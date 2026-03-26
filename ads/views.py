@@ -975,7 +975,11 @@ def supprimer_alerte(request, pk):
 
 # ── Custom 404 ───────────────────────────────────────────────────────────
 def mentions_legales(request):
-    return render(request, 'ads/mentions_legales.html')
+    return render(request, 'pages/mentions_legales.html')
+
+
+def politique_confidentialite(request):
+    return render(request, 'pages/politique_confidentialite.html')
 
 
 def cgu(request):

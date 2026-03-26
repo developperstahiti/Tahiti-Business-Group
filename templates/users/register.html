@@ -82,6 +82,14 @@
           {{ form.password2 }}
         </div>
 
+        <div class="flex items-start gap-2 mt-3">
+          <input type="checkbox" name="accept_cgu" id="id_accept_cgu" required class="mt-1 accent-emerald-500">
+          <label for="id_accept_cgu" class="text-sm text-muted">
+            J'accepte les <a href="{% url 'mentions_legales' %}" target="_blank" class="text-accent hover:underline">CGU</a>
+            et la <a href="{% url 'politique_confidentialite' %}" target="_blank" class="text-accent hover:underline">politique de confidentialité</a>
+          </label>
+        </div>
+
         <button type="submit" class="w-full bg-accent hover:bg-green-400 text-dark font-bold py-3 rounded-xl transition mt-2">
           Créer mon compte gratuitement
         </button>

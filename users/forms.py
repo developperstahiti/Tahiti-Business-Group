@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
@@ -19,7 +20,7 @@ class RegisterForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': '••••••••', 'class': 'form-input'}),
         label='Mot de passe',
-        min_length=6
+        min_length=8
     )
     password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': '••••••••', 'class': 'form-input'}),
@@ -71,8 +72,20 @@ class RegisterForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data.get('password') != cleaned_data.get('password2'):
+        password = cleaned_data.get('password')
+        if password != cleaned_data.get('password2'):
             raise forms.ValidationError("Les mots de passe ne correspondent pas.")
+        # Valider le mot de passe avec AUTH_PASSWORD_VALIDATORS
+        if password:
+            # Build a temporary user instance for UserAttributeSimilarityValidator
+            temp_user = User(
+                email=cleaned_data.get('email', ''),
+                nom=cleaned_data.get('nom', ''),
+            )
+            try:
+                validate_password(password, user=temp_user)
+            except forms.ValidationError as e:
+                self.add_error('password', e)
         if cleaned_data.get('role') == 'pro' and not cleaned_data.get('nom_entreprise', '').strip():
             self.add_error('nom_entreprise', "Le nom d'entreprise est obligatoire pour un compte Pro.")
         if cleaned_data.get('role') == 'pro' and not cleaned_data.get('numero_tahiti', '').strip():
