@@ -8,7 +8,7 @@ from PIL import Image as PILImage
 
 logger = logging.getLogger(__name__)
 
-_MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 Mo
+_MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo
 _ALLOWED_FORMATS = {'JPEG', 'PNG', 'WEBP'}
 
 
@@ -25,7 +25,7 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
         URL publique (str)
     """
     if hasattr(file_obj, 'size') and file_obj.size > _MAX_FILE_SIZE:
-        raise ValueError("Fichier trop volumineux (max 10 Mo).")
+        raise ValueError("Fichier trop volumineux (max 5 Mo).")
 
     img = PILImage.open(file_obj)
     if img.format not in _ALLOWED_FORMATS:

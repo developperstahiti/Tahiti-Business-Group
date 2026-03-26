@@ -8,7 +8,7 @@ from django.core import signing
 from django.conf import settings as django_settings
 from django.http import Http404, JsonResponse
 from .forms import LoginForm, RegisterForm, ProfileForm
-from ads.models import Annonce, Message
+from ads.models import Annonce, Message, Notation
 from ads.image_utils import save_webp
 
 _LOGIN_MAX_ATTEMPTS = 5
@@ -243,15 +243,22 @@ def admin_dashboard(request):
 @login_required
 def supprimer_compte(request):
     if request.method == 'POST':
-        confirm = request.POST.get('confirm', '')
-        if confirm == 'SUPPRIMER':
+        password = request.POST.get('password', '')
+        if request.user.check_password(password):
             user = request.user
+            # Suppression RGPD : anonymiser / supprimer les données liées
+            Message.objects.filter(from_user=user).delete()
+            Message.objects.filter(to_user=user).delete()
+            Notation.objects.filter(acheteur=user).delete()
+            Notation.objects.filter(vendeur=user).delete()
+            Annonce.objects.filter(user=user).delete()
+            # Déconnexion puis suppression du compte
             logout(request)
             user.delete()
-            messages.success(request, "Votre compte a été supprimé définitivement.")
+            messages.success(request, "Votre compte et toutes vos données ont été supprimés définitivement.")
             return redirect('index')
         else:
-            messages.error(request, "Confirmation incorrecte. Tapez SUPPRIMER pour confirmer.")
+            messages.error(request, "Mot de passe incorrect. Veuillez réessayer.")
     return render(request, 'users/supprimer_compte.html')
 
 

@@ -1,11 +1,13 @@
-Django==5.2.11
+Django==5.2.12
 gunicorn==23.0.0
-Pillow==11.3.0
+Pillow==12.1.1
 whitenoise==6.9.0
 dj-database-url==2.3.0
 psycopg2-binary==2.9.10
 boto3==1.35.99
-requests==2.32.5
+requests==2.33.0
 beautifulsoup4==4.14.3
 python-decouple==3.8
 anthropic>=0.86.0
+django-two-factor-auth>=1.18.0
+qrcode[pil]>=7.4

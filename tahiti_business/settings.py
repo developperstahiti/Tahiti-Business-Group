@@ -7,24 +7,15 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ── Securite ───────────────────────────────────────────────────────────────────
-_secret_key = os.environ.get('SECRET_KEY', '')
-if not _secret_key:
-    if os.environ.get('DATABASE_URL'):
-        raise RuntimeError(
-            "La variable d'environnement SECRET_KEY doit être définie en production !"
-        )
-    _secret_key = 'dev-only-insecure-key-ne-pas-utiliser-en-production'
-SECRET_KEY = _secret_key
+SECRET_KEY = config('SECRET_KEY', default='dev-only-insecure-key-ne-pas-utiliser-en-production')
 
 # En l'absence de DATABASE_URL on est en local (SQLite)
 _local = not os.environ.get('DATABASE_URL')
 
-DEBUG = os.environ.get('DEBUG', 'True' if _local else 'False') == 'True'
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,[::1]').split(',')
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
-if _local and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in CSRF_TRUSTED_ORIGINS if o.strip()]
@@ -40,6 +31,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
+    'two_factor',
     'ads',
     'users',
     'pubs',
@@ -53,6 +48,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tahiti_business.middleware.SecurityHeadersMiddleware',
@@ -61,9 +57,9 @@ MIDDLEWARE = [
 
 X_FRAME_OPTIONS = 'DENY'
 
-# Taille max des uploads (50 Mo pour 5 photos de 10 Mo)
+# Taille max des uploads (50 Mo pour 5 photos de 5 Mo + champs)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 Mo
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 Mo
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 Mo
 
 ROOT_URLCONF = 'tahiti_business.urls'
 
@@ -133,6 +129,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ── 2FA (django-two-factor-auth) — admin uniquement ──
+TWO_FACTOR_PATCH_ADMIN = True
+TWO_FACTOR_LOGIN_TIMEOUT = 600  # 10 min pour saisir le code
 
 # ── Security headers ─────────────────────────────────────────────────────────
 SECURE_SSL_REDIRECT = not DEBUG

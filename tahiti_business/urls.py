@@ -5,6 +5,7 @@ from django.conf import settings
 from django.views.static import serve
 from django.http import HttpResponse, FileResponse
 from ads.views import sitemap_xml
+from two_factor.urls import urlpatterns as tf_urls
 
 admin.site.site_header = 'TBG Gestion'
 admin.site.site_title = 'TBG Gestion'
@@ -29,6 +30,7 @@ def robots_txt(request):
         "Disallow: /signaler/\n"
         "Disallow: /pubs/deposer/\n"
         "Disallow: /rubriques/moderation/\n"
+        "Disallow: /account/\n"
         f"Sitemap: {base}sitemap.xml\n"
     )
     return HttpResponse(content, content_type='text/plain')
@@ -38,6 +40,7 @@ urlpatterns = [
     path('admin/<path:p>', lambda r, p=None: HttpResponse(status=404)),
     path('admin/', lambda r: HttpResponse(status=404)),
     path('3319cdb9fc7eb59/', admin.site.urls),
+    path('', include(tf_urls)),
     path('', include('ads.urls')),
     path('users/', include('users.urls')),
     path('pubs/', include('pubs.urls')),
