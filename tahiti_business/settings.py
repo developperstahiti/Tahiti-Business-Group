@@ -12,7 +12,7 @@ SECRET_KEY = config('SECRET_KEY', default='dev-only-insecure-key-ne-pas-utiliser
 # En l'absence de DATABASE_URL on est en local (SQLite)
 _local = not os.environ.get('DATABASE_URL')
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default='True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,[::1]').split(',')
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
