@@ -157,10 +157,8 @@ def index(request):
     annonces_recentes = qs[:10]
     total_count = base.count()
 
-    # Ordre d'affichage : immobilier, véhicules, occasion, puis le reste
-    cat_order = ['immobilier', 'vehicules', 'occasion'] + [
-        code for code, _ in CATEGORIES if code not in ('immobilier', 'vehicules', 'occasion')
-    ]
+    # Ordre d'affichage aligné sur la nav
+    cat_order = ['immobilier', 'vehicules', 'occasion', 'emploi', 'services']
     cat_labels = dict(CATEGORIES)
     annonces_par_cat = []
     for code in cat_order:

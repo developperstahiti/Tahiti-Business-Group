@@ -819,14 +819,17 @@ main {
   justify-content: space-between;
   text-decoration: none;
   color: inherit;
-  padding: 8px 12px;
+  padding: 10px 16px;
   margin-bottom: 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background .15s;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  transition: background .15s, border-color .15s;
 }
 .cat-section-header:hover {
-  background: #f3f4f6;
+  background: #e5e7eb;
+  border-color: #d1d5db;
 }
 
 /* ── Carousel Promo — overflow vertical pour cartes expandables ── */
