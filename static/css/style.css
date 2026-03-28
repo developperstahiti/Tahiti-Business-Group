@@ -2385,11 +2385,10 @@ img.loaded     { opacity: 1; }
     /* pas de margin-top par défaut (pages sans billboard) */
     min-height: 0;
     overflow-y: auto;
-    background: white;
+    background: transparent;
     border-radius: 10px 10px 0 0;
-    box-shadow: 0 -4px 24px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
     animation: frameAppear 200ms ease-out 60ms both;
-    padding: 12px 10px;
+    padding: 0;
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
   }
@@ -2401,6 +2400,14 @@ img.loaded     { opacity: 1; }
   #right-sidebar-pubs::-webkit-scrollbar       { width: 4px; }
   #right-sidebar-pubs::-webkit-scrollbar-track { background: transparent; }
   #right-sidebar-pubs::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  #right-sidebar-pubs .pub-slot {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+  #right-sidebar-pubs .pub-empty {
+    border-radius: 0;
+  }
 
   /* ── Sidebar inline dans la page → masquée (gérée hors cadre) ─ */
   .layout-sidebar       { display: none !important; }
