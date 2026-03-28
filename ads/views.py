@@ -1552,6 +1552,11 @@ def import_url(request):
             photo_url = src
             break
 
+    # Décoder les entités HTML (&eacute; → é, &agrave; → à, etc.)
+    import html as _html
+    titre = _html.unescape(titre)
+    description = _html.unescape(description)
+
     # Tronquer
     titre = titre[:200]
     description = description[:2000]
