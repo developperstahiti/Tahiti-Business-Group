@@ -858,53 +858,18 @@ var _photoFiles = [];
           importPhotoBase64(data.photo_data, data.photo_mime);
         }
 
-        // ── Auto-remplissage intelligent (immobilier, prix, localisation) ──
-        if (data.categorie) {
-          var catCard = document.querySelector('.dep-cat-card[data-cat="' + data.categorie + '"]');
-          if (catCard) catCard.click();
-        }
-        if (data.type_transaction) {
-          // Attendre que le DOM se mette a jour apres le click categorie
-          setTimeout(function() {
-            var txBtn = document.querySelector('#rg-transaction .dep-radio-btn[data-val="' + data.type_transaction + '"]');
-            if (txBtn) txBtn.click();
-
-            // Remplir le prix apres que les champs immobilier soient rendus
-            if (data.prix) {
-              setTimeout(function() {
-                var prixInput = document.querySelector('input[name="prix"]');
-                if (prixInput) {
-                  prixInput.value = data.prix;
-                  prixInput.dispatchEvent(new Event('input', {bubbles: true}));
-                }
-              }, 100);
-            }
-          }, 100);
-        } else if (data.prix) {
-          // Prix sans categorie immobilier (vehicules, occasion, etc.)
-          setTimeout(function() {
-            var prixInput = document.querySelector('input[name="prix"]');
-            if (prixInput) {
-              prixInput.value = data.prix;
-              prixInput.dispatchEvent(new Event('input', {bubbles: true}));
-            }
-          }, 200);
-        }
-        if (data.localisation) {
-          var locInput = document.getElementById('h-localisation');
-          if (locInput) locInput.value = data.localisation;
-          var communeInput = document.querySelector('input[name="commune"]');
-          if (communeInput) communeInput.value = data.localisation;
-        }
+        // ── Auto-remplissage intelligent ──────────────────────────────────
+        _applyImportHints(data);
 
         var srcLabel = data.source === 'papf' ? 'PA.PF' :
                        data.source === 'leboncoin' ? 'Leboncoin' :
                        data.source === 'marketplace' ? 'Marketplace' :
                        data.source;
         var hints = [];
-        if (data.categorie) hints.push('categorie');
+        if (data.categorie) hints.push('immobilier');
         if (data.type_transaction) hints.push(data.type_transaction === 'location' ? 'location' : 'vente');
-        if (data.prix) hints.push('prix');
+        if (data.sous_categorie) hints.push(data.sous_categorie.replace('immo-', ''));
+        if (data.prix) hints.push(data.prix.toLocaleString('fr-FR') + ' XPF');
         if (data.localisation) hints.push(data.localisation);
         var extra = hints.length ? ' (detecte : ' + hints.join(', ') + ')' : '';
         showImportMsg('success', 'Annonce importee depuis ' + srcLabel + extra + ' — verifiez et completez les informations.');
@@ -932,6 +897,60 @@ var _photoFiles = [];
     importMsg.className = 'dep-import-msg dep-import-msg--' + type;
     importMsg.textContent = (type === 'success' ? '\u2713 ' : '') + text;
     importMsg.style.display = 'block';
+  }
+
+  function _applyImportHints(data) {
+    var delay = 0;
+
+    // 1) Categorie
+    if (data.categorie) {
+      var catCard = document.querySelector('.dep-cat-card[data-cat="' + data.categorie + '"]');
+      if (catCard) catCard.click();
+      delay = 150;
+    }
+
+    // 2) Type transaction (immobilier : vente/location)
+    if (data.type_transaction) {
+      setTimeout(function() {
+        var txBtn = document.querySelector('#rg-transaction .dep-radio-btn[data-val="' + data.type_transaction + '"]');
+        if (txBtn) txBtn.click();
+      }, delay);
+      delay += 200;
+    }
+
+    // 3) Sous-categorie
+    if (data.sous_categorie) {
+      setTimeout(function() {
+        var chips = document.querySelectorAll('#sous-cat-container .dep-chip');
+        chips.forEach(function(chip) {
+          if (chip.dataset.value === data.sous_categorie) chip.click();
+        });
+      }, delay);
+    }
+
+    // 4) Prix — doit attendre que le champ soit rendu par renderImmoFields()
+    if (data.prix) {
+      setTimeout(function() {
+        var prixInput = document.querySelector('input[name="prix"]');
+        if (prixInput) {
+          prixInput.value = data.prix;
+          prixInput.dispatchEvent(new Event('input', {bubbles: true}));
+        }
+      }, delay + 150);
+    }
+
+    // 5) Localisation via LocationSelector
+    if (data.localisation && window._locSelector) {
+      setTimeout(function() {
+        var island = data.localisation_island || 'tahiti';
+        window._locSelector._addSelection({
+          island: island,
+          commune: data.localisation,
+          quartier: null,
+          label: data.localisation
+        });
+      }, delay + 100);
+    }
   }
 
   function importPhotoBase64(b64data, mime) {
@@ -1283,7 +1302,7 @@ function showStep(id, show) {
 (function initLocSelector() {
   var root = document.getElementById('loc-selector-form');
   if (!root || !window.LocationSelector) return;
-  new LocationSelector(root, {
+  window._locSelector = new LocationSelector(root, {
     mode: 'form',
     staticPrefix: '{% static "img/" %}',
     initial: [],

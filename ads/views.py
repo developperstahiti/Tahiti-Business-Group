@@ -1437,25 +1437,55 @@ def _is_private_ip(hostname):
         return True  # En cas de doute, bloquer
 
 
+# Communes PF — noms exacts tels qu'utilisés dans le LocationSelector JS
+# (commune_display, island_id) pour pouvoir pré-sélectionner côté frontend
 _COMMUNES_PF = [
-    'Papeete', 'Faaa', 'Punaauia', 'Pirae', 'Arue', 'Mahina', 'Paea',
-    'Papara', 'Taravao', 'Teva I Uta', 'Mataiea', 'Moorea', 'Afareaitu',
-    'Haapiti', 'Papetoai', 'Paopao', 'Bora Bora', 'Raiatea', 'Uturoa',
-    'Tahaa', 'Huahine', 'Fare', 'Rangiroa', 'Tikehau', 'Fakarava',
-    'Hiva Oa', 'Nuku Hiva', 'Taiohae', 'Mangareva', 'Rurutu',
-    'Tubuai', 'Raivavae', 'Hitia\'a', 'Faa\'a', 'Taiarapu',
+    ("Papeete", "tahiti"), ("Pirae", "tahiti"), ("Arue", "tahiti"),
+    ("Mahina", "tahiti"), ("Papenoo", "tahiti"), ("Hitiaa O Te Ra", "tahiti"),
+    ("Faaone", "tahiti"), ("Taiarapu-Est", "tahiti"), ("Taiarapu-Ouest", "tahiti"),
+    ("Teva I Uta", "tahiti"), ("Papara", "tahiti"), ("Paea", "tahiti"),
+    ("Punaauia", "tahiti"), ("Faa'a", "tahiti"),
+    ("Afareaitu", "moorea"), ("Papeatoai", "moorea"), ("Haapiti", "moorea"),
+    ("Pao Pao", "moorea"), ("Teavaro", "moorea"),
+    ("Vaitape", "bora-bora"), ("Uturoa", "raiatea"),
+    ("Fare", "huahine"), ("Rangiroa", "tuamotu"), ("Fakarava", "tuamotu"),
+    ("Tikehau", "tuamotu"), ("Nuku Hiva", "marquises"), ("Hiva Oa", "marquises"),
+    ("Rurutu", "australes"), ("Tubuai", "australes"),
+]
+
+# Alias courants → nom officiel LocationSelector
+_COMMUNE_ALIASES = {
+    'faaa': "Faa'a", 'faa a': "Faa'a", "faa'a": "Faa'a",
+    'taravao': 'Taiarapu-Est', 'punaruu': 'Punaauia',
+    'moorea': 'Afareaitu', 'bora bora': 'Vaitape', 'bora-bora': 'Vaitape',
+    'raiatea': 'Uturoa', 'huahine': 'Fare',
+    'paopao': 'Pao Pao', 'pao pao': 'Pao Pao',
+    'mataiea': 'Teva I Uta', 'papeari': 'Teva I Uta',
+    'hitiaa': 'Hitiaa O Te Ra', 'tiarei': 'Hitiaa O Te Ra',
+}
+
+# Sous-catégories immobilier — mots-clés → valeur
+_SOUS_CAT_IMMO = [
+    ('immo-appartements', ['appartement', 'studio', 'f1', 'f2', 'f3', 'f4', 'f5', 'duplex', 't1', 't2', 't3', 't4']),
+    ('immo-maisons',      ['maison', 'villa', 'fare', 'bungalow', 'pavillon']),
+    ('immo-terrains',     ['terrain', 'parcelle', 'lot', 'foncier']),
+    ('immo-bureaux',      ['bureau', 'local commercial', 'commerce', 'entrepot', 'magasin', 'boutique']),
+    ('immo-saisonnieres', ['saisonnier', 'saisonniere', 'vacance', 'meuble', 'courte duree', 'airbnb']),
+    ('immo-parkings',     ['parking', 'garage', 'box', 'stationnement']),
 ]
 
 
 def _extract_annonce_hints(titre, description):
     """Analyse titre + description pour deviner catégorie, transaction, prix, localisation."""
+    import re
     result = {}
     text = f"{titre} {description}".lower()
+    full_text = f"{titre} {description}"
 
     # ── Type de transaction ────────────────────────────────────────────
     location_kw = ['location', 'à louer', 'a louer', 'louer', 'loue', 'bail',
-                   'mensuel', '/mois', 'par mois', 'charges comprises']
-    vente_kw = ['vente', 'à vendre', 'a vendre', 'vends', 'vend', 'cession']
+                   'mensuel', '/mois', 'par mois', 'charges comprises', 'loyer']
+    vente_kw = ['vente', 'à vendre', 'a vendre', 'vends', 'vend', 'cession', 'prix de vente']
 
     loc_score = sum(1 for kw in location_kw if kw in text)
     vente_score = sum(1 for kw in vente_kw if kw in text)
@@ -1466,17 +1496,15 @@ def _extract_annonce_hints(titre, description):
         result['type_transaction'] = 'vente'
 
     # ── Prix ───────────────────────────────────────────────────────────
-    import re
-    full_text = f"{titre} {description}"
-
-    # Patterns : "25 000 000 XPF", "25000000 F", "25 MF", "25 millions"
     prix_patterns = [
         # "25 000 000 XPF" ou "25 000 000 F" ou "25.000.000 F"
         r'(\d[\d\s\.\,]{2,12}\d)\s*(?:XPF|FCFP|F\b|francs?)',
         # "25MF" ou "25 MF" ou "2.5MF"
         r'([\d]+(?:[.,]\d+)?)\s*(?:MF|millions?\s*(?:de\s*)?(?:XPF|F|francs?))',
-        # "Prix : 25 000 000" (mot prix suivi d'un nombre)
-        r'(?:prix|loyer|tarif)\s*[:=]?\s*(\d[\d\s\.\,]{2,12}\d)',
+        # "Prix : 25 000 000" ou "Loyer : 80 000"
+        r'(?:prix|loyer|tarif|montant)\s*[:=]?\s*(\d[\d\s\.\,]{2,12}\d)',
+        # Nombre isolé > 10000 suivi de XPF/F (format sans espaces)
+        r'(\d{5,})\s*(?:XPF|FCFP|F\b)',
     ]
 
     prix = 0
@@ -1486,7 +1514,6 @@ def _extract_annonce_hints(titre, description):
             raw = match.group(1).replace(' ', '').replace('.', '').replace(',', '.')
             try:
                 val = float(raw)
-                # Si c'est un pattern "MF/millions", multiplier par 1 000 000
                 if 'MF' in match.group(0).upper() or 'million' in match.group(0).lower():
                     val *= 1_000_000
                 prix = int(val)
@@ -1499,18 +1526,44 @@ def _extract_annonce_hints(titre, description):
         result['prix'] = prix
 
     # ── Localisation ───────────────────────────────────────────────────
-    for commune in _COMMUNES_PF:
+    # D'abord chercher les noms officiels
+    for commune, island in _COMMUNES_PF:
         if commune.lower() in text:
             result['localisation'] = commune
+            result['localisation_island'] = island
             break
+
+    # Sinon chercher les alias
+    if 'localisation' not in result:
+        for alias, official in _COMMUNE_ALIASES.items():
+            if alias in text:
+                result['localisation'] = official
+                # Trouver l'île correspondante
+                for commune, island in _COMMUNES_PF:
+                    if commune == official:
+                        result['localisation_island'] = island
+                        break
+                break
 
     # ── Catégorie immobilier ───────────────────────────────────────────
     immo_kw = ['immobilier', 'appartement', 'maison', 'villa', 'terrain',
                'studio', 'duplex', 'f1', 'f2', 'f3', 'f4', 'f5',
                'chambre', 'lot', 'parcelle', 'bureau', 'local commercial',
-               'location', 'loyer', 'à louer', 'à vendre']
+               'location', 'loyer', 'à louer', 'a louer', 'à vendre', 'a vendre',
+               'bungalow', 'fare', 'meublé', 'meuble']
     if sum(1 for kw in immo_kw if kw in text) >= 2:
         result['categorie'] = 'immobilier'
+
+    # ── Sous-catégorie immobilier ──────────────────────────────────────
+    if result.get('categorie') == 'immobilier':
+        best_sc, best_score = '', 0
+        for sc_value, keywords in _SOUS_CAT_IMMO:
+            score = sum(1 for kw in keywords if kw in text)
+            if score > best_score:
+                best_score = score
+                best_sc = sc_value
+        if best_sc:
+            result['sous_categorie'] = best_sc
 
     return result
 
