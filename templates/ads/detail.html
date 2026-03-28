@@ -45,8 +45,8 @@
               <img id="mainPhotoMosaic" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
                 class="cursor-zoom-in" style="max-height:400px;max-width:100%;object-fit:contain">
               <!-- Fleches navigation -->
-              <button id="navPhotoPrev" class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
-              <button id="navPhotoNext" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo suivante">&rsaquo;</button>
+              <button id="navPhotoPrev" class="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
+              <button id="navPhotoNext" class="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo suivante">&rsaquo;</button>
               <div class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm" id="photo-counter">1 / {{ photo_count }}</div>
             </div>
             <!-- Miniatures -->
@@ -824,6 +824,61 @@ document.addEventListener('DOMContentLoaded', function() {
       openContact(this.dataset.contactUrl);
     });
   });
+})();
+
+// ── Swipe tactile sur la galerie photos (mosaique) ──────────────────────────
+(function() {
+  var gallery = document.querySelector('.detail-mosaic__main');
+  if (!gallery) return;
+
+  var startX = 0;
+  var startY = 0;
+
+  gallery.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, {passive: true});
+
+  gallery.addEventListener('touchend', function(e) {
+    var diffX = startX - e.changedTouches[0].clientX;
+    var diffY = startY - e.changedTouches[0].clientY;
+
+    // Seulement si le swipe est plus horizontal que vertical
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        navPhoto(1);  // Swipe gauche → photo suivante
+      } else {
+        navPhoto(-1); // Swipe droite → photo precedente
+      }
+    }
+  }, {passive: true});
+})();
+
+// ── Swipe tactile sur la lightbox ───────────────────────────────────────────
+(function() {
+  var lb = document.getElementById('lightbox');
+  if (!lb) return;
+
+  var startX = 0;
+  var startY = 0;
+
+  lb.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, {passive: true});
+
+  lb.addEventListener('touchend', function(e) {
+    var diffX = startX - e.changedTouches[0].clientX;
+    var diffY = startY - e.changedTouches[0].clientY;
+
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        lightboxNav(1);  // Swipe gauche → photo suivante
+      } else {
+        lightboxNav(-1); // Swipe droite → photo precedente
+      }
+    }
+  }, {passive: true});
 })();
 </script>
 {% endblock %}
