@@ -740,8 +740,13 @@ def remonter_annonces(request):
 
 def contact_annonce(request, pk):
     if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Non connecté'}, status=403)
-    annonce = get_object_or_404(Annonce, pk=pk)
+        return JsonResponse({'error': 'Connectez-vous pour contacter ce vendeur', 'auth_required': True}, status=403)
+
+    try:
+        annonce = Annonce.objects.get(pk=pk)
+    except Annonce.DoesNotExist:
+        return JsonResponse({'error': 'Annonce introuvable'}, status=404)
+
     User = get_user_model()
 
     # Le vendeur peut voir ses conversations avec les acheteurs via ?with=<pk>
@@ -749,7 +754,10 @@ def contact_annonce(request, pk):
         other_pk = request.GET.get('with')
         if not other_pk:
             return JsonResponse({'error': 'Paramètre manquant'}, status=400)
-        buyer = get_object_or_404(User, pk=other_pk)
+        try:
+            buyer = User.objects.get(pk=other_pk)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Utilisateur introuvable'}, status=404)
         seller = request.user
     else:
         buyer = request.user
@@ -792,21 +800,35 @@ def contact_annonce(request, pk):
         except Exception as e:
             logger.error("Erreur envoi email notification message: %s", e)
         thread.filter(from_user=to_user, read=False).update(read=True)
-        html = render_to_string(
-            'partials/_message_bubble.html',
-            {'msg': msg, 'me': request.user},
-            request=request,
-        )
+        try:
+            html = render_to_string(
+                'partials/_message_bubble.html',
+                {'msg': msg, 'me': request.user},
+                request=request,
+            )
+        except Exception as e:
+            logger.error("Erreur render _message_bubble: %s", e)
+            from django.utils.html import escape as html_escape
+            html = (
+                '<div class="chat-bubble chat-bubble--me">'
+                '<div class="chat-bubble__text">' + html_escape(msg.content) + '</div>'
+                '<div class="chat-bubble__time">maintenant</div>'
+                '</div>'
+            )
         return JsonResponse({'success': True, 'html': html})
 
     # GET → mark received messages as read, return modal HTML
     thread.filter(to_user=request.user, read=False).update(read=True)
     with_pk = request.GET.get('with')
-    html = render_to_string(
-        'ads/contact_modal.html',
-        {'annonce': annonce, 'thread': thread, 'with_pk': with_pk},
-        request=request,
-    )
+    try:
+        html = render_to_string(
+            'ads/contact_modal.html',
+            {'annonce': annonce, 'thread': thread, 'with_pk': with_pk},
+            request=request,
+        )
+    except Exception as e:
+        logger.error("Erreur render contact_modal: %s", e)
+        return JsonResponse({'error': 'Erreur interne, veuillez réessayer'}, status=500)
     return JsonResponse({'html': html})
 
 

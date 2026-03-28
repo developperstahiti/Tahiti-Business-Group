@@ -706,31 +706,77 @@ document.querySelectorAll('.slide-accordion__toggle').forEach(function(btn) {
 <script nonce="{{ csp_nonce }}">
 // ── Contact Modal ────────────────────────────────────────────────────────────
 function openContact(url) {
-  const modal = document.getElementById('contactModal');
-  const content = document.getElementById('modalContent');
+  var modal = document.getElementById('contactModal');
+  var content = document.getElementById('modalContent');
   modal.style.display = 'flex';
   _frameScrollTarget().style.overflow = 'hidden';
   content.innerHTML = '<div class="text-center py-10 text-gray-400"><div class="text-4xl mb-2">&#x1F4AC;</div>Chargement…</div>';
   fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
-    .then(r => {
-      if (!r.ok) throw new Error(r.status);
+    .then(function(r) {
       var ct = r.headers.get('content-type') || '';
-      if (ct.indexOf('application/json') === -1) throw new Error('not-json');
+      var isJson = ct.indexOf('application/json') !== -1;
+      if (r.status === 403) {
+        return (isJson ? r.json() : Promise.resolve({})).catch(function() { return {}; }).then(function(data) {
+          throw { type: 'auth', message: data.error || 'Non connect\u00e9' };
+        });
+      }
+      if (!r.ok) {
+        if (isJson) {
+          return r.json().catch(function() { return {}; }).then(function(data) {
+            throw { type: 'server_error', message: data.error || 'Erreur serveur (' + r.status + ')' };
+          });
+        }
+        throw { type: 'redirect', message: 'not-json' };
+      }
+      if (!isJson) {
+        throw { type: 'redirect', message: 'not-json' };
+      }
       return r.json();
     })
-    .then(data => {
-      if (data.error) { closeContact(); return; }
+    .then(function(data) {
+      if (data.error) {
+        var errEl = document.createElement('div');
+        errEl.className = 'text-center py-8 text-red-500 text-sm font-semibold';
+        errEl.textContent = data.error;
+        content.innerHTML = '';
+        content.appendChild(errEl);
+        return;
+      }
       content.innerHTML = data.html;
-      const t = document.getElementById('chatThread');
+      var t = document.getElementById('chatThread');
       if (t) t.scrollTop = t.scrollHeight;
-      const form = document.getElementById('contactForm');
+      var form = document.getElementById('contactForm');
       if (form) form.addEventListener('submit', submitContact);
     })
-    .catch(err => {
-      if (err.message === 'not-json' || err.message === '302' || err.message === '403') {
+    .catch(function(err) {
+      if (err && err.type === 'auth') {
+        var loginUrl = '/users/login/?next=' + encodeURIComponent(window.location.pathname) + '&msg=contact';
+        content.innerHTML =
+          '<div class="text-center py-8">' +
+            '<div class="text-5xl mb-3">&#x1F512;</div>' +
+            '<p class="text-gray-700 font-semibold mb-4">Connectez-vous pour contacter ce vendeur</p>' +
+            '<a href="' + loginUrl + '" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition">Se connecter</a>' +
+          '</div>';
+      } else if (err && err.type === 'redirect') {
         window.location.href = url;
+      } else if (err && err.type === 'server_error') {
+        var srvEl = document.createElement('div');
+        srvEl.className = 'text-center py-8 text-red-500 text-sm font-semibold';
+        srvEl.textContent = err.message;
+        content.innerHTML = '';
+        content.appendChild(srvEl);
       } else {
-        content.innerHTML = '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
+        content.innerHTML =
+          '<div class="text-center py-8">' +
+            '<div class="text-5xl mb-3">&#x26A0;&#xFE0F;</div>' +
+            '<p class="text-red-500 font-semibold mb-2">Erreur de chargement</p>' +
+            '<p class="text-gray-500 text-sm mb-4">V\u00e9rifiez votre connexion et r\u00e9essayez.</p>' +
+            '<button type="button" id="contactRetryBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-5 rounded-lg transition text-sm">R\u00e9essayer</button>' +
+          '</div>';
+        var retryBtn = document.getElementById('contactRetryBtn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', function() { openContact(url); });
+        }
       }
     });
 }
@@ -742,37 +788,89 @@ function closeContact() {
 
 function submitContact(e) {
   e.preventDefault();
-  const form = e.target;
-  const url  = form.dataset.url;
-  const btn  = form.querySelector('button[type=submit]');
+  var form = e.target;
+  var url  = form.dataset.url;
+  var btn  = form.querySelector('button[type=submit]');
+  var textarea = form.querySelector('textarea');
+  var msgText = textarea ? textarea.value.trim() : '';
+  if (msgText.length < 10) {
+    var existing = form.querySelector('.contact-form-error');
+    if (existing) existing.remove();
+    var errDiv = document.createElement('div');
+    errDiv.className = 'contact-form-error text-red-500 text-xs font-medium mt-1';
+    errDiv.textContent = 'Votre message doit contenir au moins 10 caract\u00e8res.';
+    textarea.parentNode.insertBefore(errDiv, textarea.nextSibling);
+    return;
+  }
   btn.disabled = true;
+  var svgHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="text-xs">Envoi…</span>';
+  var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]');
+  var fd = new FormData(form);
   fetch(url, {
     method: 'POST',
-    body: new FormData(form),
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    body: fd,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': csrfToken ? csrfToken.value : ''
+    }
   })
-    .then(r => r.json())
-    .then(data => {
+    .then(function(r) {
+      if (!r.ok && r.status === 403) {
+        throw new Error('session');
+      }
+      return r.json();
+    })
+    .then(function(data) {
       if (data.success) {
-        let t = document.getElementById('chatThread');
+        var t = document.getElementById('chatThread');
         if (!t) {
           t = document.createElement('div');
           t.id = 'chatThread';
           t.className = 'chat-thread';
           form.before(t);
-          // Remove empty state if present
-          const empty = t.previousSibling;
         }
+        // Remove the empty-state placeholder if present
+        var emptyState = t.querySelector('.text-center.py-6');
+        if (emptyState) emptyState.remove();
         t.insertAdjacentHTML('beforeend', data.html);
         t.scrollTop = t.scrollHeight;
-        form.querySelector('textarea').value = '';
-        // Clear badge since we just sent a message
-        const badge = document.querySelector('.msg-badge');
+        textarea.value = '';
+        var existingErr = form.querySelector('.contact-form-error');
+        if (existingErr) existingErr.remove();
+        // Clear unread badge since we just sent a message
+        var badge = document.querySelector('.msg-badge');
         if (badge) badge.remove();
+        if (typeof showToast !== 'undefined') showToast('Message envoy\u00e9 !', 'success');
+      } else if (data.error) {
+        var existing2 = form.querySelector('.contact-form-error');
+        if (existing2) existing2.remove();
+        var errDiv2 = document.createElement('div');
+        errDiv2.className = 'contact-form-error text-red-500 text-xs font-medium mt-1';
+        errDiv2.textContent = data.error;
+        textarea.parentNode.insertBefore(errDiv2, textarea.nextSibling);
       }
       btn.disabled = false;
+      btn.innerHTML = svgHtml;
     })
-    .catch(() => { btn.disabled = false; });
+    .catch(function(err) {
+      btn.disabled = false;
+      btn.innerHTML = svgHtml;
+      if (err && err.message === 'session') {
+        var loginUrl = '/users/login/?next=' + encodeURIComponent(window.location.pathname) + '&msg=contact';
+        var content = document.getElementById('modalContent');
+        if (content) {
+          content.innerHTML =
+            '<div class="text-center py-8">' +
+              '<div class="text-5xl mb-3">&#x1F512;</div>' +
+              '<p class="text-gray-700 font-semibold mb-4">Votre session a expir\u00e9. Reconnectez-vous.</p>' +
+              '<a href="' + loginUrl + '" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition">Se connecter</a>' +
+            '</div>';
+        }
+      } else {
+        if (typeof showToast !== 'undefined') showToast('Erreur r\u00e9seau, r\u00e9essayez.', 'error');
+      }
+    });
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeContact(); });
