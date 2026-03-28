@@ -3543,3 +3543,448 @@ img.loaded     { opacity: 1; }
 .btn-hover-light:hover {
   background: #f9fafb;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE AUDIT — Mobile (< 768px) & Tablet (768-1024px)
+   Corrections ciblées pour l'affichage sur petits et moyens ecrans.
+   NE TOUCHE PAS : bottom-nav, head base.html, desktop >= 1025px.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── GLOBAL — Prevent any horizontal overflow on all sub-desktop screens ── */
+@media (max-width: 1024px) {
+  /* Extra safety: table, pre, iframe, video can cause overflow */
+  table { max-width: 100%; overflow-x: auto; display: block; }
+  pre   { max-width: 100%; overflow-x: auto; word-break: break-all; }
+  iframe, video { max-width: 100%; height: auto; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE  (< 768px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* ── General spacing: reduce excessive vertical padding on content pages ── */
+  .max-w-7xl.mx-auto.px-4.py-4 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .max-w-4xl.mx-auto.px-4.py-8,
+  .max-w-5xl.mx-auto.px-4 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* ── Section headers: wrap text if long category names ── */
+  .cat-section-header {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .cat-section-header h2 {
+    font-size: 0.9rem;
+    gap: 6px !important;
+  }
+  .cat-section-header .cat-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* ── Over-img bubbles: tighter padding on mobile ── */
+  .over-img {
+    padding: 6px 10px;
+  }
+  .over-img h2 {
+    font-size: 0.9rem !important;
+  }
+
+  /* ── Detail page: tighter spacing ── */
+  .max-w-7xl.mx-auto.px-4.py-8 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  /* ── Detail page title & price section: less padding ── */
+  .bg-white.border.border-gray-200.rounded-2xl.p-6.shadow-sm {
+    padding: 14px;
+  }
+
+  /* ── Detail price: prevent very long prices from overflowing ── */
+  .text-3xl.font-black {
+    word-break: break-word;
+  }
+
+  /* ── Detail action bar: full width stacked buttons ── */
+  .detail-actions-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .detail-actions-bar > * {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+    margin-left: 0 !important;
+    text-align: center;
+  }
+  /* Enregistrer/Partager/Signaler buttons: proper touch size */
+  .detail-actions-bar button,
+  .detail-actions-bar a {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  /* ── Detail vendeur section: compact layout ── */
+  .layout-main .flex.items-start.gap-4 {
+    gap: 12px;
+  }
+  .layout-main .w-16.h-16 {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+
+  /* ── Detail "Contacter" button: ensure touch target ── */
+  .layout-main .btn.btn-primary.w-full {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  /* ── Specs grid: 2 cols on mobile (already done but ensure robustness) ── */
+  .layout-main .grid.grid-cols-2.sm\:grid-cols-3 {
+    gap: 6px;
+  }
+  .layout-main .grid.grid-cols-2.sm\:grid-cols-3 > div {
+    padding: 8px 10px;
+  }
+
+  /* ── Similaires grid: 2 columns minimum on mobile ── */
+  .layout-main .ads-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  /* ── Liste annonces filters: tighter on mobile ── */
+  .bg-white.border.border-gray-200.rounded-2xl.p-4.mb-6 {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Liste annonces "aucun resultat" card: less padding ── */
+  .bg-white.border.border-gray-200.rounded-2xl.p-16 {
+    padding: 32px 16px;
+  }
+
+  /* ── Mes annonces: compact action bar ── */
+  .flex.items-center.gap-2.px-4.py-2\.5 {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .flex.items-center.gap-2.px-4.py-2\.5 a,
+  .flex.items-center.gap-2.px-4.py-2\.5 button {
+    min-height: 36px;
+    padding: 6px 10px;
+  }
+
+  /* ── Mes annonces: remontee bar wraps properly ── */
+  .flex.items-center.gap-3.mb-4.bg-blue-50 {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  /* ── Mes annonces: title row ── */
+  .flex.items-center.justify-between.mb-6 {
+    gap: 8px;
+  }
+
+  /* ── Deposer page: category cards — ensure 2 per row minimum ── */
+  .dep-cat-grid {
+    gap: 6px;
+  }
+  .dep-cat-card {
+    min-width: calc(50% - 6px);
+    flex: 1 1 calc(50% - 6px);
+  }
+  .dep-cat-card--rubrique {
+    min-width: calc(50% - 6px);
+    flex: 1 1 calc(50% - 6px);
+  }
+  .dep-cat-icon {
+    width: 56px;
+    height: 56px;
+  }
+  .dep-cat-name {
+    font-size: 10px;
+    max-width: 100px;
+  }
+
+  /* ── Deposer: submit button ── */
+  .dep-submit {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  /* ── Rubrique grid: single column on mobile ── */
+  .rubrique-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* ── Rubrique section header: wrap properly ── */
+  .rubrique-section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+  }
+  .rubrique-section-header h2 {
+    font-size: 16px;
+  }
+
+  /* ── Article cards: reduce image height ── */
+  .article-card__image {
+    height: 120px;
+  }
+  .article-card__body {
+    padding: 12px 14px 10px;
+  }
+
+  /* ── Profil vendeur: compact identity section ── */
+  .max-w-5xl .px-6.pb-6.pt-3 {
+    padding: 12px 14px 14px;
+  }
+
+  /* ── Toast above bottom-nav ── */
+  .toast {
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  /* ── Cat section row: on mobile, hide label card and let carousel take full width ── */
+  .cat-section-row {
+    gap: 0;
+  }
+
+  /* ── Carousel wrapper: enough space for absolutely-positioned arrows ── */
+  .cat-carousel-wrapper {
+    padding: 0 4px;
+  }
+
+  /* ── Location selector: proper mobile sizing ── */
+  .loc-selector__trigger {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  /* ── Enregistrer button on detail page: full-width, touch-friendly ── */
+  .enregistrer-btn {
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  /* ── Share popup: full width on mobile ── */
+  #share-btn {
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLET  (768px - 1024px)
+   ═══════════════════════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  /* ── General padding: slightly reduce from desktop ── */
+  .max-w-7xl.mx-auto.px-4.py-8 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  .max-w-7xl.mx-auto.px-4.py-4 {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  /* ── Carousel items: 3 items on tablet ── */
+  .cat-carousel__item {
+    flex: 0 0 calc(33.333% - 8px);
+  }
+
+  /* ── Carousel buttons: visible and properly sized for tablet ── */
+  .cat-carousel__btn {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+  .cat-carousel__btn--prev { left: -12px; }
+  .cat-carousel__btn--next { right: -12px; }
+
+  /* ── Ads grid: 3 columns on tablet ── */
+  .ads-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  /* ── Detail mosaic: maintain 2-column grid ── */
+  .detail-mosaic {
+    height: 350px;
+  }
+  .detail-mosaic__main {
+    height: 350px;
+  }
+  .detail-mosaic__main img { max-height: 350px !important; }
+  .detail-mosaic__thumbs {
+    height: 350px;
+  }
+
+  /* ── Detail action bar: horizontal but with wrapping ── */
+  .detail-actions-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .detail-actions-bar > * {
+    min-height: 44px;
+  }
+
+  /* ── Filters: 2x2 grid on tablet portrait ── */
+  .grid.grid-cols-2.sm\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* ── Deposer category grid: 3 items per row ── */
+  .dep-cat-grid {
+    gap: 10px;
+  }
+  .dep-cat-card {
+    min-width: calc(33.333% - 10px);
+    flex: 1 1 calc(33.333% - 10px);
+  }
+
+  /* ── Rubrique grid: 2 columns ── */
+  .rubrique-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* ── Lightbox: slightly more compact ── */
+  .lightbox-content {
+    max-width: 90vw;
+  }
+
+  /* ── Location selector islands: 3 columns on tablet ── */
+  .loc-selector__islands {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .loc-selector__commune-list,
+  .loc-selector__quartier-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* ── Mes annonces: ensure action buttons stay horizontal ── */
+  .flex.items-center.gap-2.px-4.py-2\.5 {
+    flex-wrap: wrap;
+  }
+
+  /* ── Section header: proper sizing ── */
+  .cat-section-header .cat-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* ── Profil vendeur: proper spacing ── */
+  .max-w-5xl .px-6.pb-6.pt-3 {
+    padding: 16px 20px 20px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SMALL MOBILE (< 400px) — extra tight screens
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 400px) {
+
+  /* ── Ads grid: 2 columns but very tight gap ── */
+  .ads-grid {
+    gap: 4px;
+  }
+
+  /* ── Annonce card body: very compact ── */
+  .annonce-card__body {
+    padding: 5px 6px 7px;
+  }
+  .annonce-card__title {
+    font-size: 10px;
+  }
+  .annonce-card__price {
+    font-size: 12px;
+  }
+
+  /* ── Carousel items: slightly narrower ── */
+  .cat-carousel__item {
+    width: clamp(130px, 44vw, 170px) !important;
+  }
+
+  /* ── Header: extra compact ── */
+  .cat-section-header {
+    padding: 6px 10px;
+  }
+  .cat-section-header h2 {
+    font-size: 0.82rem;
+  }
+
+  /* ── Deposer cat cards: 2 per row, smaller icons ── */
+  .dep-cat-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .dep-cat-name {
+    font-size: 9px;
+  }
+
+  /* ── Detail page: even more compact ── */
+  .bg-white.border.border-gray-200.rounded-2xl.p-6.shadow-sm {
+    padding: 10px;
+  }
+
+  /* ── Pagination: compact on tiny screens ── */
+  .pagination-btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  .pagination-ellipsis {
+    min-width: 24px;
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  /* ── Profil vendeur metrics: stack vertically ── */
+  .profil-metrics {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .profil-metrics .separator {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT — basic print-friendly reset
+   ═══════════════════════════════════════════════════════════════ */
+@media print {
+  #layout-billboard,
+  .bottom-nav,
+  .layout-sidebar,
+  #right-sidebar-pubs,
+  #left-sidebar-pub,
+  .cat-carousel__btn,
+  .slide-menu,
+  .slide-overlay,
+  .toast {
+    display: none !important;
+  }
+  body { padding-bottom: 0 !important; }
+  #main-frame { overflow: visible !important; }
+}
