@@ -330,17 +330,25 @@ def modifier_profil(request):
         profil.instagram_url = request.POST.get('instagram_url', '')
         profil.site_web = request.POST.get('site_web', '')
 
-        # Photo de profil (max 2 Mo)
+        # Photo de profil (max 2 Mo) → S3 persistant
         if 'photo_profil' in request.FILES:
             photo = request.FILES['photo_profil']
             if photo.size <= 2 * 1024 * 1024:
-                profil.photo_profil = photo
+                from ads.image_utils import save_webp
+                profil.photo_profil_url = save_webp(
+                    photo, 'profils/photos', f'profil_{request.user.pk}',
+                    max_size=(400, 400),
+                )
 
-        # Image de fond (max 5 Mo)
+        # Image de fond (max 5 Mo) → S3 persistant
         if 'image_fond' in request.FILES:
             img = request.FILES['image_fond']
             if img.size <= 5 * 1024 * 1024:
-                profil.image_fond = img
+                from ads.image_utils import save_webp
+                profil.image_fond_url = save_webp(
+                    img, 'profils/bannieres', f'banner_{request.user.pk}',
+                    max_size=(1400, 400),
+                )
 
         profil.save()
         messages.success(request, 'Profil mis à jour avec succès.')

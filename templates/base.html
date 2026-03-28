@@ -205,8 +205,7 @@
               <div class="text-sm font-semibold text-gray-800 truncate mt-0.5">{{ user.email }}</div>
             </div>
             <a href="{% url 'mon_compte' %}">Mon compte</a>
-            <a href="{% url 'modifier_profil' %}">Mon profil</a>
-            <a href="{% url 'profil_vendeur' user.pk %}">Mon profil public &rarr;</a>
+            <a href="{% url 'profil_vendeur' user.pk %}">Mon profil</a>
             <a href="{% url 'mes_annonces' %}">Mes annonces</a>
             <a href="{% url 'mes_favoris' %}">Mes annonces enregistr&#233;es</a>
             <div class="user-menu-sep">

@@ -39,7 +39,9 @@
   <div class="bg-white rounded-2xl border border-gray-200 mb-6 overflow-hidden">
 
     <!-- Banniere -->
-    {% if profil.image_fond %}
+    {% if profil.image_fond_url %}
+    <img src="{{ profil.image_fond_url }}" alt="Banniere de {{ vendeur.nom|default:vendeur.email }}" class="profil-banner">
+    {% elif profil.image_fond %}
     <img src="{{ profil.image_fond.url }}" alt="Banniere de {{ vendeur.nom|default:vendeur.email }}" class="profil-banner">
     {% else %}
     <div class="profil-banner-default"></div>
@@ -47,7 +49,9 @@
 
     <!-- Avatar chevauchant -->
     <div class="profil-avatar-wrapper">
-      {% if profil.photo_profil %}
+      {% if profil.photo_profil_url %}
+      <img src="{{ profil.photo_profil_url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar">
+      {% elif profil.photo_profil %}
       <img src="{{ profil.photo_profil.url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar">
       {% elif vendeur.avatar_url %}
       <img src="{{ vendeur.avatar_url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar">

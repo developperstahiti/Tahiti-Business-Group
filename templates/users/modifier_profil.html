@@ -47,7 +47,9 @@
         <label class="block text-sm font-medium text-gray-700 mb-3">Photo de profil</label>
         <div class="flex items-center gap-4">
           <div class="profil-photo-preview" id="photoProfilPreview">
-            {% if profil.photo_profil %}
+            {% if profil.photo_profil_url %}
+            <img src="{{ profil.photo_profil_url }}" alt="Photo de profil" class="w-full h-full object-cover">
+            {% elif profil.photo_profil %}
             <img src="{{ profil.photo_profil.url }}" alt="Photo de profil" class="w-full h-full object-cover">
             {% else %}
             <div class="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-400">
@@ -67,7 +69,9 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-3">Image de fond / Banniere</label>
         <div class="profil-banner-preview" id="bannerPreview">
-          {% if profil.image_fond %}
+          {% if profil.image_fond_url %}
+          <img src="{{ profil.image_fond_url }}" alt="Banniere" class="w-full h-full object-cover">
+          {% elif profil.image_fond %}
           <img src="{{ profil.image_fond.url }}" alt="Banniere" class="w-full h-full object-cover">
           {% else %}
           <div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">

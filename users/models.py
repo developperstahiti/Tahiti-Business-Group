@@ -72,7 +72,10 @@ class Profil(models.Model):
         related_name='profil',
     )
     photo_profil = models.ImageField(upload_to='profils/photos/', blank=True, null=True)
+    photo_profil_url = models.URLField(max_length=500, blank=True, default='')
     image_fond = models.ImageField(upload_to='profils/bannieres/', blank=True, null=True)
+    image_fond_url = models.URLField(max_length=500, blank=True, default='')
+
     bio = models.TextField(max_length=500, blank=True, default='')
     localisation = models.CharField(max_length=100, blank=True, default='')
     whatsapp = models.CharField(max_length=20, blank=True, default='')
