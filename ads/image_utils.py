@@ -11,6 +11,33 @@ logger = logging.getLogger(__name__)
 _MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 Mo
 _ALLOWED_FORMATS = {'JPEG', 'PNG', 'WEBP'}
 
+_MAGIC_BYTES = {
+    b'\xff\xd8\xff': 'image/jpeg',
+    b'\x89PNG\r\n\x1a\n': 'image/png',
+    b'RIFF': 'image/webp',  # WebP commence par RIFF....WEBP
+    b'GIF87a': 'image/gif',
+    b'GIF89a': 'image/gif',
+}
+
+
+def _check_magic_bytes(file_obj):
+    """Verifie les magic bytes du fichier pour s'assurer que c'est une vraie image."""
+    pos = file_obj.tell() if hasattr(file_obj, 'tell') else 0
+    header = file_obj.read(12)
+    file_obj.seek(pos)
+
+    if not header:
+        raise ValueError("Fichier vide.")
+
+    for magic, mime in _MAGIC_BYTES.items():
+        if header.startswith(magic):
+            # Pour WebP, verifier aussi que "WEBP" est a l'offset 8
+            if magic == b'RIFF' and header[8:12] != b'WEBP':
+                continue
+            return mime
+
+    raise ValueError("Format de fichier non autorise (magic bytes invalides).")
+
 
 def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
     """Convertit un upload image en WebP, sauvegarde localement ou sur S3.
@@ -26,6 +53,8 @@ def save_webp(file_obj, folder, prefix, max_size=(1200, 900)):
     """
     if hasattr(file_obj, 'size') and file_obj.size > _MAX_FILE_SIZE:
         raise ValueError("Fichier trop volumineux (max 5 Mo).")
+
+    _check_magic_bytes(file_obj)
 
     img = PILImage.open(file_obj)
     if img.format not in _ALLOWED_FORMATS:
