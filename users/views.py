@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.core import signing
 from django.conf import settings as django_settings
 from django.http import Http404, JsonResponse
+from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import LoginForm, RegisterForm, ProfileForm
 from ads.models import Annonce, Message, Notation
 from ads.image_utils import save_webp
@@ -51,7 +52,14 @@ def login_view(request):
             cache.delete(key)          # Réinitialise le compteur en cas de succès
             login(request, user)
             messages.success(request, f"Bienvenue {user.nom or user.email} !")
-            return redirect(request.GET.get('next', 'index'))
+            next_url = request.GET.get('next', 'index')
+            if not url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                next_url = 'index'
+            return redirect(next_url)
         else:
             attempts += 1
             cache.set(key, attempts, _LOGIN_LOCKOUT_SEC)
