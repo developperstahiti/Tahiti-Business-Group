@@ -13,25 +13,11 @@
     {% endif %}
   </a>
   {% else %}
-  <a href="{% url 'deposer_pub' %}?emplacement={{ strip_emp|default:'strip_accueil_haut' }}" class="pub-empty" style="min-height:70px;padding:14px 16px;border-radius:12px;flex-direction:row;gap:16px">
-    <span class="pub-star" style="top:12%;left:2%;animation-delay:0s"></span>
-    <span class="pub-star pub-star--lg" style="top:55%;left:8%;animation-delay:.3s"></span>
-    <span class="pub-star" style="top:20%;left:15%;animation-delay:.6s"></span>
-    <span class="pub-star" style="top:70%;left:22%;animation-delay:.9s"></span>
-    <span class="pub-star pub-star--lg" style="top:30%;left:30%;animation-delay:1.2s"></span>
-    <span class="pub-star" style="top:65%;left:38%;animation-delay:1.5s"></span>
-    <span class="pub-star" style="top:15%;left:45%;animation-delay:1.8s"></span>
-    <span class="pub-star pub-star--lg" style="top:60%;left:52%;animation-delay:2.1s"></span>
-    <span class="pub-star" style="top:25%;left:60%;animation-delay:2.4s"></span>
-    <span class="pub-star" style="top:72%;left:68%;animation-delay:2.7s"></span>
-    <span class="pub-star pub-star--lg" style="top:18%;left:75%;animation-delay:.4s"></span>
-    <span class="pub-star" style="top:58%;left:82%;animation-delay:.8s"></span>
-    <span class="pub-star" style="top:35%;left:90%;animation-delay:1.3s"></span>
-    <span class="pub-star" style="top:75%;left:96%;animation-delay:1.9s"></span>
-    <div class="pub-empty__zone" style="margin-bottom:0;font-size:9px">{{ strip_label|default:"Strip Accueil" }}</div>
-    <div class="pub-empty__title" style="margin-bottom:0;font-size:15px">Votre pub ici</div>
-    <div class="pub-empty__price" style="margin-bottom:0;font-size:12px">8 000 XPF/mois</div>
-    <span class="pub-empty__cta" style="font-size:12px;padding:6px 16px">Réserver →</span>
+  <a href="{% url 'deposer_pub' %}?emplacement={{ strip_emp|default:'strip_accueil_haut' }}" class="pub-strip-empty">
+    <div class="pub-strip-empty__zone">{{ strip_label|default:"Strip Accueil" }}</div>
+    <div class="pub-strip-empty__title">Votre publicité ici</div>
+    <div class="pub-strip-empty__price">À partir de 8 000 XPF/mois</div>
+    <span class="pub-strip-empty__cta">Réserver →</span>
   </a>
   {% endif %}
 </div>

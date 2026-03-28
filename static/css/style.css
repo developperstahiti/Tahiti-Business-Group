@@ -367,6 +367,98 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   50% { opacity: 1; }
 }
 
+/* ── Pub strip vide — fond noir étoilé (accueil haut/milieu/bas) ── */
+.pub-strip-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  background: #111111;
+  overflow: hidden;
+  min-height: 70px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: opacity .15s;
+}
+.pub-strip-empty:hover { opacity: .92; }
+.pub-strip-empty::before,
+.pub-strip-empty::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+                     radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,.8), transparent),
+                     radial-gradient(1.5px 1.5px at 90px 40px, #fff, transparent),
+                     radial-gradient(1.5px 1.5px at 130px 20px, rgba(255,255,255,.6), transparent),
+                     radial-gradient(2px 2px at 160px 60px, #fff, transparent),
+                     radial-gradient(1.5px 1.5px at 50px 10px, #fff, transparent),
+                     radial-gradient(2px 2px at 110px 55px, rgba(255,255,255,.7), transparent),
+                     radial-gradient(1.5px 1.5px at 180px 35px, #fff, transparent);
+  background-size: 200px 100px;
+  animation: stripTwinkle 4s ease-in-out infinite alternate;
+  z-index: 1;
+  pointer-events: none;
+}
+.pub-strip-empty::after {
+  background-position: 80px 50px;
+  animation-delay: 2s;
+  opacity: 0.7;
+}
+@keyframes stripTwinkle {
+  0%   { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+.pub-strip-empty__zone {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: rgba(255,255,255,.85);
+  position: relative; z-index: 2;
+}
+.pub-strip-empty__title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  position: relative; z-index: 2;
+}
+.pub-strip-empty__price {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.6);
+  position: relative; z-index: 2;
+}
+.pub-strip-empty__cta {
+  display: inline-block;
+  background: #1D9E75;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: none;
+  text-decoration: none;
+  letter-spacing: .02em;
+  transition: transform .15s, box-shadow .15s, background .15s;
+  position: relative; z-index: 2;
+}
+.pub-strip-empty__cta:hover {
+  background: #17875f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(29,158,117,.4);
+}
+/* Responsive strip : colonne sur mobile */
+@media (max-width: 479px) {
+  .pub-strip-empty {
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    min-height: 90px;
+  }
+}
+
 /* ── Pub strip label ─────────────────────────────────────────── */
 .pub-strip-label {
   font-size: 9px;
