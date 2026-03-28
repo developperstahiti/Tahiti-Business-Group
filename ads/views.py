@@ -7,6 +7,7 @@ import logging
 from django.conf import settings as django_settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from .decorators import staff_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import models as db_models
@@ -411,7 +412,7 @@ def annonce_detail(request, pk):
     is_admin = request.user.is_authenticated and getattr(request.user, 'role', '') == 'admin'
     if annonce.statut != 'actif' and not is_owner and not is_admin:
         raise Http404
-    annonce.increment_views()
+    annonce.increment_clics()
 
     if request.method == 'POST' and request.user.is_authenticated and annonce.user != request.user:
         content = request.POST.get('content', '').strip()
@@ -541,8 +542,8 @@ def deposer_annonce(request):
                     )
                     alerte.derniere_notification = timezone.now()
                     alerte.save(update_fields=['derniere_notification'])
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error("Erreur envoi alerte email: %s", e)
 
             # Email de confirmation de publication
             try:
@@ -564,8 +565,8 @@ def deposer_annonce(request):
                     html_message=html_msg,
                     fail_silently=True,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Erreur envoi email confirmation publication: %s", e)
 
             if boost_duree in ('7jours', '1mois'):
                 # Renvoyer une URL JSON pour que le JS redirige vers le paiement
@@ -637,8 +638,8 @@ def edit_annonce(request, pk):
                 path = os.path.join(django_settings.MEDIA_ROOT, rel)
                 if os.path.exists(path):
                     os.remove(path)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Erreur suppression photo: %s", e)
 
         # Réordonner les photos existantes selon l'ordre envoyé
         photo_order = request.POST.getlist('photo_order')
@@ -656,8 +657,8 @@ def edit_annonce(request, pk):
                 break
             try:
                 current.append(_save_webp(photo_file, request.user.pk))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Erreur upload nouvelle photo: %s", e)
 
         annonce.photos = current
         annonce.save()
@@ -685,8 +686,8 @@ def supprimer_annonce(request, pk):
                 path = os.path.join(django_settings.MEDIA_ROOT, rel)
                 if os.path.exists(path):
                     os.remove(path)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Erreur suppression photo annonce: %s", e)
         annonce.delete()
         messages.success(request, "Annonce supprimée.")
     return redirect('mes_annonces')
@@ -788,8 +789,8 @@ def contact_annonce(request, pk):
                 html_message=html_msg,
                 fail_silently=True,
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error("Erreur envoi email notification message: %s", e)
         thread.filter(from_user=to_user, read=False).update(read=True)
         html = render_to_string(
             'partials/_message_bubble.html',
@@ -944,11 +945,8 @@ def signaler_annonce(request, pk):
 
 
 # ── Admin stats dashboard ────────────────────────────────────────────────
-@login_required
+@staff_required
 def admin_stats(request):
-    if not request.user.is_staff:
-        from django.http import Http404
-        raise Http404
     from django.utils import timezone as tz
     import datetime as dt
     today  = tz.now()
@@ -993,11 +991,8 @@ def admin_stats(request):
 
 
 # ── Export CSV ───────────────────────────────────────────────────────────
-@login_required
+@staff_required
 def export_csv(request):
-    if not request.user.is_staff:
-        from django.http import Http404
-        raise Http404
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="tbg_annonces.csv"'
     response.write('\ufeff')  # BOM Excel UTF-8
@@ -1064,30 +1059,6 @@ def cgu(request):
 
 def custom_404(request, exception=None):
     return render(request, '404.html', status=404)
-
-
-# ── Sitemap dynamique ─────────────────────────────────────────────────────
-def sitemap_xml(request):
-    base = request.build_absolute_uri('/').rstrip('/')
-    annonces = Annonce.objects.filter(statut='actif').values('pk', 'updated_at').order_by('-updated_at')[:50000]
-    categories_sitemap = [
-        {'code': code, 'label': label}
-        for code, label in CATEGORIES
-    ]
-    static_pages = [
-        {'path': '/pubs/tarifs/', 'changefreq': 'monthly', 'priority': '0.6'},
-        {'path': '/info/', 'changefreq': 'weekly', 'priority': '0.7'},
-        {'path': '/business/', 'changefreq': 'weekly', 'priority': '0.7'},
-    ]
-    today = datetime.date.today().isoformat()
-    xml = render_to_string('sitemap.xml', {
-        'base': base,
-        'annonces': annonces,
-        'categories_sitemap': categories_sitemap,
-        'static_pages': static_pages,
-        'today': today,
-    }, request=request)
-    return HttpResponse(xml, content_type='application/xml')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1617,8 +1588,8 @@ def import_url(request):
                 if len(img_bytes) <= 5_000_000:
                     photo_data = base64.b64encode(img_bytes).decode('ascii')
                     photo_mime = content_type.split(';')[0]
-        except Exception:
-            pass  # Photo non importable, pas grave
+        except Exception as e:
+            logger.error("Erreur import photo depuis URL: %s", e)
 
     return JsonResponse({
         'success': True,

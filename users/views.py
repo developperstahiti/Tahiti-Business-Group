@@ -1,6 +1,8 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from ads.decorators import staff_required
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.mail import send_mail
@@ -14,6 +16,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import LoginForm, RegisterForm, ProfileForm
 from ads.models import Annonce, Message, Notation
 from ads.image_utils import save_webp
+
+logger = logging.getLogger(__name__)
 
 _LOGIN_MAX_ATTEMPTS = 5
 _LOGIN_LOCKOUT_SEC  = 15 * 60  # 15 minutes
@@ -148,8 +152,8 @@ def register_view(request):
                     html_message=html_msg,
                     fail_silently=True,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Erreur envoi email bienvenue: %s", e)
             return redirect('index')
 
     return render(request, 'users/register.html', {'form': form})
@@ -237,11 +241,8 @@ def upgrade_to_pro(request):
     return redirect('mon_compte')
 
 
-@login_required
+@staff_required
 def admin_dashboard(request):
-    if not request.user.is_staff:
-        messages.error(request, "Accès refusé.")
-        return redirect('index')
 
     from pubs.models import Publicite, DemandePublicite
     from .models import User
@@ -323,11 +324,9 @@ def supprimer_compte(request):
     return render(request, 'users/supprimer_compte.html')
 
 
-@login_required
+@staff_required
 def test_email(request):
     """Diagnostic : teste l'envoi email — admin only."""
-    if not request.user.is_staff:
-        raise Http404
     backend = django_settings.EMAIL_BACKEND
     host_user = getattr(django_settings, 'EMAIL_HOST_USER', '(vide)')
     info = {
@@ -391,10 +390,8 @@ def modifier_profil(request):
     return render(request, 'users/modifier_profil.html', {'profil': profil})
 
 
-@login_required
+@staff_required
 def moderer_annonce(request, pk):
-    if not request.user.is_staff:
-        return redirect('index')
     annonce = get_object_or_404(Annonce, pk=pk)
     action = request.POST.get('action')
     if action == 'approuver':

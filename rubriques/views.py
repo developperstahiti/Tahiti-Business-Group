@@ -1,9 +1,13 @@
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from ads.decorators import staff_required
 from django.contrib import messages
 from django.http import Http404, JsonResponse
 from ads.image_utils import save_webp
 from .models import ArticlePromo, ArticleInfo, ArticleNouveaute
+
+logger = logging.getLogger(__name__)
 
 TEMPLATE_DEPOSER = 'rubriques/deposer_article.html'
 
@@ -14,8 +18,8 @@ def _attach_photo(request, article, prefix):
         try:
             article.photo = save_webp(photo_file, 'rubriques', f'{prefix}_{article.pk}')
             article.save(update_fields=['photo'])
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error("Erreur sauvegarde photo rubrique: %s", e)
 
 
 def rubriques_index(request):
@@ -140,10 +144,8 @@ def nouveaute_detail(request, pk):
     })
 
 
-@login_required
+@staff_required
 def moderation_dashboard(request):
-    if not request.user.is_staff:
-        raise Http404
     promos_attente     = ArticlePromo.objects.filter(statut='en_attente').select_related('pro_user')
     infos_attente      = ArticleInfo.objects.filter(statut='en_attente').select_related('auteur')
     nouveautes_attente = ArticleNouveaute.objects.filter(statut='en_attente').select_related('pro_user')
@@ -158,11 +160,9 @@ def moderation_dashboard(request):
     })
 
 
-@login_required
+@staff_required
 def run_agents_view(request):
     """Lance les agents de scraping en arriere-plan — admin only."""
-    if not request.user.is_staff:
-        raise Http404
     import threading
     from .agents import run_all_agents
 
@@ -180,10 +180,8 @@ def run_agents_view(request):
     return redirect('rubriques_index')
 
 
-@login_required
+@staff_required
 def moderer_article(request, type_article, pk, action):
-    if not request.user.is_staff:
-        raise Http404
     MODEL_MAP = {'promo': ArticlePromo, 'info': ArticleInfo, 'nouveaute': ArticleNouveaute}
     Model = MODEL_MAP.get(type_article)
     if not Model or action not in ('valider', 'refuser'):

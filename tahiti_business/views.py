@@ -2,13 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
 from django_otp import devices_for_user
+from ads.decorators import staff_required
 
 
-@login_required
+@staff_required
 def otp_verify(request):
     """Page de vérification TOTP pour l'admin."""
-    if not request.user.is_staff:
-        return redirect('/')
 
     error = None
     if request.method == 'POST':

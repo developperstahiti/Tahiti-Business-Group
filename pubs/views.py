@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from ads.decorators import staff_required
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -22,22 +23,12 @@ from .payzen import (
 logger = logging.getLogger(__name__)
 
 
-def _staff_required(request):
-    """Retourne True si l'accès est autorisé, sinon redirige."""
-    if not request.user.is_authenticated or not request.user.is_staff:
-        messages.error(request, "Accès réservé aux administrateurs.")
-        return False
-    return True
-
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # Admin CRUD (inchangé)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@login_required
+@staff_required
 def pub_creer(request):
-    if not _staff_required(request):
-        return redirect('index')
     emplacement = request.GET.get('emplacement', '')
     initial = {'emplacement': emplacement} if emplacement else {}
     form = PubliciteForm(request.POST or None, request.FILES or None, initial=initial)
@@ -48,10 +39,8 @@ def pub_creer(request):
     return render(request, 'pubs/pub_form.html', {'form': form, 'action': 'Créer'})
 
 
-@login_required
+@staff_required
 def pub_modifier(request, pk):
-    if not _staff_required(request):
-        return redirect('index')
     pub = get_object_or_404(Publicite, pk=pk)
     form = PubliciteForm(request.POST or None, request.FILES or None, instance=pub)
     if request.method == 'POST' and form.is_valid():
@@ -61,10 +50,8 @@ def pub_modifier(request, pk):
     return render(request, 'pubs/pub_form.html', {'form': form, 'pub': pub, 'action': 'Modifier'})
 
 
-@login_required
+@staff_required
 def pub_supprimer(request, pk):
-    if not _staff_required(request):
-        return redirect('index')
     pub = get_object_or_404(Publicite, pk=pk)
     if request.method == 'POST':
         if pub.image:
@@ -92,10 +79,8 @@ def pub_supprimer(request, pk):
     return redirect('admin_dashboard')
 
 
-@login_required
+@staff_required
 def pub_toggle(request, pk):
-    if not _staff_required(request):
-        return redirect('index')
     pub = get_object_or_404(Publicite, pk=pk)
     if request.method == 'POST':
         pub.actif = not pub.actif
