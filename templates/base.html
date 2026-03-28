@@ -69,7 +69,7 @@
 {% endblock structured_data %}
 </head>
 <body class="bg-gray-50 text-gray-900">
-
+{% csrf_token %}
 <div id="layout-outer">
 
 <!-- ═══ BILLBOARD — affiché sur toutes les pages sauf formulaires ═══ -->
@@ -1016,12 +1016,22 @@ document.getElementById('contactCloseBtn').addEventListener('click', closeContac
   var queue = [];
   var timer = null;
 
+  /* Lire le CSRF token depuis le champ caché {% csrf_token %} dans base.html
+     (CSRF_COOKIE_HTTPONLY=True empêche la lecture du cookie en JS) */
+  function getCSRFToken() {
+    var el = document.querySelector('[name=csrfmiddlewaretoken]');
+    return el ? el.value : '';
+  }
+
   function flush() {
     if (!queue.length) return;
     var ids = queue.splice(0);
     fetch('/api/impressions/', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+      },
       body: JSON.stringify({ids: ids})
     }).catch(function(){});
   }

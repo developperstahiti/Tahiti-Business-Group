@@ -839,15 +839,16 @@ def mes_messages(request):
 
 
 # ── Impressions (vues au scroll) ──────────────────────────────────────────
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 
 
-@csrf_exempt
 @require_POST
 def track_impressions(request):
-    """Incremente les vues des annonces visibles a l'ecran (batch)."""
+    """Incremente les vues des annonces visibles a l'ecran (batch).
+
+    Appel AJAX depuis le navigateur — CSRF token requis dans le header X-CSRFToken.
+    """
     try:
         data = json.loads(request.body)
         ids = data.get('ids', [])
@@ -1190,6 +1191,9 @@ def boost_paiement(request, pk):
 from django.views.decorators.csrf import csrf_exempt as _csrf_exempt
 
 
+# @csrf_exempt requis : le SDK JS PayZen (Krypton) soumet ce formulaire
+# via kr-post-url-success depuis le domaine PayZen — pas de cookie CSRF.
+# Aucune action sensible ici (le boost est activé par l'IPN, pas par ce callback).
 @_csrf_exempt
 def boost_paiement_valide_js(request, pk):
     """Callback JS après paiement réussi côté client."""
@@ -1198,6 +1202,8 @@ def boost_paiement_valide_js(request, pk):
     return JsonResponse({'redirect': f'/annonces/{pk}/'})
 
 
+# @csrf_exempt requis : webhook PayZen (IPN) — appel serveur-à-serveur.
+# Signatures HMAC-SHA-256 vérifiées ci-dessous (REST V4 et Formulaire V2).
 @_csrf_exempt
 def boost_ipn(request):
     """IPN PayZen pour le boost — gère API REST V4 et API Formulaire V2."""
@@ -1262,6 +1268,9 @@ def boost_ipn(request):
     return HttpResponse('OK', status=200)
 
 
+# @csrf_exempt requis : PayZen redirige le navigateur de l'acheteur via POST
+# depuis son propre domaine (secure.osb.pf) — aucun cookie CSRF disponible.
+# Cette vue ne fait qu'afficher un message et rediriger, aucune action sensible.
 @_csrf_exempt
 def boost_retour_succes(request):
     """Page de retour après paiement boost réussi (GET ou POST V2)."""
@@ -1284,6 +1293,9 @@ def boost_retour_succes(request):
     return redirect('mes_annonces')
 
 
+# @csrf_exempt requis : PayZen redirige le navigateur de l'acheteur via POST
+# depuis son propre domaine (secure.osb.pf) — aucun cookie CSRF disponible.
+# Cette vue ne fait qu'afficher un message et rediriger, aucune action sensible.
 @_csrf_exempt
 def boost_retour_echec(request):
     """Page de retour après paiement boost échoué (GET ou POST V2)."""

@@ -224,6 +224,9 @@ def initier_paiement(request, pk):
     })
 
 
+# @csrf_exempt requis : PayZen redirige le navigateur de l'acheteur via POST
+# depuis son propre domaine (secure.osb.pf) — aucun cookie CSRF disponible.
+# Cette vue ne fait qu'afficher un résultat, aucune action sensible.
 @csrf_exempt
 def retour_paiement(request):
     """Page de retour après paiement (navigateur de l'acheteur).
@@ -265,6 +268,8 @@ def retour_paiement(request):
     })
 
 
+# @csrf_exempt requis : webhook PayZen (IPN) — appel serveur-à-serveur,
+# pas de navigateur ni de cookie CSRF. Signature HMAC-SHA-256 vérifiée ci-dessous.
 @csrf_exempt
 def ipn_paiement(request):
     """IPN (Instant Payment Notification) — appel serveur-à-serveur de PayZen.
@@ -305,6 +310,8 @@ def ipn_paiement(request):
     return HttpResponse('OK', status=200)
 
 
+# @csrf_exempt requis : webhook PayZen (IPN REST V4) — appel serveur-à-serveur.
+# Signature HMAC-SHA-256 vérifiée via verify_rest_signature() ci-dessous.
 @csrf_exempt
 def ipn_paiement_rest(request):
     """IPN pour le formulaire embarqué (API REST V4).
@@ -354,6 +361,9 @@ def ipn_paiement_rest(request):
     return HttpResponse('OK', status=200)
 
 
+# @csrf_exempt requis : le SDK JS PayZen (Krypton) soumet ce formulaire
+# via kr-post-url-success depuis le domaine PayZen — pas de cookie CSRF.
+# Signature HMAC-SHA-256 vérifiée via verify_rest_signature() ci-dessous.
 @csrf_exempt
 def paiement_valide_js(request, pk):
     """Endpoint appelé par le SDK PayZen après paiement (kr-post-url-success).
