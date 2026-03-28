@@ -11,8 +11,9 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ STATIC_VERSION }}">
   {% block extra_css %}{% endblock %}
   {% block extra_head %}{% endblock %}
-  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/icon-192x192.png' %}">
-  <link rel="icon" type="image/png" sizes="96x96" href="{% static 'img/icon-96x96.png' %}">
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon-180.png' %}">
   <link rel="apple-touch-icon" sizes="192x192" href="{% static 'img/icon-192x192.png' %}">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1D9E75">
