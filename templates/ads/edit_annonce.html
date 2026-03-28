@@ -172,6 +172,17 @@
               </div>
             </div>
 
+            <!-- Type de transaction (immobilier uniquement) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="transaction-row" style="{% if annonce.categorie != 'immobilier' %}display:none{% endif %}">
+              <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Type de transaction *</label>
+                <select name="type_transaction" id="id_type_transaction" class="form-input">
+                  <option value="vente" {% if annonce.type_transaction == 'vente' %}selected{% endif %}>Vente</option>
+                  <option value="location" {% if annonce.type_transaction == 'location' %}selected{% endif %}>Location</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Prix -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="prix-row">
               <div>
@@ -381,10 +392,12 @@ document.getElementById('id_categorie').addEventListener('change', function () {
   updateSousCats(this.value, '');
 });
 
-// ── Toggle prix (caché pour emploi) ──────────────────────────
+// ── Toggle prix (caché pour emploi) + transaction (immobilier only) ──
 function togglePrix(cat) {
   const row = document.getElementById('prix-row');
   if (row) row.style.display = cat === 'emploi' ? 'none' : '';
+  const txRow = document.getElementById('transaction-row');
+  if (txRow) txRow.style.display = cat === 'immobilier' ? '' : 'none';
 }
 const catElEdit = document.getElementById('id_categorie');
 togglePrix(catElEdit.value);
