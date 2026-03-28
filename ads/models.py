@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator
 
 CATEGORIES = [
     ('vehicules',    'Véhicules'),
@@ -87,7 +88,7 @@ class Annonce(models.Model):
     )
     titre          = models.CharField(max_length=200)
     description    = models.TextField()
-    prix           = models.IntegerField(default=0)
+    prix           = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     prix_label     = models.CharField(max_length=50, blank=True, help_text="Ex: 15 000 XPF, Prix sur demande, À débattre")
     prix_unite     = models.CharField(max_length=20, choices=PRIX_UNITE_CHOICES, default='', blank=True)
     categorie      = models.CharField(max_length=50, choices=CATEGORIES)
@@ -144,8 +145,8 @@ class Annonce(models.Model):
     def get_main_photo(self):
         return self.photos[0] if self.photos else None
 
-    def increment_views(self):
-        """Ancienne methode — maintenant incremente les clics."""
+    def increment_clics(self):
+        """Incrémente le compteur de clics."""
         self.clics += 1
         self.save(update_fields=['clics'])
 

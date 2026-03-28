@@ -4,8 +4,14 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.static import serve
 from django.http import HttpResponse, FileResponse
-from ads.views import sitemap_xml
+from django.contrib.sitemaps.views import sitemap
+from ads.sitemaps import StaticSitemap, AnnonceSitemap
 from two_factor.urls import urlpatterns as tf_urls
+
+sitemaps = {
+    'static': StaticSitemap,
+    'annonces': AnnonceSitemap,
+}
 
 admin.site.site_header = 'TBG Gestion'
 admin.site.site_title = 'TBG Gestion'
@@ -15,25 +21,25 @@ handler404 = 'ads.views.custom_404'
 
 
 def robots_txt(request):
-    base = request.build_absolute_uri('/')
-    content = (
-        "User-agent: *\n"
-        "Allow: /\n"
-        "Disallow: /3319cdb9fc7eb59/\n"
-        "Disallow: /admin-stats/\n"
-        "Disallow: /deposer/\n"
-        "Disallow: /mes-annonces/\n"
-        "Disallow: /mes-messages/\n"
-        "Disallow: /mes-favoris/\n"
-        "Disallow: /mon-compte/\n"
-        "Disallow: /users/\n"
-        "Disallow: /signaler/\n"
-        "Disallow: /pubs/deposer/\n"
-        "Disallow: /rubriques/moderation/\n"
-        "Disallow: /account/\n"
-        f"Sitemap: {base}sitemap.xml\n"
-    )
-    return HttpResponse(content, content_type='text/plain')
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /3319cdb9fc7eb59/",
+        "Disallow: /admin-stats/",
+        "Disallow: /deposer/",
+        "Disallow: /mes-annonces/",
+        "Disallow: /mes-messages/",
+        "Disallow: /mes-favoris/",
+        "Disallow: /mon-compte/",
+        "Disallow: /users/",
+        "Disallow: /signaler/",
+        "Disallow: /pubs/deposer/",
+        "Disallow: /rubriques/moderation/",
+        "Disallow: /account/",
+        "",
+        "Sitemap: https://www.tahitibusinessgroup.com/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
 urlpatterns = [
@@ -45,8 +51,8 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('pubs/', include('pubs.urls')),
     path('rubriques/', include('rubriques.urls')),
-    path('robots.txt', robots_txt),
-    path('sitemap.xml', sitemap_xml),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('sw.js', lambda r: FileResponse(
         open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'sw.js'), 'rb'),
         content_type='application/javascript',

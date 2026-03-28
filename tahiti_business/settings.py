@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'users',
     'pubs',
     'rubriques',
+    'django.contrib.sitemaps',
 ]
 
 MIDDLEWARE = [
@@ -200,3 +201,32 @@ PAYZEN_PUBLIC_KEY_PROD = os.environ.get('PAYZEN_PUBLIC_KEY_PROD', _payzen_pub_ke
 _payzen_hmac = os.environ.get('PAYZEN_HMAC_KEY', '')
 PAYZEN_HMAC_KEY_TEST = os.environ.get('PAYZEN_HMAC_KEY_TEST', _payzen_hmac)
 PAYZEN_HMAC_KEY_PROD = os.environ.get('PAYZEN_HMAC_KEY_PROD', _payzen_hmac)
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
