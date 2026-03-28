@@ -6,6 +6,8 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.core import signing
 from django.conf import settings as django_settings
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import Http404, JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import LoginForm, RegisterForm, ProfileForm
@@ -19,6 +21,23 @@ _LOGIN_LOCKOUT_SEC  = 15 * 60  # 15 minutes
 def _client_ip(request):
     xff = request.META.get('HTTP_X_FORWARDED_FOR')
     return xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '0.0.0.0')
+
+
+_url_validator = URLValidator(schemes=['http', 'https'])
+
+def _clean_url(raw):
+    """Valide et nettoie une URL de profil. Retourne '' si invalide."""
+    raw = raw.strip()
+    if not raw:
+        return ''
+    # Ajouter https:// si pas de scheme
+    if not raw.startswith(('http://', 'https://')):
+        raw = 'https://' + raw
+    try:
+        _url_validator(raw)
+    except DjangoValidationError:
+        return ''
+    return raw
 
 
 def login_view(request):
@@ -334,9 +353,9 @@ def modifier_profil(request):
         profil.bio = request.POST.get('bio', '')[:500]
         profil.localisation = request.POST.get('localisation', '')[:100]
         profil.whatsapp = request.POST.get('whatsapp', '')[:20]
-        profil.facebook_url = request.POST.get('facebook_url', '')
-        profil.instagram_url = request.POST.get('instagram_url', '')
-        profil.site_web = request.POST.get('site_web', '')
+        profil.facebook_url = _clean_url(request.POST.get('facebook_url', ''))
+        profil.instagram_url = _clean_url(request.POST.get('instagram_url', ''))
+        profil.site_web = _clean_url(request.POST.get('site_web', ''))
 
         # Photo de profil (max 2 Mo) → S3 persistant
         if 'photo_profil' in request.FILES:
