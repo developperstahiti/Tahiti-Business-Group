@@ -772,15 +772,13 @@ def contact_annonce(request, pk):
         )
         # Email notification au vendeur
         try:
-            from django.template.loader import render_to_string
-            from django.utils.html import strip_tags
-
             html_msg = render_to_string('emails/nouveau_message.html', {
                 'vendeur_nom': annonce.user.nom or 'vendeur',
                 'annonce_titre': annonce.titre,
                 'acheteur_nom': msg.from_user.nom or msg.from_user.email,
                 'message_preview': msg.content[:60] + ('...' if len(msg.content) > 60 else ''),
             })
+            from django.utils.html import strip_tags
             send_mail(
                 subject=f'Nouveau message pour votre annonce "{annonce.titre}" — TBG',
                 message=strip_tags(html_msg),
