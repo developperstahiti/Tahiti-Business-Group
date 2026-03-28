@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -11,7 +12,7 @@ import models
 from database import get_db
 
 # ---- Config ----
-SECRET_KEY = "tahiti-business-2026-super-secret"
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'changeme-in-production')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 heures
 
