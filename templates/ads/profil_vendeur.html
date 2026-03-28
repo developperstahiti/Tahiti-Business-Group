@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}{{ vendeur.nom|default:vendeur.email }} — Profil vendeur{% endblock %}
-{% block meta_desc %}Profil de {{ vendeur.nom|default:vendeur.email }} sur Tahiti Business Group. Consultez ses annonces et avis.{% endblock %}
+{% block title %}Annonces de {{ vendeur.nom|default:vendeur.email }} — TBG{% endblock %}
+{% block meta_desc %}Consultez les annonces de {{ vendeur.nom|default:vendeur.email }} sur Tahiti Business Group. Profil, avis et coordonnées.{% endblock %}
+
+{% block og_title %}{{ vendeur.nom|default:vendeur.email }} — Profil vendeur TBG{% endblock %}
+{% block og_desc %}Consultez les annonces de {{ vendeur.nom|default:vendeur.email }} sur Tahiti Business Group. Profil, avis et coordonnées.{% endblock %}
+{% block og_image %}{% if vendeur.photo_profil %}{{ vendeur.photo_profil.url }}{% else %}https://www.tahitibusinessgroup.com{% static 'img/og-image.webp' %}{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style nonce="{{ csp_nonce }}">

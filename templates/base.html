@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   {% block robots %}{% endblock %}
-  <title>{% block title %}Tahiti Business Group{% endblock %} — Annonces Polynésie</title>
-  <meta name="description" content="{% block meta_desc %}Annonces gratuites en Polynésie française. Achetez et vendez véhicules, immobilier, électronique, emploi.{% endblock %}">
+  <title>{% block title %}Tahiti Business Group — Annonces gratuites en Polynésie française{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}TBG — Annonces gratuites #1 en Polynésie française. Immobilier, véhicules, emploi, services à Tahiti, Moorea, Bora-Bora et dans tout le fenua.{% endblock %}">
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/tailwind.css' %}?v={{ STATIC_VERSION }}">
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ STATIC_VERSION }}">
@@ -20,13 +20,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="TBG">
   <!-- Open Graph -->
-  <meta property="og:type"        content="website">
-  <meta property="og:locale"      content="fr_PF">
   <meta property="og:site_name"   content="Tahiti Business Group">
-  <meta property="og:title"       content="{% block og_title %}Tahiti Business Group — Annonces Polynésie{% endblock %}">
-  <meta property="og:description" content="{% block og_desc %}Annonces gratuites en Polynésie française. Véhicules, immobilier, électronique, emploi.{% endblock %}">
+  <meta property="og:locale"      content="fr_FR">
+  <meta property="og:type"        content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title"       content="{% block og_title %}Tahiti Business Group — Annonces gratuites en Polynésie française{% endblock %}">
+  <meta property="og:description" content="{% block og_desc %}Annonces gratuites en Polynésie française. Immobilier, véhicules, emploi, services.{% endblock %}">
+  <meta property="og:image"       content="{% block og_image %}https://www.tahitibusinessgroup.com{% static 'img/og-image.webp' %}{% endblock %}">
+  <meta property="og:url"         content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
   <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
-  <meta property="og:image"       content="{% block og_image %}{% static 'img/og-image.webp' %}{% endblock %}">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="alternate" hreflang="fr-PF" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
 {% block structured_data %}

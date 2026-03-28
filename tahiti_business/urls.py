@@ -6,11 +6,12 @@ from django.views.static import serve
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
 from django.contrib.sitemaps.views import sitemap
-from ads.sitemaps import StaticSitemap, AnnonceSitemap
+from ads.sitemaps import StaticSitemap, CategorieSitemap, AnnonceSitemap
 from two_factor.urls import urlpatterns as tf_urls
 
 sitemaps = {
     'static': StaticSitemap,
+    'categories': CategorieSitemap,
     'annonces': AnnonceSitemap,
 }
 
@@ -25,18 +26,40 @@ def robots_txt(request):
     lines = [
         "User-agent: *",
         "Allow: /",
+        "",
+        "# Admin & back-office",
         "Disallow: /3319cdb9fc7eb59/",
+        "Disallow: /admin/",
         "Disallow: /admin-stats/",
-        "Disallow: /deposer/",
+        "Disallow: /rubriques/moderation/",
+        "",
+        "# Espace utilisateur prive",
+        "Disallow: /users/",
+        "Disallow: /account/",
+        "Disallow: /mon-compte/",
         "Disallow: /mes-annonces/",
         "Disallow: /mes-messages/",
         "Disallow: /mes-favoris/",
-        "Disallow: /mon-compte/",
-        "Disallow: /users/",
-        "Disallow: /signaler/",
+        "Disallow: /mes-alertes/",
+        "",
+        "# Depot & actions privees",
+        "Disallow: /deposer/",
         "Disallow: /pubs/deposer/",
-        "Disallow: /rubriques/moderation/",
-        "Disallow: /account/",
+        "Disallow: /pubs/demande/",
+        "Disallow: /pubs/paiement/",
+        "Disallow: /rubriques/promo/deposer/",
+        "Disallow: /rubriques/info/deposer/",
+        "Disallow: /rubriques/nouveaute/deposer/",
+        "Disallow: /annonces/import-url/",
+        "Disallow: /annonces/toggle-enregistrement/",
+        "Disallow: /boost/",
+        "",
+        "# Signalement",
+        "Disallow: /signaler/",
+        "",
+        "# API internes",
+        "Disallow: /api/",
+        "Disallow: /rubriques/run-agents/",
         "",
         "Sitemap: https://www.tahitibusinessgroup.com/sitemap.xml",
     ]
