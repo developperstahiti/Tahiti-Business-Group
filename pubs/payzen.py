@@ -75,10 +75,11 @@ def compute_signature(form_data, key=None):
     return base64.b64encode(signature).decode('utf-8')
 
 
-def build_payzen_form(publicite, request):
+def build_payzen_form(publicite, request, return_path='/pubs/paiement/retour/', ipn_path='/pubs/paiement/ipn/'):
     """Construit le dict complet des champs pour le formulaire PayZen (redirection).
 
     Retourne (form_data, payment_url).
+    return_path / ipn_path : chemins personnalisables (pour boost, etc.).
     """
     now = datetime.now(timezone.utc)
     trans_id = uuid.uuid4().hex[:6]
@@ -97,15 +98,15 @@ def build_payzen_form(publicite, request):
         'vads_order_id':       publicite.payment_ref,
         'vads_cust_email':     publicite.client_email,
         'vads_cust_name':      publicite.client_nom,
-        'vads_cust_cell_phone': publicite.client_tel,
-        'vads_order_info':     f"Pub {publicite.get_emplacement_display()} — {publicite.duree_semaines} sem.",
+        'vads_cust_cell_phone': getattr(publicite, 'client_tel', '') or '',
+        'vads_order_info':     f"{publicite.get_emplacement_display()} — {publicite.duree_semaines} sem.",
         'vads_return_mode':    'POST',
         'vads_hash_type':      'HMAC_SHA_256',
     }
 
     base = request.build_absolute_uri('/')[:-1]
-    form_data['vads_url_return'] = f"{base}/pubs/paiement/retour/"
-    form_data['vads_url_check']  = f"{base}/pubs/paiement/ipn/"
+    form_data['vads_url_return'] = f"{base}{return_path}"
+    form_data['vads_url_check']  = f"{base}{ipn_path}"
 
     form_data['signature'] = compute_signature(form_data)
 
@@ -128,50 +129,11 @@ def verify_signature(post_data):
 REST_API_URL = 'https://secure.osb.pf/api-payment/V4/Charge/CreatePayment'
 
 
-def create_generic_form_token(amount_xpf, order_id, customer_email, customer_name, ipn_url, request):
-    """Crée un formToken PayZen générique (boost, pub, etc.).
-
-    Retourne (form_token, public_key).
-    """
-    password = _get_rest_password()
-    shop_id = settings.PAYZEN_SHOP_ID
-    credentials = base64.b64encode(f"{shop_id}:{password}".encode()).decode()
-
-    payload = {
-        'amount': amount_xpf,
-        'currency': 'XPF',
-        'orderId': order_id,
-        'customer': {
-            'email': customer_email,
-            'billingDetails': {'firstName': customer_name},
-        },
-        'ipnTargetUrl': ipn_url,
-    }
-
-    body = json.dumps(payload).encode('utf-8')
-    req = Request(REST_API_URL, data=body, method='POST')
-    req.add_header('Content-Type', 'application/json')
-    req.add_header('Authorization', f'Basic {credentials}')
-
-    try:
-        with urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode('utf-8'))
-    except URLError as e:
-        logger.error("PayZen REST API error: %s", e)
-        raise RuntimeError(f"Erreur de connexion PayZen : {e}")
-
-    if data.get('status') != 'SUCCESS':
-        error_msg = data.get('answer', {}).get('errorMessage', str(data))
-        logger.error("PayZen CreatePayment failed: %s", error_msg)
-        raise RuntimeError(f"Erreur PayZen : {error_msg}")
-
-    return data['answer']['formToken'], _get_public_key()
-
-
-def create_embedded_form_token(publicite, request):
+def create_embedded_form_token(publicite, request, ipn_path='/pubs/paiement/ipn/rest/'):
     """Appelle l'API REST PayZen pour créer un formToken (formulaire embarqué).
 
     Retourne (form_token, public_key) ou lève une exception en cas d'erreur.
+    ipn_path : chemin IPN (défaut pubs, peut être changé pour boost).
     """
     password = _get_rest_password()
     shop_id = settings.PAYZEN_SHOP_ID
@@ -181,18 +143,19 @@ def create_embedded_form_token(publicite, request):
 
     base_url = request.build_absolute_uri('/')[:-1]
 
+    billing = {'firstName': publicite.client_nom}
+    if getattr(publicite, 'client_tel', ''):
+        billing['cellPhoneNumber'] = publicite.client_tel
+
     payload = {
         'amount': publicite.prix,
         'currency': 'XPF',
         'orderId': publicite.payment_ref,
         'customer': {
             'email': publicite.client_email,
-            'billingDetails': {
-                'firstName': publicite.client_nom,
-                'cellPhoneNumber': publicite.client_tel,
-            },
+            'billingDetails': billing,
         },
-        'ipnTargetUrl': f"{base_url}/pubs/paiement/ipn/rest/",
+        'ipnTargetUrl': f"{base_url}{ipn_path}",
     }
 
     body = json.dumps(payload).encode('utf-8')
@@ -217,42 +180,6 @@ def create_embedded_form_token(publicite, request):
     public_key = _get_public_key()
 
     return form_token, public_key
-
-
-def build_generic_payzen_form(amount_xpf, order_id, customer_email, customer_name, request):
-    """Construit un formulaire PayZen V2 (redirection) générique.
-
-    Retourne (form_data, payment_url).
-    """
-    now = datetime.now(timezone.utc)
-    trans_id = uuid.uuid4().hex[:6]
-
-    base = request.build_absolute_uri('/')[:-1]
-
-    form_data = {
-        'vads_site_id':        settings.PAYZEN_SHOP_ID,
-        'vads_ctx_mode':       settings.PAYZEN_MODE,
-        'vads_trans_date':     now.strftime('%Y%m%d%H%M%S'),
-        'vads_trans_id':       trans_id,
-        'vads_amount':         str(amount_xpf),
-        'vads_currency':       '953',
-        'vads_action_mode':    'INTERACTIVE',
-        'vads_page_action':    'PAYMENT',
-        'vads_payment_config': 'SINGLE',
-        'vads_version':        'V2',
-        'vads_order_id':       order_id,
-        'vads_cust_email':     customer_email,
-        'vads_cust_name':      customer_name,
-        'vads_order_info':     f"Boost annonce — {order_id}",
-        'vads_return_mode':    'POST',
-        'vads_hash_type':      'HMAC_SHA_256',
-        'vads_url_return':     f"{base}/boost/paiement/succes/",
-        'vads_url_check':      f"{base}/boost/paiement/ipn/",
-    }
-
-    form_data['signature'] = compute_signature(form_data)
-
-    return form_data, settings.PAYZEN_PAYMENT_URL
 
 
 def verify_rest_signature(kr_answer, kr_hash):

@@ -1113,7 +1113,11 @@ def boost_from_edit(request, pk):
 
 @login_required
 def boost_paiement(request, pk):
-    """Affiche le formulaire de paiement embarqué pour le boost."""
+    """Affiche le formulaire de paiement embarqué pour le boost.
+
+    Utilise exactement le même chemin de code que les pubs (create_embedded_form_token)
+    via un objet adaptateur, pour garantir la compatibilité PayZen.
+    """
     annonce = get_object_or_404(Annonce, pk=pk, user=request.user, boost_status='pending')
 
     if request.session.get('boost_pending_pk') != annonce.pk:
@@ -1123,30 +1127,42 @@ def boost_paiement(request, pk):
     prix = BOOST_PRIX.get(annonce.boost_duree, 500)
     duree_label = '7 jours' if annonce.boost_duree == '7jours' else '1 mois'
 
-    from pubs.payzen import create_generic_form_token, build_generic_payzen_form
+    from pubs.payzen import create_embedded_form_token, build_payzen_form
 
-    base_url = request.build_absolute_uri('/')[:-1]
-    ipn_url = f"{base_url}/boost/paiement/ipn/"
+    # Adaptateur : même interface que Publicite pour réutiliser create_embedded_form_token
+    class _BoostAsPublicite:
+        def __init__(self):
+            self.prix = prix
+            self.payment_ref = annonce.boost_payment_ref
+            self.client_email = request.user.email
+            self.client_nom = request.user.nom or request.user.email
+            self.client_tel = ''
+
+        def get_emplacement_display(self):
+            return f"Boost {duree_label}"
+
+        @property
+        def duree_semaines(self):
+            return 1 if annonce.boost_duree == '7jours' else 4
+
+    boost_pub = _BoostAsPublicite()
 
     try:
-        form_token, public_key = create_generic_form_token(
-            amount_xpf=prix,
-            order_id=annonce.boost_payment_ref,
-            customer_email=request.user.email,
-            customer_name=request.user.nom or request.user.email,
-            ipn_url=ipn_url,
-            request=request,
-        )
+        form_token, public_key = create_embedded_form_token(boost_pub, request, ipn_path='/boost/paiement/ipn/')
     except RuntimeError:
         # Fallback : redirection classique V2 si l'API REST échoue
         logger.exception("Boost: REST API failed, falling back to redirect form")
-        form_data, payment_url = build_generic_payzen_form(
-            amount_xpf=prix,
-            order_id=annonce.boost_payment_ref,
-            customer_email=request.user.email,
-            customer_name=request.user.nom or request.user.email,
-            request=request,
-        )
+        try:
+            form_data, payment_url = build_payzen_form(
+                boost_pub, request,
+                return_path='/boost/paiement/succes/',
+                ipn_path='/boost/paiement/ipn/',
+            )
+        except Exception:
+            logger.exception("Boost: V2 fallback also failed")
+            messages.error(request, "Erreur lors de la connexion au service de paiement. Veuillez réessayer.")
+            return redirect('annonce_detail', pk=pk)
+
         return render(request, 'ads/boost_payzen_redirect.html', {
             'annonce': annonce,
             'prix': prix,
