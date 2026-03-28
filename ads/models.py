@@ -98,7 +98,7 @@ class Annonce(models.Model):
         choices=[('non_applicable', 'Non applicable'), ('vente', 'Vente'), ('location', 'Location')],
         default='non_applicable',
     )
-    localisation   = models.CharField(max_length=100, default='Papeete')  # ancien champ — compatibilite
+    localisation   = models.CharField(max_length=100, default='', blank=True)  # ancien champ — compatibilite
     commune        = models.CharField(max_length=100, blank=True, default='')
     quartier       = models.CharField(max_length=100, blank=True, default='')
     precision_lieu = models.CharField(max_length=150, blank=True, default='')
@@ -125,6 +125,12 @@ class Annonce(models.Model):
         verbose_name = 'Annonce'
         verbose_name_plural = 'Annonces'
         ordering = ['-boost', '-created_at']
+        indexes = [
+            models.Index(fields=['statut'], name='idx_annonce_statut'),
+            models.Index(fields=['categorie'], name='idx_annonce_categorie'),
+            models.Index(fields=['statut', 'categorie'], name='idx_annonce_stat_cat'),
+            models.Index(fields=['-created_at'], name='idx_annonce_created'),
+        ]
 
     def __str__(self):
         return self.titre
@@ -171,6 +177,9 @@ class Message(models.Model):
         verbose_name = 'Message'
         verbose_name_plural = 'Messages'
         ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['to_user', 'read', 'created_at'], name='idx_msg_unread'),
+        ]
 
     def __str__(self):
         return f"Message {self.from_user} → {self.to_user} ({self.annonce.titre})"
