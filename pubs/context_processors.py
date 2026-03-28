@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from django.db.models import Count, Sum, Q
 
 from .models import Publicite
 from ads.models import SOUS_CATEGORIES
@@ -61,15 +62,20 @@ def admin_stats(request):
             + ArticleInfo.objects.filter(statut='en_attente').count()
             + ArticleNouveaute.objects.filter(statut='en_attente').count()
         )
+        annonce_agg = Annonce.objects.aggregate(
+            actives=Count('pk', filter=Q(statut='actif')),
+            moderees=Count('pk', filter=Q(statut='modere')),
+            vues_totales=Sum('views'),
+        )
         result = {"tbg_stats": {
-            "annonces_actives":   Annonce.objects.filter(statut='actif').count(),
-            "annonces_moderees":  Annonce.objects.filter(statut='modere').count(),
+            "annonces_actives":   annonce_agg['actives'],
+            "annonces_moderees":  annonce_agg['moderees'],
             "users_total":        User.objects.count(),
             "users_new_7j":       User.objects.filter(date_joined__gte=sept_jours).count(),
             "messages_total":     Message.objects.count(),
             "rubriques_attente":  rubriques_attente,
             "pubs_actives":       Publicite.objects.filter(actif=True).count(),
-            "vues_totales":       sum(Annonce.objects.values_list('views', flat=True)),
+            "vues_totales":       annonce_agg['vues_totales'] or 0,
             "dernières_annonces": Annonce.objects.order_by('-created_at').select_related('user')[:5],
             "signalements":       Signalement.objects.order_by('-created_at').select_related('annonce')[:5],
         }}

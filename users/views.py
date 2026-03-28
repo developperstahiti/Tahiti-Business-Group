@@ -8,6 +8,7 @@ from django.core import signing
 from django.conf import settings as django_settings
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Count, Sum, Q
 from django.http import Http404, JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import LoginForm, RegisterForm, ProfileForm
@@ -196,11 +197,17 @@ def mon_compte(request):
         annonce__user=request.user
     ).select_related('annonce').order_by('-created_at')[:10]
 
+    stats_agg = annonces.aggregate(
+        total=Count('pk'),
+        actives=Count('pk', filter=Q(statut='actif')),
+        vendues=Count('pk', filter=Q(statut='vendu')),
+        vues=Sum('views'),
+    )
     stats = {
-        'total': annonces.count(),
-        'actives': annonces.filter(statut='actif').count(),
-        'vendues': annonces.filter(statut='vendu').count(),
-        'vues': sum(a.views for a in annonces),
+        'total': stats_agg['total'],
+        'actives': stats_agg['actives'],
+        'vendues': stats_agg['vendues'],
+        'vues': stats_agg['vues'] or 0,
         'messages': messages_recus.count(),
     }
 
