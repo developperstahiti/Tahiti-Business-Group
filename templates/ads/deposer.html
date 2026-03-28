@@ -857,11 +857,57 @@ var _photoFiles = [];
         if (data.photo_data && data.photo_mime) {
           importPhotoBase64(data.photo_data, data.photo_mime);
         }
+
+        // ── Auto-remplissage intelligent (immobilier, prix, localisation) ──
+        if (data.categorie) {
+          var catCard = document.querySelector('.dep-cat-card[data-cat="' + data.categorie + '"]');
+          if (catCard) catCard.click();
+        }
+        if (data.type_transaction) {
+          // Attendre que le DOM se mette a jour apres le click categorie
+          setTimeout(function() {
+            var txBtn = document.querySelector('#rg-transaction .dep-radio-btn[data-val="' + data.type_transaction + '"]');
+            if (txBtn) txBtn.click();
+
+            // Remplir le prix apres que les champs immobilier soient rendus
+            if (data.prix) {
+              setTimeout(function() {
+                var prixInput = document.querySelector('input[name="prix"]');
+                if (prixInput) {
+                  prixInput.value = data.prix;
+                  prixInput.dispatchEvent(new Event('input', {bubbles: true}));
+                }
+              }, 100);
+            }
+          }, 100);
+        } else if (data.prix) {
+          // Prix sans categorie immobilier (vehicules, occasion, etc.)
+          setTimeout(function() {
+            var prixInput = document.querySelector('input[name="prix"]');
+            if (prixInput) {
+              prixInput.value = data.prix;
+              prixInput.dispatchEvent(new Event('input', {bubbles: true}));
+            }
+          }, 200);
+        }
+        if (data.localisation) {
+          var locInput = document.getElementById('h-localisation');
+          if (locInput) locInput.value = data.localisation;
+          var communeInput = document.querySelector('input[name="commune"]');
+          if (communeInput) communeInput.value = data.localisation;
+        }
+
         var srcLabel = data.source === 'papf' ? 'PA.PF' :
                        data.source === 'leboncoin' ? 'Leboncoin' :
                        data.source === 'marketplace' ? 'Marketplace' :
                        data.source;
-        showImportMsg('success', 'Annonce importee depuis ' + srcLabel + ' — verifiez et completez les informations avant de publier.');
+        var hints = [];
+        if (data.categorie) hints.push('categorie');
+        if (data.type_transaction) hints.push(data.type_transaction === 'location' ? 'location' : 'vente');
+        if (data.prix) hints.push('prix');
+        if (data.localisation) hints.push(data.localisation);
+        var extra = hints.length ? ' (detecte : ' + hints.join(', ') + ')' : '';
+        showImportMsg('success', 'Annonce importee depuis ' + srcLabel + extra + ' — verifiez et completez les informations.');
       } else {
         showImportMsg('error', data.error || "Impossible d'importer ce lien. Remplissez le formulaire manuellement.");
       }

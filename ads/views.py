@@ -1437,6 +1437,84 @@ def _is_private_ip(hostname):
         return True  # En cas de doute, bloquer
 
 
+_COMMUNES_PF = [
+    'Papeete', 'Faaa', 'Punaauia', 'Pirae', 'Arue', 'Mahina', 'Paea',
+    'Papara', 'Taravao', 'Teva I Uta', 'Mataiea', 'Moorea', 'Afareaitu',
+    'Haapiti', 'Papetoai', 'Paopao', 'Bora Bora', 'Raiatea', 'Uturoa',
+    'Tahaa', 'Huahine', 'Fare', 'Rangiroa', 'Tikehau', 'Fakarava',
+    'Hiva Oa', 'Nuku Hiva', 'Taiohae', 'Mangareva', 'Rurutu',
+    'Tubuai', 'Raivavae', 'Hitia\'a', 'Faa\'a', 'Taiarapu',
+]
+
+
+def _extract_annonce_hints(titre, description):
+    """Analyse titre + description pour deviner catégorie, transaction, prix, localisation."""
+    result = {}
+    text = f"{titre} {description}".lower()
+
+    # ── Type de transaction ────────────────────────────────────────────
+    location_kw = ['location', 'à louer', 'a louer', 'louer', 'loue', 'bail',
+                   'mensuel', '/mois', 'par mois', 'charges comprises']
+    vente_kw = ['vente', 'à vendre', 'a vendre', 'vends', 'vend', 'cession']
+
+    loc_score = sum(1 for kw in location_kw if kw in text)
+    vente_score = sum(1 for kw in vente_kw if kw in text)
+
+    if loc_score > vente_score:
+        result['type_transaction'] = 'location'
+    elif vente_score > 0:
+        result['type_transaction'] = 'vente'
+
+    # ── Prix ───────────────────────────────────────────────────────────
+    import re
+    full_text = f"{titre} {description}"
+
+    # Patterns : "25 000 000 XPF", "25000000 F", "25 MF", "25 millions"
+    prix_patterns = [
+        # "25 000 000 XPF" ou "25 000 000 F" ou "25.000.000 F"
+        r'(\d[\d\s\.\,]{2,12}\d)\s*(?:XPF|FCFP|F\b|francs?)',
+        # "25MF" ou "25 MF" ou "2.5MF"
+        r'([\d]+(?:[.,]\d+)?)\s*(?:MF|millions?\s*(?:de\s*)?(?:XPF|F|francs?))',
+        # "Prix : 25 000 000" (mot prix suivi d'un nombre)
+        r'(?:prix|loyer|tarif)\s*[:=]?\s*(\d[\d\s\.\,]{2,12}\d)',
+    ]
+
+    prix = 0
+    for pattern in prix_patterns:
+        match = re.search(pattern, full_text, re.IGNORECASE)
+        if match:
+            raw = match.group(1).replace(' ', '').replace('.', '').replace(',', '.')
+            try:
+                val = float(raw)
+                # Si c'est un pattern "MF/millions", multiplier par 1 000 000
+                if 'MF' in match.group(0).upper() or 'million' in match.group(0).lower():
+                    val *= 1_000_000
+                prix = int(val)
+                if prix > 0:
+                    break
+            except (ValueError, OverflowError):
+                pass
+
+    if prix > 0:
+        result['prix'] = prix
+
+    # ── Localisation ───────────────────────────────────────────────────
+    for commune in _COMMUNES_PF:
+        if commune.lower() in text:
+            result['localisation'] = commune
+            break
+
+    # ── Catégorie immobilier ───────────────────────────────────────────
+    immo_kw = ['immobilier', 'appartement', 'maison', 'villa', 'terrain',
+               'studio', 'duplex', 'f1', 'f2', 'f3', 'f4', 'f5',
+               'chambre', 'lot', 'parcelle', 'bureau', 'local commercial',
+               'location', 'loyer', 'à louer', 'à vendre']
+    if sum(1 for kw in immo_kw if kw in text) >= 2:
+        result['categorie'] = 'immobilier'
+
+    return result
+
+
 def _detect_source(url):
     host = urlparse(url).hostname or ''
     host = host.lower()
@@ -1568,6 +1646,10 @@ def import_url(request):
     titre = titre[:200]
     description = description[:2000]
 
+    # ── Extraction intelligente immobilier ─────────────────────────────
+    detected = _extract_annonce_hints(titre, description)
+
+
     if not titre and not description:
         return JsonResponse({
             'success': False,
@@ -1599,4 +1681,5 @@ def import_url(request):
         'photo_data': photo_data,
         'photo_mime': photo_mime,
         'source': source,
+        **detected,
     })
