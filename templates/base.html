@@ -11,12 +11,13 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ STATIC_VERSION }}">
   {% block extra_css %}{% endblock %}
   {% block extra_head %}{% endblock %}
-  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}?v={{ STATIC_VERSION }}">
-  <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}?v={{ STATIC_VERSION }}" sizes="any">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon-180.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/icon-192x192.png' %}">
+  <link rel="icon" type="image/png" sizes="96x96" href="{% static 'img/icon-96x96.png' %}">
+  <link rel="apple-touch-icon" sizes="192x192" href="{% static 'img/icon-192x192.png' %}">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1a6cf1">
+  <meta name="theme-color" content="#1D9E75">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="TBG">
   <!-- Open Graph -->
   <meta property="og:type"        content="website">
@@ -581,13 +582,6 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
     </svg>
     <span>Annonces</span>
-  </a>
-
-  <a href="{% if user.is_authenticated %}{% url 'mes_favoris' %}{% else %}{% url 'login' %}?next={% url 'mes_favoris' %}&msg=favoris{% endif %}" class="bottom-nav__item">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-    </svg>
-    <span>Enregistrer</span>
   </a>
 
   <a href="{% url 'deposer_annonce' %}" class="bottom-nav__item bottom-nav__item--deposer">
