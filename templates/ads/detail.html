@@ -9,6 +9,7 @@
 {% block og_image %}{% if annonce.photos %}{% if 'http' in annonce.photos.0 %}{{ annonce.photos.0 }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ annonce.photos.0 }}{% endif %}{% endif %}{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="max-w-7xl mx-auto px-4 py-8">
 
   <!-- Breadcrumb -->

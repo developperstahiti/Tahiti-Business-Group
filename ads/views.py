@@ -879,16 +879,17 @@ def _rate_limited(request, action, max_count=3, period_minutes=60):
 
 
 # ── Toggle enregistrement (AJAX) ─────────────────────────────────────────
-@login_required
 @require_POST
 def toggle_enregistrement(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Non connecté'}, status=403)
     import json
     try:
         data = json.loads(request.body)
         annonce_id = int(data.get('annonce_id', 0))
     except (json.JSONDecodeError, ValueError, TypeError):
         annonce_id = int(request.POST.get('annonce_id', 0))
-    annonce = get_object_or_404(Annonce, pk=annonce_id, statut='actif')
+    annonce = get_object_or_404(Annonce, pk=annonce_id)
     obj, created = Enregistrement.objects.get_or_create(user=request.user, annonce=annonce)
     if not created:
         obj.delete()
