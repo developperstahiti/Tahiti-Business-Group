@@ -31,13 +31,16 @@ def sidebar_pubs(request):
         }
         cache.set('sidebar_pubs_data', ctx, 300)
 
-    # unread_count reste hors cache (specifique a chaque utilisateur)
+    # unread_count en cache 60s par utilisateur
     ctx["unread_count"] = 0
     if request.user.is_authenticated:
-        from ads.models import Message
-        ctx["unread_count"] = Message.objects.filter(
-            to_user=request.user, read=False
-        ).count()
+        cache_key = f'unread_msgs_{request.user.pk}'
+        unread = cache.get(cache_key)
+        if unread is None:
+            from ads.models import Message
+            unread = Message.objects.filter(to_user=request.user, read=False).count()
+            cache.set(cache_key, unread, 60)
+        ctx["unread_count"] = unread
     return ctx
 
 

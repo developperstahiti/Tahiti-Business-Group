@@ -195,7 +195,7 @@ def mon_compte(request):
     annonces = Annonce.objects.filter(user=request.user).order_by('-created_at')
     messages_recus = Message.objects.filter(
         annonce__user=request.user
-    ).select_related('annonce').order_by('-created_at')[:10]
+    ).select_related('annonce', 'from_user', 'to_user').order_by('-created_at')[:10]
 
     stats_agg = annonces.aggregate(
         total=Count('pk'),
@@ -291,7 +291,7 @@ def admin_dashboard(request):
     }
 
     annonces_recentes = Annonce.objects.select_related('user').order_by('-created_at')[:20]
-    demandes_pubs     = DemandePublicite.objects.filter(traite=False).order_by('-created_at')
+    demandes_pubs     = DemandePublicite.objects.filter(traite=False).order_by('-created_at')[:50]
 
     return render(request, 'users/admin_dashboard.html', {
         'stats':          stats,
