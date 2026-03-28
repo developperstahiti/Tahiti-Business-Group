@@ -11,6 +11,23 @@
 {% if annonces.has_next %}<link rel="next" href="?{% query_transform page=annonces.next_page_number %}">{% endif %}
 {% endblock %}
 
+{% block structured_data %}
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "numberOfItems": {{ annonces.paginator.count }},
+  "itemListElement": [{% for annonce in annonces %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "url": "{{ request.scheme }}://{{ request.get_host }}{{ annonce.get_absolute_url }}"
+    }{% if not forloop.last %},{% endif %}{% endfor %}
+  ]
+}
+</script>
+{% endblock structured_data %}
+
 {% block pub_spacer %}<div class="pub-spacer"></div>{% endblock %}
 
 {% block content %}

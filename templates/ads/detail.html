@@ -367,86 +367,80 @@
 {% endif %}
 
 {% block structured_data %}
-{% if annonce.categorie == 'emploi' %}
-<script type="application/ld+json">
+{% if annonce.categorie == 'immobilier' %}
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
+{
+  "@context": "https://schema.org",
+  "@type": "RealEstateListing",
+  "name": "{{ annonce.titre|escapejs }}",
+  "description": "{{ annonce.description|truncatewords:50|escapejs }}",
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ annonce.get_absolute_url }}",
+  "datePosted": "{{ annonce.created_at|date:'c' }}"{% if annonce.photos %},
+  "image": [{% for photo in annonce.photos %}"{{ photo|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]{% endif %}{% if annonce.prix %},
+  "offers": {
+    "@type": "Offer",
+    "price": {{ annonce.prix }},
+    "priceCurrency": "XPF",
+    "availability": "https://schema.org/InStock"
+  }{% endif %},
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "{{ annonce.commune|default:'Papeete'|escapejs }}",
+    "addressRegion": "Polynésie française",
+    "addressCountry": "PF"
+  }
+}
+</script>
+{% elif annonce.categorie == 'emploi' %}
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
 {
   "@context": "https://schema.org",
   "@type": "JobPosting",
   "title": "{{ annonce.titre|escapejs }}",
   "description": "{{ annonce.description|truncatewords:50|escapejs }}",
-  "datePosted": "{{ annonce.created_at|date:'Y-m-d' }}",
-  "hiringOrganization": {
-    "@type": "Organization",
-    "name": "{{ annonce.user.nom_entreprise|default:annonce.user.nom|escapejs }}"
-  },
+  "datePosted": "{{ annonce.created_at|date:'c' }}",
   "jobLocation": {
     "@type": "Place",
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": "{{ annonce.localisation|default:'Papeete' }}",
-      "addressRegion": "Polynésie française"
+      "addressLocality": "{{ annonce.commune|default:'Papeete'|escapejs }}",
+      "addressRegion": "Polynésie française",
+      "addressCountry": "PF"
     }
-  }{% if annonce.prix %},
-  "baseSalary": {
-    "@type": "MonetaryAmount",
-    "currency": "XPF",
-    "value": {{ annonce.prix }}
-  }{% endif %}
-}
-</script>
-{% elif annonce.categorie == 'services' %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Service",
-  "name": "{{ annonce.titre|escapejs }}",
-  "description": "{{ annonce.description|truncatewords:50|escapejs }}",
-  "provider": {
-    "@type": "{% if annonce.user.is_pro %}Organization{% else %}Person{% endif %}",
-    "name": "{{ annonce.user.nom_entreprise|default:annonce.user.nom|escapejs }}"
   },
-  "areaServed": {
-    "@type": "Place",
-    "name": "{{ annonce.localisation|default:'Polynésie française' }}"
-  }{% if annonce.prix %},
-  "offers": {
-    "@type": "Offer",
-    "price": "{{ annonce.prix }}",
-    "priceCurrency": "XPF"
-  }{% endif %}
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": "{{ annonce.user.nom|default:annonce.user.email|escapejs }}"
+  }
 }
 </script>
 {% else %}
-<script type="application/ld+json">
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
 {
   "@context": "https://schema.org",
   "@type": "Product",
   "name": "{{ annonce.titre|escapejs }}",
-  "description": "{{ annonce.description|truncatewords:50|escapejs }}",
-  {% if annonce.photos %}"image": [{% for photo in annonce.photos %}"{{ photo }}"{% if not forloop.last %},{% endif %}{% endfor %}],{% endif %}
+  "description": "{{ annonce.description|truncatewords:50|escapejs }}"{% if annonce.photos %},
+  "image": [{% for photo in annonce.photos %}"{{ photo|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]{% endif %},
+  "url": "{{ request.scheme }}://{{ request.get_host }}{{ annonce.get_absolute_url }}",
   "offers": {
     "@type": "Offer",
-    "price": "{{ annonce.prix|default:'0' }}",
+    "price": {{ annonce.prix|default:"0" }},
     "priceCurrency": "XPF",
     "availability": "https://schema.org/InStock",
-    "itemCondition": "{% if annonce.etat == 'neuf' %}https://schema.org/NewCondition{% else %}https://schema.org/UsedCondition{% endif %}",
-    "areaServed": {
-      "@type": "Place",
-      "name": "{{ annonce.localisation|default:'Polynésie française' }}"
-    }
-  },
-  "category": "{{ annonce.get_categorie_display|default:annonce.categorie }}"
+    "url": "{{ request.scheme }}://{{ request.get_host }}{{ annonce.get_absolute_url }}"
+  }
 }
 </script>
 {% endif %}
-<script type="application/ld+json">
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
 {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.tahitibusinessgroup.com/"},
-    {"@type": "ListItem", "position": 2, "name": "{{ annonce.get_categorie_display|default:annonce.categorie }}", "item": "https://www.tahitibusinessgroup.com/annonces/?categorie={{ annonce.categorie }}"},
-    {"@type": "ListItem", "position": 3, "name": "{{ annonce.titre|truncatewords:5 }}"}
+    {"@type": "ListItem", "position": 2, "name": "{{ annonce.get_categorie_display|default:annonce.categorie|escapejs }}", "item": "https://www.tahitibusinessgroup.com/annonces/?categorie={{ annonce.categorie }}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ annonce.titre|truncatewords:5|escapejs }}"}
   ]
 }
 </script>

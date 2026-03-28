@@ -3,6 +3,22 @@
 {% block title %}Tahiti Business Group — Annonces gratuites en Polynésie française{% endblock %}
 {% block meta_desc %}TBG — Annonces gratuites #1 en Polynésie française. Immobilier, véhicules, emploi, services à Tahiti, Moorea, Bora-Bora et dans tout le fenua.{% endblock %}
 
+{% block structured_data %}
+<script type="application/ld+json" nonce="{{ csp_nonce }}">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Tahiti Business Group",
+  "url": "https://www.tahitibusinessgroup.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://www.tahitibusinessgroup.com/annonces/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% endblock structured_data %}
+
 {% block pub_spacer %}<div class="pub-spacer"></div>{% endblock %}
 
 {% block content %}
