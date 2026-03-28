@@ -589,7 +589,7 @@
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
     </svg>
-    <span style="font-size:9px;font-weight:700;letter-spacing:.3px;margin-top:2px;opacity:.85">Publie une annonce</span>
+    <span style="font-size:9px;font-weight:700;letter-spacing:.3px;margin-top:2px;opacity:.85">Déposer</span>
   </a>
 
   <a href="{% if user.is_authenticated %}{% url 'mes_messages' %}{% else %}{% url 'login' %}?next={% url 'mes_messages' %}&msg=messages{% endif %}" class="bottom-nav__item">
