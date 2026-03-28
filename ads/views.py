@@ -1197,7 +1197,7 @@ from django.views.decorators.csrf import csrf_exempt as _csrf_exempt
 @_csrf_exempt
 def boost_paiement_valide_js(request, pk):
     """Callback JS après paiement réussi côté client."""
-    annonce = get_object_or_404(Annonce, pk=pk)
+    annonce = get_object_or_404(Annonce, pk=pk, user=request.user)
     # Le vrai traitement se fait via IPN. Ici on redirige.
     return JsonResponse({'redirect': f'/annonces/{pk}/'})
 
