@@ -737,8 +737,9 @@ def remonter_annonces(request):
     return redirect('mes_annonces')
 
 
-@login_required
 def contact_annonce(request, pk):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Non connecté'}, status=403)
     annonce = get_object_or_404(Annonce, pk=pk)
     User = get_user_model()
 

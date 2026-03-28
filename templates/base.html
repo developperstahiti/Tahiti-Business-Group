@@ -717,8 +717,13 @@ function openContact(url) {
   modal.style.display = 'flex';
   _frameScrollTarget().style.overflow = 'hidden';
   content.innerHTML = '<div class="text-center py-10 text-gray-400"><div class="text-4xl mb-2">&#x1F4AC;</div>Chargement…</div>';
-  fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then(r => r.json())
+  fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+    .then(r => {
+      if (!r.ok) throw new Error(r.status);
+      var ct = r.headers.get('content-type') || '';
+      if (ct.indexOf('application/json') === -1) throw new Error('not-json');
+      return r.json();
+    })
     .then(data => {
       if (data.error) { closeContact(); return; }
       content.innerHTML = data.html;
@@ -727,8 +732,12 @@ function openContact(url) {
       const form = document.getElementById('contactForm');
       if (form) form.addEventListener('submit', submitContact);
     })
-    .catch(() => {
-      content.innerHTML = '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
+    .catch(err => {
+      if (err.message === 'not-json' || err.message === '302' || err.message === '403') {
+        window.location.href = url;
+      } else {
+        content.innerHTML = '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
+      }
     });
 }
 
