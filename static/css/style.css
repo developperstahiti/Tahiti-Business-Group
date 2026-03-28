@@ -2424,21 +2424,24 @@ img.loaded     { opacity: 1; }
     grid-row: 1;
     min-height: 0;
     overflow: hidden;
-    background: white;
+    background: transparent;
     border-radius: 10px 10px 0 0;
-    box-shadow: 0 -4px 24px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
     animation: frameAppear 200ms ease-out 60ms both;
-    padding: 10px;
+    padding: 0;
     align-self: stretch;
   }
   #left-sidebar-pub > .pub-slot {
     flex: 1;
     display: flex;
     flex-direction: column;
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
   #left-sidebar-pub .pub-empty {
     flex: 1;
     min-height: 0;
+    border-radius: 0;
   }
 
   /* Quand billboard présent : même compensation que le cadre */

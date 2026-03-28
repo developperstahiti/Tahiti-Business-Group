@@ -525,7 +525,7 @@
 
 <!-- SIDEBAR GAUCHE ─ pub unique (desktop ≥1025px uniquement) -->
 <div id="left-sidebar-pub">
-  <div class="pub-slot overflow-hidden" style="border-radius:10px">
+  <div class="pub-slot overflow-hidden">
     {% if pub_sidebar_gauche %}
       {% if pub_sidebar_gauche.lien %}<a href="{{ pub_sidebar_gauche.lien }}" target="_blank" rel="noopener" class="block">{% endif %}
       {% if pub_sidebar_gauche.is_video %}
@@ -535,7 +535,7 @@
       {% endif %}
       {% if pub_sidebar_gauche.lien %}</a>{% endif %}
     {% else %}
-    <a href="{% url 'deposer_pub' %}?emplacement=sidebar_gauche" class="pub-empty block" style="border-radius:12px">
+    <a href="{% url 'deposer_pub' %}?emplacement=sidebar_gauche" class="pub-empty block">
       <span class="pub-star" style="top:5%;left:10%;animation-delay:0s"></span>
       <span class="pub-star pub-star--lg" style="top:12%;left:45%;animation-delay:.4s"></span>
       <span class="pub-star" style="top:8%;left:78%;animation-delay:.8s"></span>
