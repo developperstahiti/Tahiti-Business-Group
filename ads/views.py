@@ -13,7 +13,7 @@ from django.db import models as db_models
 from django.db.models import Q, Case, When, Value, IntegerField, Count
 from django.db.models.functions import TruncDay
 from django.utils import timezone
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -404,7 +404,13 @@ def liste_annonces(request):
 def annonce_detail(request, pk):
     from .notation_utils import stats_vendeur, peut_noter
 
-    annonce = get_object_or_404(Annonce.objects.select_related('user', 'user__profil'), pk=pk, statut='actif')
+    annonce = get_object_or_404(Annonce.objects.select_related('user', 'user__profil'), pk=pk)
+    # Seuls les annonces actives sont visibles publiquement ;
+    # le propriétaire et les admins peuvent voir toute annonce.
+    is_owner = request.user.is_authenticated and request.user == annonce.user
+    is_admin = request.user.is_authenticated and getattr(request.user, 'role', '') == 'admin'
+    if annonce.statut != 'actif' and not is_owner and not is_admin:
+        raise Http404
     annonce.increment_views()
 
     if request.method == 'POST' and request.user.is_authenticated and annonce.user != request.user:
