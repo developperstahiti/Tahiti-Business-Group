@@ -214,6 +214,14 @@ function initFavorisCards() {
   });
 }
 
+// ── Stop propagation for inner links (CSP-compliant) ─────────
+// Replaces inline onclick="event.stopPropagation()" on elements
+// like seller avatar links inside card wrappers.
+document.addEventListener('click', function(e) {
+  var el = e.target.closest('.js-stop-propagation');
+  if (el) e.stopPropagation();
+});
+
 // ── Admin stats link in slide menu (for staff) ─────────────────
 // (handled server-side via is_staff check in template)
 

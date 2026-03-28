@@ -33,32 +33,30 @@
           {% if photo_count == 1 %}
           <!-- Une seule photo -->
           <div class="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center" style="max-height:500px">
-            <img id="mainPhoto" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
-              class="rounded-xl cursor-zoom-in" style="max-height:500px;max-width:100%;object-fit:contain"
-              onclick="openLightbox(0)">
+            <img id="mainPhotoSingle" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
+              class="rounded-xl cursor-zoom-in" style="max-height:500px;max-width:100%;object-fit:contain">
           </div>
           {% else %}
           <!-- Mosaique : grande photo + miniatures -->
-          <div class="grid grid-cols-4 gap-2" style="height:400px">
+          <div class="detail-mosaic">
             <!-- Photo principale avec fleches -->
-            <div class="col-span-3 relative rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center" style="height:400px">
-              <img id="mainPhoto" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
-                class="cursor-zoom-in" style="max-height:400px;max-width:100%;object-fit:contain"
-                onclick="openLightbox(currentPhotoIdx)">
+            <div class="detail-mosaic__main relative rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+              <img id="mainPhotoMosaic" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
+                class="cursor-zoom-in" style="max-height:400px;max-width:100%;object-fit:contain">
               <!-- Fleches navigation -->
-              <button onclick="navPhoto(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
-              <button onclick="navPhoto(1)" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo suivante">&rsaquo;</button>
+              <button id="navPhotoPrev" class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
+              <button id="navPhotoNext" class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo suivante">&rsaquo;</button>
               <div class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm" id="photo-counter">1 / {{ photo_count }}</div>
             </div>
-            <!-- Miniatures a droite -->
-            <div class="col-span-1 flex flex-col gap-2" style="height:400px;overflow:hidden">
+            <!-- Miniatures -->
+            <div class="detail-mosaic__thumbs">
               {% for photo in annonce.photos|slice:":4" %}
-              <div class="relative rounded-lg overflow-hidden cursor-pointer flex-1 min-h-0" onclick="goToPhoto({{ forloop.counter0 }})">
+              <div class="relative rounded-lg overflow-hidden cursor-pointer flex-1 min-h-0 mosaic-thumb-click" data-photo-idx="{{ forloop.counter0 }}">
                 <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" loading="lazy"
                   class="w-full h-full object-cover photo-mosaic-thumb {% if forloop.first %}ring-2 ring-blue-500{% endif %}"
                   data-idx="{{ forloop.counter0 }}">
                 {% if forloop.counter == 4 and photo_count > 4 %}
-                <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg" onclick="openLightbox(3)">
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg" id="extraPhotosOverlay">
                   +{{ photo_count|add:"-4" }}
                 </div>
                 {% endif %}
@@ -79,8 +77,8 @@
 
       <!-- Titre & Prix -->
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-        <div class="flex items-start justify-between gap-4 mb-3">
-          <h1 class="text-2xl font-black text-gray-900 leading-tight">{{ annonce.titre }}</h1>
+        <div class="flex items-start justify-between gap-4 mb-3 flex-wrap">
+          <h1 class="text-2xl font-black text-gray-900 leading-tight" style="min-width:0;word-break:break-word">{{ annonce.titre }}</h1>
           {% if annonce.verified %}<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-sm font-bold px-3 py-1 rounded-full mt-2">&#10003; Annonce vérifiée</span>{% endif %}
           {% if annonce.boost %}<span class="badge badge-pro flex-shrink-0">⭐ Boost</span>{% endif %}
           {% if user.is_staff or user == annonce.user %}
@@ -118,17 +116,20 @@
         {% endif %}
       </div>
 
-      <!-- Action bar: Favoris · Partager · Signaler -->
-      <div class="detail-actions-bar flex flex-wrap gap-2">
-        <!-- Favoris -->
-        <button class="fav-btn inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2.5 hover:bg-gray-100 transition"
-                data-fav-pk="{{ annonce.pk }}"
-                aria-label="Ajouter aux favoris">
-          <span class="fav-icon">♡</span>
-          <span class="fav-label">Favoris</span>
+      <!-- Action bar: Enregistrer · Partager · Signaler -->
+      <div class="detail-actions-bar flex flex-wrap gap-2 items-center">
+        <!-- Enregistrer -->
+        <button class="enregistrer-btn inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2.5 hover:bg-gray-100 transition{% if is_enregistre %} enregistrer-btn--active{% endif %}"
+                data-annonce-pk="{{ annonce.pk }}"
+                data-saved="{{ is_enregistre|yesno:'true,false' }}"
+                data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
+                aria-label="Enregistrer l'annonce">
+          <span class="enregistrer-icon">{% if is_enregistre %}&#10003;{% else %}&#9829;{% endif %}</span>
+          <span class="enregistrer-label">{% if is_enregistre %}Enregistr&eacute;{% else %}Enregistrer{% endif %}</span>
         </button>
+        <span class="text-xs text-gray-400 enregistrer-count" data-annonce-pk="{{ annonce.pk }}">{{ enregistrement_count }} personne{{ enregistrement_count|pluralize }} {{ enregistrement_count|pluralize:"a,ont" }} enregistr&eacute; cette annonce</span>
         <!-- Partager -->
-        <button onclick="shareAnnonce()" id="share-btn"
+        <button id="share-btn"
                 class="inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2.5 hover:bg-gray-100 transition"
                 aria-label="Partager l'annonce">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
@@ -145,7 +146,7 @@
 
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
         <h2 class="font-bold text-lg mb-3 text-gray-900">Description</h2>
-        <p class="text-gray-600 leading-relaxed whitespace-pre-wrap">{{ annonce.description }}</p>
+        <p class="text-gray-600 leading-relaxed whitespace-pre-wrap">{{ annonce.description|linkify }}</p>
       </div>
 
       <!-- Vendeur -->
@@ -153,7 +154,9 @@
         <h2 class="font-bold text-lg mb-4 text-gray-900">Vendeur</h2>
         <div class="flex items-start gap-4">
           <!-- Avatar -->
-          {% if annonce.user.avatar_url %}
+          {% if annonce.user.profil.photo_profil %}
+          <img src="{{ annonce.user.profil.photo_profil.url }}" alt="{{ annonce.user.nom }}" class="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2 border-gray-200">
+          {% elif annonce.user.avatar_url %}
           <img src="{{ annonce.user.avatar_url }}" alt="{{ annonce.user.nom }}" class="w-16 h-16 rounded-full object-cover flex-shrink-0 border-2 border-gray-200">
           {% else %}
           <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
@@ -202,7 +205,7 @@
             <!-- Laisser un avis -->
             {% if peut_noter_vendeur %}
             <div class="mt-3 pt-3 border-t border-gray-100" id="detail-noter-section">
-              <button onclick="document.getElementById('detail-noter-panel').classList.toggle('hidden')" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+              <button id="toggleNoterPanel" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
                 Laisser un avis →
               </button>
               <div id="detail-noter-panel" class="hidden mt-3">
@@ -274,19 +277,19 @@
 
 {% if annonce.photos %}
 <!-- Lightbox popup — hors de tout conteneur pour être au-dessus du header -->
-<div id="lightbox" class="lightbox-overlay" onclick="if(event.target===this)closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()" aria-label="Fermer">&times;</button>
+<div id="lightbox" class="lightbox-overlay">
+  <button class="lightbox-close" id="lightboxCloseBtn" aria-label="Fermer">&times;</button>
   <div class="lightbox-content">
     <div class="lightbox-left">
       <div class="lightbox-img-wrap">
-        <button class="lightbox-arrow lightbox-arrow--prev" onclick="lightboxNav(-1)" aria-label="Précédent">&#8249;</button>
+        <button class="lightbox-arrow lightbox-arrow--prev" id="lightboxPrevBtn" aria-label="Précédent">&#8249;</button>
         <img id="lightboxImg" src="" alt="{{ annonce.titre }}" class="lightbox-img">
-        <button class="lightbox-arrow lightbox-arrow--next" onclick="lightboxNav(1)" aria-label="Suivant">&#8250;</button>
+        <button class="lightbox-arrow lightbox-arrow--next" id="lightboxNextBtn" aria-label="Suivant">&#8250;</button>
       </div>
       {% if annonce.photos|length > 1 %}
       <div class="lightbox-thumbs">
         {% for photo in annonce.photos %}
-        <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" class="lightbox-thumb {% if forloop.first %}active{% endif %}" onclick="lightboxGoTo({{ forloop.counter0 }})">
+        <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" class="lightbox-thumb lightbox-thumb-click {% if forloop.first %}active{% endif %}" data-lb-idx="{{ forloop.counter0 }}">
         {% endfor %}
       </div>
       {% endif %}
@@ -311,13 +314,15 @@
         </div>
       </div>
       {% endif %}
-      <div class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap lightbox-desc">{{ annonce.description }}</div>
+      <div class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap lightbox-desc">{{ annonce.description|linkify }}</div>
 
       <!-- Vendeur -->
       <div class="mt-4 pt-4 border-t border-gray-100">
         <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Vendeur</p>
         <div class="flex items-center gap-3">
-          {% if annonce.user.avatar_url %}
+          {% if annonce.user.profil.photo_profil %}
+          <img src="{{ annonce.user.profil.photo_profil.url }}" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+          {% elif annonce.user.avatar_url %}
           <img src="{{ annonce.user.avatar_url }}" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
           {% else %}
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-lg font-black text-white flex-shrink-0">
@@ -506,7 +511,6 @@
       var token = csrfToken ? csrfToken.value : '';
 
       var formData = new FormData();
-      formData.append('annonce_id', '{{ annonce.pk }}');
       formData.append('note', selected);
 
       // Desactiver les etoiles
@@ -571,7 +575,7 @@ function navPhoto(dir) {
 
 function goToPhoto(idx) {
   currentPhotoIdx = idx;
-  const main = document.getElementById('mainPhoto');
+  const main = document.getElementById('mainPhotoMosaic');
   if (main) main.src = allPhotos[idx];
   const counter = document.getElementById('photo-counter');
   if (counter) counter.textContent = (idx + 1) + ' / ' + allPhotos.length;
@@ -583,7 +587,8 @@ function goToPhoto(idx) {
 }
 
 function switchPhoto(el, src) {
-  document.getElementById('mainPhoto').src = src;
+  var mp = document.getElementById('mainPhotoMosaic') || document.getElementById('mainPhotoSingle');
+  if (mp) mp.src = src;
   document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
@@ -628,57 +633,178 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Partager via Web Share API ou copier le lien
-function shareAnnonce() {
-  const url  = location.href;
-  const text = document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : document.title;
-  if (navigator.share) {
-    navigator.share({ title: text, url: url }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).then(() => {
-      showToast && showToast('Lien copié !', 'success');
-    }).catch(() => {
-      prompt('Copiez ce lien :', url);
+(function() {
+  var shareBtn = document.getElementById('share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function() {
+      var url  = location.href;
+      var text = document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : document.title;
+      if (navigator.share) {
+        navigator.share({ title: text, url: url }).catch(function() {});
+      } else {
+        navigator.clipboard.writeText(url).then(function() {
+          typeof showToast !== 'undefined' && showToast('Lien copie !', 'success');
+        }).catch(function() {
+          prompt('Copiez ce lien :', url);
+        });
+      }
     });
   }
-}
+})();
 
-// Favoris sur la page de détail
-document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.querySelector('.fav-btn[data-fav-pk]');
-  if (!btn) return;
-  const pk = btn.dataset.favPk;
-  const icon  = btn.querySelector('.fav-icon');
-  const label = btn.querySelector('.fav-label');
-
-  function isFav() {
-    return (JSON.parse(localStorage.getItem('tbg_favoris') || '[]')).includes(pk);
+// ── Bind event listeners (remplacement des onclick inline pour CSP) ───
+(function() {
+  // 1. Photo principale unique → openLightbox(0)
+  var mainSingle = document.getElementById('mainPhotoSingle');
+  if (mainSingle) {
+    mainSingle.addEventListener('click', function() { openLightbox(0); });
   }
-  function update() {
-    if (isFav()) {
-      icon.textContent  = '❤️';
-      label.textContent = 'Sauvegardé';
+
+  // 2. Photo principale mosaique → openLightbox(currentPhotoIdx)
+  var mainMosaic = document.getElementById('mainPhotoMosaic');
+  if (mainMosaic) {
+    mainMosaic.addEventListener('click', function() { openLightbox(currentPhotoIdx); });
+  }
+
+  // 3-4. Navigation photo prev / next
+  var prevBtn = document.getElementById('navPhotoPrev');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function() { navPhoto(-1); });
+  }
+  var nextBtn = document.getElementById('navPhotoNext');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function() { navPhoto(1); });
+  }
+
+  // 5. Miniatures mosaique → goToPhoto(idx)
+  document.querySelectorAll('.mosaic-thumb-click').forEach(function(el) {
+    el.addEventListener('click', function() {
+      goToPhoto(parseInt(this.dataset.photoIdx));
+    });
+  });
+
+  // 6. Overlay "+N photos" → openLightbox(3)
+  var extraOverlay = document.getElementById('extraPhotosOverlay');
+  if (extraOverlay) {
+    extraOverlay.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openLightbox(3);
+    });
+  }
+
+  // 7. Toggle panel "Laisser un avis"
+  var toggleNoter = document.getElementById('toggleNoterPanel');
+  if (toggleNoter) {
+    toggleNoter.addEventListener('click', function() {
+      document.getElementById('detail-noter-panel').classList.toggle('hidden');
+    });
+  }
+
+  // 8. Lightbox overlay → fermer si clic sur le fond
+  var lbOverlay = document.getElementById('lightbox');
+  if (lbOverlay) {
+    lbOverlay.addEventListener('click', function(e) {
+      if (e.target === this) closeLightbox();
+    });
+  }
+
+  // 9. Lightbox close button
+  var lbClose = document.getElementById('lightboxCloseBtn');
+  if (lbClose) {
+    lbClose.addEventListener('click', function() { closeLightbox(); });
+  }
+
+  // 10-11. Lightbox prev / next
+  var lbPrev = document.getElementById('lightboxPrevBtn');
+  if (lbPrev) {
+    lbPrev.addEventListener('click', function() { lightboxNav(-1); });
+  }
+  var lbNext = document.getElementById('lightboxNextBtn');
+  if (lbNext) {
+    lbNext.addEventListener('click', function() { lightboxNav(1); });
+  }
+
+  // 12. Lightbox thumbnails → lightboxGoTo(idx)
+  document.querySelectorAll('.lightbox-thumb-click').forEach(function(el) {
+    el.addEventListener('click', function() {
+      lightboxGoTo(parseInt(this.dataset.lbIdx));
+    });
+  });
+})();
+
+// Enregistrer sur la page de detail
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.querySelector('.enregistrer-btn[data-annonce-pk]');
+  if (!btn) return;
+  var pk = btn.dataset.annoncePk;
+  var icon  = btn.querySelector('.enregistrer-icon');
+  var label = btn.querySelector('.enregistrer-label');
+  var countEl = document.querySelector('.enregistrer-count[data-annonce-pk="' + pk + '"]');
+  var saved = btn.dataset.saved === 'true';
+
+  function updateUI(isSaved, count) {
+    saved = isSaved;
+    btn.dataset.saved = isSaved ? 'true' : 'false';
+    if (isSaved) {
+      icon.innerHTML = '&#10003;';
+      label.textContent = 'Enregistr\u00e9';
       btn.style.background = '#111827';
       btn.style.color = '#fff';
+      btn.classList.add('enregistrer-btn--active');
     } else {
-      icon.textContent  = '♡';
-      label.textContent = 'Favoris';
+      icon.innerHTML = '&#9829;';
+      label.textContent = 'Enregistrer';
       btn.style.background = '';
       btn.style.color = '';
+      btn.classList.remove('enregistrer-btn--active');
+    }
+    if (countEl && count !== undefined) {
+      var txt = count + ' personne';
+      if (count !== 1) txt += 's';
+      txt += ' ';
+      txt += (count <= 1) ? 'a' : 'ont';
+      txt += ' enregistr\u00e9 cette annonce';
+      countEl.textContent = txt;
     }
   }
-  update();
+
   btn.addEventListener('click', function() {
-    const list = JSON.parse(localStorage.getItem('tbg_favoris') || '[]');
-    const idx = list.indexOf(pk);
-    if (idx >= 0) {
-      list.splice(idx, 1);
-      typeof showToast !== 'undefined' && showToast('Retiré des favoris', 'info');
-    } else {
-      list.push(pk);
-      typeof showToast !== 'undefined' && showToast('Ajouté aux favoris ❤️', 'success');
+    // Utilisateur non connecte → redirection vers login
+    if (btn.dataset.authenticated !== 'true') {
+      window.location.href = '/users/login/?next=' + encodeURIComponent(window.location.pathname) + '&msg=favoris';
+      return;
     }
-    localStorage.setItem('tbg_favoris', JSON.stringify(list));
-    update();
+
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    var token = csrfToken ? csrfToken.value : '';
+
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+
+    fetch('{% url "toggle_enregistrement" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': token
+      },
+      body: JSON.stringify({ annonce_id: pk })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      updateUI(data.saved, data.count);
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+      if (data.saved) {
+        typeof showToast !== 'undefined' && showToast('Annonce enregistr\u00e9e', 'success');
+      } else {
+        typeof showToast !== 'undefined' && showToast('Enregistrement retir\u00e9', 'info');
+      }
+    })
+    .catch(function() {
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+      typeof showToast !== 'undefined' && showToast('Erreur, r\u00e9essayez', 'error');
+    });
   });
 });
 </script>

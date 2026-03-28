@@ -24,6 +24,15 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('index')
 
+    # Messages contextuels pour les redirections depuis la navbar
+    _MSG_MAP = {
+        'favoris':  "Connectez-vous pour enregistrer des annonces.",
+        'messages': "Connectez-vous pour accéder à vos messages.",
+    }
+    msg_key = request.GET.get('msg', '')
+    if msg_key in _MSG_MAP:
+        messages.info(request, _MSG_MAP[msg_key])
+
     ip       = _client_ip(request)
     key      = f'login_fail_{ip}'
     attempts = cache.get(key, 0)
@@ -177,6 +186,24 @@ def mon_compte(request):
 
 
 @login_required
+def upgrade_to_pro(request):
+    if request.user.role != 'personnel':
+        return redirect('mon_compte')
+    if request.method == 'POST':
+        nom_entreprise = request.POST.get('nom_entreprise', '').strip()
+        if not nom_entreprise:
+            messages.error(request, "Le nom d'entreprise est obligatoire.")
+            return redirect('mon_compte')
+        request.user.role = 'pro'
+        request.user.nom_entreprise = nom_entreprise
+        request.user.numero_tahiti = request.POST.get('numero_tahiti', '').strip()
+        request.user.save(update_fields=['role', 'nom_entreprise', 'numero_tahiti'])
+        messages.success(request, "Félicitations ! Votre compte est maintenant Professionnel.")
+        return redirect('mon_compte')
+    return redirect('mon_compte')
+
+
+@login_required
 def admin_dashboard(request):
     if not request.user.is_staff:
         messages.error(request, "Accès refusé.")
@@ -287,6 +314,39 @@ def test_email(request):
     except Exception as e:
         info['erreur'] = f'{type(e).__name__}: {e}'
     return JsonResponse(info)
+
+
+@login_required
+def modifier_profil(request):
+    from .models import Profil
+    profil, _ = Profil.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        # Champs texte
+        profil.bio = request.POST.get('bio', '')[:500]
+        profil.localisation = request.POST.get('localisation', '')[:100]
+        profil.whatsapp = request.POST.get('whatsapp', '')[:20]
+        profil.facebook_url = request.POST.get('facebook_url', '')
+        profil.instagram_url = request.POST.get('instagram_url', '')
+        profil.site_web = request.POST.get('site_web', '')
+
+        # Photo de profil (max 2 Mo)
+        if 'photo_profil' in request.FILES:
+            photo = request.FILES['photo_profil']
+            if photo.size <= 2 * 1024 * 1024:
+                profil.photo_profil = photo
+
+        # Image de fond (max 5 Mo)
+        if 'image_fond' in request.FILES:
+            img = request.FILES['image_fond']
+            if img.size <= 5 * 1024 * 1024:
+                profil.image_fond = img
+
+        profil.save()
+        messages.success(request, 'Profil mis à jour avec succès.')
+        return redirect('modifier_profil')
+
+    return render(request, 'users/modifier_profil.html', {'profil': profil})
 
 
 @login_required

@@ -21,9 +21,11 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
     path('mon-compte/', views.mon_compte, name='mon_compte'),
+    path('upgrade-pro/', views.upgrade_to_pro, name='upgrade_to_pro'),
     path('c01e87364339aac/', views.admin_dashboard, name='admin_dashboard'),
     path('c01e87364339aac/moderer/<int:pk>/', views.moderer_annonce, name='moderer_annonce'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+    path('profil/modifier/', views.modifier_profil, name='modifier_profil'),
     path('supprimer-compte/', views.supprimer_compte, name='supprimer_compte'),
     path('test-email/', views.test_email, name='test_email'),
 

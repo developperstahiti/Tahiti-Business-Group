@@ -6,7 +6,7 @@
 {% block pub_spacer %}<div class="pub-spacer"></div>{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 pb-16 pt-6">
+<div class="max-w-7xl mx-auto px-4 pb-6 pt-4">
   <div class="layout-with-sidebar">
 
     <!-- CONTENU PRINCIPAL -->
@@ -18,7 +18,7 @@
       <!-- Par catégorie (ordre : immo, véhicules, puis le reste) -->
       {% for cat_data in annonces_par_cat %}
       {% if cat_data.annonces %}
-      <div class="mb-10">
+      <div class="mb-4">
         <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="cat-section-header">
           <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2" style="margin:0">
             {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% endif %}
@@ -66,7 +66,7 @@
 
       <!-- ── ACTUALITÉS & INFOS (après immo + véhicules) ── -->
       {% if infos_home %}
-      <div class="mb-10">
+      <div class="mb-4">
         <div class="over-img flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Infos média / Article de presse</h2>
           <a href="{% url 'rubriques_index' %}#info" class="text-sm text-sky-600 hover:text-sky-800 font-medium transition">Voir tout →</a>
@@ -82,14 +82,14 @@
               <div class="cat-carousel__track">
                 {% for a in infos_home %}
                 <div class="cat-carousel__item">
-                  <div class="info-card" data-href="{% url 'info_detail' a.pk %}" onclick="handleCardClick(this,event)">
-                    {% if a.photo %}<img src="{{ a.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
+                  <div class="info-card rubrique-card" data-href="{% url 'info_detail' a.pk %}">
+                    {% if a.photo %}<img src="{{ a.photo }}" alt="" class="info-card__photo" loading="lazy">{% endif %}
                     <span class="info-card__badge"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Infos média</span>
                     <div class="info-card__title">{{ a.titre }}</div>
                     <div class="info-card__preview">{{ a.contenu }}</div>
                     <div class="info-card__expand">
                       <p>{{ a.contenu }}</p>
-                      <a href="{% url 'info_detail' a.pk %}" class="info-card__cta" onclick="event.stopPropagation()">
+                      <a href="{% url 'info_detail' a.pk %}" class="info-card__cta rubrique-card__link">
                         Lire l'article →
                       </a>
                       <div class="info-card__source">{% if a.auteur %}{{ a.auteur.nom|default:a.auteur.email }}{% else %}TBG{% endif %}</div>
@@ -117,7 +117,7 @@
 
       <!-- ── NOUVEAUTÉS BUSINESS ── -->
       {% if nouveautes_home %}
-      <div class="mb-10">
+      <div class="mb-4">
         <div class="over-img flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Nouveautés / À tester absolument</h2>
           <a href="{% url 'rubriques_index' %}#nouveautes" class="text-sm text-emerald-600 hover:text-emerald-800 font-medium transition">Voir tout →</a>
@@ -133,14 +133,14 @@
               <div class="cat-carousel__track">
                 {% for n in nouveautes_home %}
                 <div class="cat-carousel__item">
-                  <div class="nouv-card" data-href="{% url 'nouveaute_detail' n.pk %}" onclick="handleCardClick(this,event)">
-                    {% if n.photo %}<img src="{{ n.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
+                  <div class="nouv-card rubrique-card" data-href="{% url 'nouveaute_detail' n.pk %}">
+                    {% if n.photo %}<img src="{{ n.photo }}" alt="" class="info-card__photo" loading="lazy">{% endif %}
                     <span class="nouv-card__badge"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Nouveautés</span>
                     <div class="nouv-card__title">{{ n.titre }}</div>
                     <div class="nouv-card__preview">{{ n.contenu }}</div>
                     <div class="nouv-card__expand">
                       <p>{{ n.contenu }}</p>
-                      <a href="{% url 'nouveaute_detail' n.pk %}" class="nouv-card__cta" onclick="event.stopPropagation()">
+                      <a href="{% url 'nouveaute_detail' n.pk %}" class="nouv-card__cta rubrique-card__link">
                         Lire l'article →
                       </a>
                       <div class="nouv-card__source">{{ n.pro_user.nom|default:n.pro_user.email }}</div>
@@ -168,7 +168,7 @@
 
       <!-- ── PROMOS & BONS PLANS ── -->
       {% if promos_home %}
-      <div class="promo-carousel mb-10">
+      <div class="promo-carousel mb-4">
         <div class="over-img flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"> Promotion / Offre spéciale</h2>
           <a href="{% url 'rubriques_index' %}" class="text-sm text-amber-600 hover:text-amber-800 font-medium transition">Voir tout →</a>
@@ -184,8 +184,8 @@
               <div class="cat-carousel__track">
                 {% for p in promos_home %}
                 <div class="cat-carousel__item">
-                  <div class="promo-card" data-href="{% url 'promo_detail' p.pk %}" onclick="handleCardClick(this,event)">
-                    {% if p.photo %}<img src="{{ p.photo }}" alt="" class="info-card__photo" loading="lazy" onerror="this.style.display='none'">{% endif %}
+                  <div class="promo-card rubrique-card" data-href="{% url 'promo_detail' p.pk %}">
+                    {% if p.photo %}<img src="{{ p.photo }}" alt="" class="info-card__photo" loading="lazy">{% endif %}
                     <span class="promo-card__badge"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Promotion</span>
                     <div class="promo-card__title">{{ p.titre }}</div>
                     <div class="promo-card__preview">{{ p.contenu }}</div>
@@ -193,7 +193,7 @@
                       <p>{{ p.contenu }}</p>
                       {% if p.lien_promo %}
                       <a href="{{ p.lien_promo }}" target="_blank" rel="noopener sponsored"
-                         class="promo-card__cta" onclick="event.stopPropagation()">
+                         class="promo-card__cta rubrique-card__link">
                         Voir l'offre →
                       </a>
                       {% endif %}
@@ -260,6 +260,22 @@ function handleCardClick(card, e) {
     card.classList.toggle('open');
   }
 }
+
+/* Event delegation for rubrique cards (info/promo/nouveautes) */
+document.addEventListener('click', function(e) {
+  /* Let inner links (.rubrique-card__link) navigate normally */
+  if (e.target.closest('.rubrique-card__link')) {
+    e.stopPropagation();
+    return;
+  }
+  var card = e.target.closest('.rubrique-card');
+  if (card) handleCardClick(card, e);
+});
+
+/* Hide broken rubrique images gracefully */
+document.querySelectorAll('.info-card__photo').forEach(function(img) {
+  img.addEventListener('error', function() { this.style.display = 'none'; });
+});
 
 /* ─── Carousel : mobile (scroll-snap + scrollLeft) vs desktop (transform) ─── */
 /* Les .mobile-pub-inject sont display:none sur desktop → on les exclut du JS  */

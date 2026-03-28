@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block title %}Modifier mon profil{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+
+  <div class="mb-6">
+    <a href="{% url 'mon_compte' %}" class="text-sm text-gray-500 hover:text-gray-800 transition inline-flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Retour au compte
+    </a>
+    <h1 class="text-2xl font-bold mt-2">Modifier mon profil</h1>
+  </div>
+
+  {% if messages %}
+  <div class="mb-6">
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded-xl text-sm font-medium
+      {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200
+      {% elif message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+      {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="space-y-8">
+    {% csrf_token %}
+
+    <!-- SECTION APPARENCE -->
+    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+      <h2 class="font-bold text-lg mb-5 flex items-center gap-2">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        Apparence
+      </h2>
+
+      <!-- Photo de profil -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Photo de profil</label>
+        <div class="flex items-center gap-4">
+          <div class="profil-photo-preview" id="photoProfilPreview">
+            {% if profil.photo_profil %}
+            <img src="{{ profil.photo_profil.url }}" alt="Photo de profil" class="w-full h-full object-cover">
+            {% else %}
+            <div class="w-full h-full bg-gray-100 flex items-center justify-center text-2xl font-bold text-gray-400">
+              {{ user.nom|first|upper|default:user.email|first|upper }}
+            </div>
+            {% endif %}
+          </div>
+          <div>
+            <button type="button" class="profil-btn-upload" id="btnChangePhoto">Changer la photo</button>
+            <input type="file" name="photo_profil" accept="image/*" class="hidden" id="inputPhotoProfil">
+            <p class="text-xs text-gray-400 mt-1">Max 2 Mo, format JPG ou PNG</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image de fond / Banniere -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-3">Image de fond / Banniere</label>
+        <div class="profil-banner-preview" id="bannerPreview">
+          {% if profil.image_fond %}
+          <img src="{{ profil.image_fond.url }}" alt="Banniere" class="w-full h-full object-cover">
+          {% else %}
+          <div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          {% endif %}
+        </div>
+        <div class="mt-3">
+          <button type="button" class="profil-btn-upload" id="btnChangeBanner">Changer la banniere</button>
+          <input type="file" name="image_fond" accept="image/*" class="hidden" id="inputImageFond">
+          <p class="text-xs text-gray-400 mt-1">Format paysage recommande, max 5 Mo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION INFORMATIONS -->
+    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+      <h2 class="font-bold text-lg mb-5 flex items-center gap-2">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Informations
+      </h2>
+
+      <!-- Bio -->
+      <div class="mb-5">
+        <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Bio / description</label>
+        <textarea id="bio" name="bio" maxlength="500" rows="4"
+                  class="form-input" placeholder="Parlez un peu de vous...">{{ profil.bio }}</textarea>
+        <div class="flex justify-end mt-1">
+          <span class="text-xs text-gray-400" id="bioCounter">{{ profil.bio|length }} / 500</span>
+        </div>
+      </div>
+
+      <!-- Localisation -->
+      <div>
+        <label for="localisation" class="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
+        <input type="text" id="localisation" name="localisation" maxlength="100"
+               class="form-input" placeholder="Ex: Papeete, Tahiti" value="{{ profil.localisation }}">
+      </div>
+    </div>
+
+    <!-- SECTION RESEAUX SOCIAUX -->
+    <div class="bg-white border border-gray-200 rounded-2xl p-6">
+      <h2 class="font-bold text-lg mb-5 flex items-center gap-2">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+        </svg>
+        Reseaux sociaux
+      </h2>
+
+      <div class="space-y-4">
+        <!-- WhatsApp -->
+        <div>
+          <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+          <div class="relative">
+            <span class="profil-input-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </span>
+            <input type="tel" id="whatsapp" name="whatsapp" maxlength="20"
+                   class="form-input profil-input-with-icon" placeholder="+689 87 12 34 56" value="{{ profil.whatsapp }}">
+          </div>
+        </div>
+
+        <!-- Facebook -->
+        <div>
+          <label for="facebook_url" class="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+          <div class="relative">
+            <span class="profil-input-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </span>
+            <input type="url" id="facebook_url" name="facebook_url"
+                   class="form-input profil-input-with-icon" placeholder="https://facebook.com/..." value="{{ profil.facebook_url }}">
+          </div>
+        </div>
+
+        <!-- Instagram -->
+        <div>
+          <label for="instagram_url" class="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+          <div class="relative">
+            <span class="profil-input-icon">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+              </svg>
+            </span>
+            <input type="url" id="instagram_url" name="instagram_url"
+                   class="form-input profil-input-with-icon" placeholder="https://instagram.com/..." value="{{ profil.instagram_url }}">
+          </div>
+        </div>
+
+        <!-- Site web -->
+        <div>
+          <label for="site_web" class="block text-sm font-medium text-gray-700 mb-1">Site web</label>
+          <div class="relative">
+            <span class="profil-input-icon">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+              </svg>
+            </span>
+            <input type="url" id="site_web" name="site_web"
+                   class="form-input profil-input-with-icon" placeholder="https://..." value="{{ profil.site_web }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOUTON SAUVEGARDE -->
+    <button type="submit" class="profil-btn-save">
+      Enregistrer les modifications
+    </button>
+  </form>
+</div>
+
+<style>
+/* ── Photo de profil preview ── */
+.profil-photo-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* ── Banniere preview ── */
+.profil-banner-preview {
+  width: 100%;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px dashed #d1d5db;
+  background: #f9fafb;
+}
+
+/* ── Bouton upload ── */
+.profil-btn-upload {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.profil-btn-upload:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/* ── Icone dans les inputs ── */
+.profil-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+.profil-input-with-icon {
+  padding-left: 38px !important;
+}
+
+/* ── Bouton sauvegarde ── */
+.profil-btn-save {
+  display: block;
+  width: 100%;
+  background: #111111;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.profil-btn-save:hover {
+  background: #333333;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .profil-banner-preview {
+    height: 120px;
+  }
+}
+</style>
+
+<script nonce="{{ csp_nonce }}">
+(function() {
+  // ── Preview photo de profil ──
+  var btnPhoto = document.getElementById('btnChangePhoto');
+  var inputPhoto = document.getElementById('inputPhotoProfil');
+  var previewPhoto = document.getElementById('photoProfilPreview');
+
+  btnPhoto.addEventListener('click', function() {
+    inputPhoto.click();
+  });
+
+  inputPhoto.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        previewPhoto.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="w-full h-full object-cover">';
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  // ── Preview banniere ──
+  var btnBanner = document.getElementById('btnChangeBanner');
+  var inputBanner = document.getElementById('inputImageFond');
+  var previewBanner = document.getElementById('bannerPreview');
+
+  btnBanner.addEventListener('click', function() {
+    inputBanner.click();
+  });
+
+  inputBanner.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        previewBanner.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="w-full h-full object-cover">';
+        previewBanner.style.borderStyle = 'solid';
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  // ── Compteur de caracteres bio ──
+  var bioField = document.getElementById('bio');
+  var bioCounter = document.getElementById('bioCounter');
+
+  function updateBioCounter() {
+    var len = bioField.value.length;
+    bioCounter.textContent = len + ' / 500';
+    if (len >= 480) {
+      bioCounter.style.color = '#ef4444';
+    } else if (len >= 400) {
+      bioCounter.style.color = '#f59e0b';
+    } else {
+      bioCounter.style.color = '#9ca3af';
+    }
+  }
+
+  bioField.addEventListener('input', updateBioCounter);
+  updateBioCounter();
+})();
+</script>
+{% endblock %}

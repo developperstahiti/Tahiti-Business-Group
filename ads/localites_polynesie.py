@@ -13,11 +13,15 @@ LOCALITES = {
             "Mahina": ["Onoiau", "Vaitupa", "Papenoo cote Mahina"],
             "Papenoo": [],
             "Hitiaa O Te Ra": ["Hitiaa", "Mahaena", "Tiarei", "Papenoo cote est"],
-            "Faaone": [],
-            "Taiarapu-Est": ["Afaahiti", "Pueu", "Tautira"],
-            "Taiarapu-Ouest": ["Teahupoo", "Vairao", "Toahotu"],
-            "Papeari": [],
-            "Mataiea": [],
+            "Taiarapu-Est": [
+                "Afaahiti", "Faaone", "Pueu", "Tautira",
+                "Taravao", "Plateau de Taravao",
+            ],
+            "Taiarapu-Ouest": [
+                "Teahupoo", "Vairao", "Toahotu",
+                "Saint-Joseph", "Fenuaino",
+            ],
+            "Teva I Uta": ["Papeari", "Mataiea"],
             "Papara": ["Papara centre", "Atimaono", "Mara"],
             "Paea": ["Paea centre", "Mapumai", "Orofara Paea"],
             "Punaauia": [

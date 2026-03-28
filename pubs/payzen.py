@@ -219,6 +219,42 @@ def create_embedded_form_token(publicite, request):
     return form_token, public_key
 
 
+def build_generic_payzen_form(amount_xpf, order_id, customer_email, customer_name, request):
+    """Construit un formulaire PayZen V2 (redirection) générique.
+
+    Retourne (form_data, payment_url).
+    """
+    now = datetime.now(timezone.utc)
+    trans_id = uuid.uuid4().hex[:6]
+
+    base = request.build_absolute_uri('/')[:-1]
+
+    form_data = {
+        'vads_site_id':        settings.PAYZEN_SHOP_ID,
+        'vads_ctx_mode':       settings.PAYZEN_MODE,
+        'vads_trans_date':     now.strftime('%Y%m%d%H%M%S'),
+        'vads_trans_id':       trans_id,
+        'vads_amount':         str(amount_xpf),
+        'vads_currency':       '953',
+        'vads_action_mode':    'INTERACTIVE',
+        'vads_page_action':    'PAYMENT',
+        'vads_payment_config': 'SINGLE',
+        'vads_version':        'V2',
+        'vads_order_id':       order_id,
+        'vads_cust_email':     customer_email,
+        'vads_cust_name':      customer_name,
+        'vads_order_info':     f"Boost annonce — {order_id}",
+        'vads_return_mode':    'POST',
+        'vads_hash_type':      'HMAC_SHA_256',
+        'vads_url_return':     f"{base}/boost/paiement/succes/",
+        'vads_url_check':      f"{base}/boost/paiement/ipn/",
+    }
+
+    form_data['signature'] = compute_signature(form_data)
+
+    return form_data, settings.PAYZEN_PAYMENT_URL
+
+
 def verify_rest_signature(kr_answer, kr_hash):
     """Vérifie la signature d'un retour du formulaire embarqué (IPN REST ou JS callback).
 

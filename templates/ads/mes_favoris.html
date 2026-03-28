@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 {% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
-{% block title %}Mes Favoris — TBG{% endblock %}
-{% block og_title %}Mes annonces favorites — TBG{% endblock %}
+{% block title %}Mes annonces enregistr&#233;es — TBG{% endblock %}
+{% block og_title %}Mes annonces enregistr&#233;es — TBG{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
 
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-      ❤️ Mes Favoris
+      &#x2764;&#xFE0F; Mes annonces enregistr&#233;es
     </h1>
     <a href="{% url 'liste_annonces' %}" class="text-sm text-gray-500 hover:text-gray-900 underline">
-      ← Voir toutes les annonces
+      &larr; Voir toutes les annonces
     </a>
   </div>
 
@@ -23,11 +23,11 @@
   </div>
   {% else %}
   <div id="fav-empty" class="text-center py-20">
-    <div class="text-7xl mb-4">💔</div>
-    <h2 class="text-xl font-bold text-gray-900 mb-2">Aucun favori sauvegardé</h2>
+    <div class="text-7xl mb-4">&#128278;</div>
+    <h2 class="text-xl font-bold text-gray-900 mb-2">Aucune annonce enregistr&#233;e</h2>
     <p class="text-gray-500 mb-6 text-sm">
-      Cliquez sur ❤️ sur une annonce pour l'ajouter à vos favoris.<br>
-      Vos favoris sont sauvegardés localement sur cet appareil.
+      Cliquez sur &laquo; Enregistrer &raquo; sur une annonce pour la retrouver ici.<br>
+      Connectez-vous pour sauvegarder vos enregistrements.
     </p>
     <a href="{% url 'liste_annonces' %}"
        class="bg-gray-900 text-white font-bold px-6 py-3 hover:bg-black transition text-sm">
@@ -39,11 +39,15 @@
 </div>
 
 <script nonce="{{ csp_nonce }}">
-// If no ids param in URL, read localStorage and redirect
+// Fallback localStorage pour utilisateurs non connectes
 (function(){
-  const params = new URLSearchParams(location.search);
+  // Si l'utilisateur est connecte, la vue Django gere les enregistrements depuis la BDD
+  // Ce script ne sert que de fallback pour les non-connectes
+  var isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+  if (isAuthenticated) return;
+  var params = new URLSearchParams(location.search);
   if (!params.get('ids')) {
-    const ids = JSON.parse(localStorage.getItem('tbg_favoris') || '[]');
+    var ids = JSON.parse(localStorage.getItem('tbg_favoris') || '[]');
     if (ids.length > 0) {
       location.replace('?ids=' + ids.join(','));
     }

@@ -17,7 +17,9 @@ from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from .models import Annonce, Message, CATEGORIES, SOUS_CATEGORIES, Signalement, PRIX_UNITE_CHOICES
+from django.db.models import Exists, OuterRef, Subquery
+from django.views.decorators.http import require_POST
+from .models import Annonce, Message, CATEGORIES, SOUS_CATEGORIES, Signalement, PRIX_UNITE_CHOICES, Enregistrement
 from .image_utils import save_webp
 from rubriques.models import ArticlePromo, ArticleInfo, ArticleNouveaute
 
@@ -151,11 +153,25 @@ def _apply_boost_sort(qs):
     ).order_by('-_boost_rank', '-updated_at')
 
 
+def _annotate_enregistrements(qs, user):
+    """Annote un queryset d'annonces avec le compteur d'enregistrements
+    et un booleen is_enregistre pour l'utilisateur courant."""
+    qs = qs.annotate(enregistrement_count=Count('enregistrements'))
+    if user.is_authenticated:
+        qs = qs.annotate(
+            is_enregistre=Exists(
+                Enregistrement.objects.filter(user=user, annonce=OuterRef('pk'))
+            )
+        )
+    return qs
+
+
 def index(request):
-    base = Annonce.objects.filter(statut='actif').select_related('user')
+    base = Annonce.objects.filter(statut='actif').select_related('user', 'user__profil')
+    base = _annotate_enregistrements(base, request.user)
     qs = _apply_boost_sort(base)
     annonces_recentes = qs[:10]
-    total_count = base.count()
+    total_count = Annonce.objects.filter(statut='actif').count()
 
     # Ordre d'affichage aligné sur la nav
     cat_order = ['immobilier', 'vehicules', 'occasion', 'emploi', 'services']
@@ -163,7 +179,10 @@ def index(request):
     annonces_par_cat = []
     for code in cat_order:
         cat_qs = _apply_boost_sort(
-            Annonce.objects.filter(statut='actif', categorie=code).select_related('user')
+            _annotate_enregistrements(
+                Annonce.objects.filter(statut='actif', categorie=code).select_related('user', 'user__profil'),
+                request.user,
+            )
         )
         annonces_par_cat.append({
             'code': code,
@@ -239,7 +258,10 @@ def _build_pretriage_groups(cat, base_qs, limit=4):
 
 
 def liste_annonces(request):
-    qs = Annonce.objects.filter(statut='actif').select_related('user')
+    qs = _annotate_enregistrements(
+        Annonce.objects.filter(statut='actif').select_related('user', 'user__profil'),
+        request.user,
+    )
     q        = request.GET.get('q', '')
     cat      = request.GET.get('categorie', '')
     sous_cat = request.GET.get('sous_cat', '')
@@ -322,7 +344,7 @@ def liste_annonces(request):
     if cat and not has_filters and not request.GET.get('page'):
         pretriage_groups = _build_pretriage_groups(cat, qs)
 
-    paginator = Paginator(qs, 24)
+    paginator = Paginator(qs, 20)
     page = paginator.get_page(request.GET.get('page'))
 
     # Partial response for "load more" AJAX requests
@@ -382,7 +404,7 @@ def liste_annonces(request):
 def annonce_detail(request, pk):
     from .notation_utils import stats_vendeur, peut_noter
 
-    annonce = get_object_or_404(Annonce, pk=pk, statut='actif')
+    annonce = get_object_or_404(Annonce.objects.select_related('user', 'user__profil'), pk=pk, statut='actif')
     annonce.increment_views()
 
     if request.method == 'POST' and request.user.is_authenticated and annonce.user != request.user:
@@ -397,20 +419,31 @@ def annonce_detail(request, pk):
             messages.success(request, "Votre message a bien été envoyé !")
             return redirect('annonce_detail', pk=pk)
 
-    annonces_similaires = Annonce.objects.filter(
-        statut='actif', categorie=annonce.categorie
-    ).exclude(pk=pk).select_related('user')[:4]
+    # Compteur d'enregistrements
+    enregistrement_count = Enregistrement.objects.filter(annonce=annonce).count()
+    is_enregistre = False
+    if request.user.is_authenticated:
+        is_enregistre = Enregistrement.objects.filter(user=request.user, annonce=annonce).exists()
+
+    annonces_similaires = _annotate_enregistrements(
+        Annonce.objects.filter(
+            statut='actif', categorie=annonce.categorie
+        ).exclude(pk=pk).select_related('user', 'user__profil'),
+        request.user,
+    )[:4]
 
     vendeur_stats = stats_vendeur(annonce.user)
     peut_noter_vendeur = False
     if request.user.is_authenticated and request.user != annonce.user:
-        peut_noter_vendeur = peut_noter(request.user, annonce.user, annonce)
+        peut_noter_vendeur = peut_noter(request.user, annonce.user)
 
     return render(request, 'ads/detail.html', {
-        'annonce':             annonce,
-        'annonces_similaires': annonces_similaires,
-        'vendeur_stats':       vendeur_stats,
-        'peut_noter_vendeur':  peut_noter_vendeur,
+        'annonce':              annonce,
+        'enregistrement_count': enregistrement_count,
+        'is_enregistre':        is_enregistre,
+        'annonces_similaires':  annonces_similaires,
+        'vendeur_stats':        vendeur_stats,
+        'peut_noter_vendeur':   peut_noter_vendeur,
     })
 
 
@@ -554,7 +587,7 @@ def deposer_annonce(request):
 
 @login_required
 def mes_annonces(request):
-    qs = Annonce.objects.filter(user=request.user)
+    qs = Annonce.objects.filter(user=request.user).select_related('user', 'user__profil')
     statut = request.GET.get('statut', '')
     if statut in ('actif', 'vendu', 'en_attente'):
         qs = qs.filter(statut=statut)
@@ -664,7 +697,7 @@ def marquer_vendu(request, pk):
 
 @login_required
 def remonter_annonces(request):
-    """Remonter les annonces selectionnees (delai 24h entre chaque remontee)."""
+    """Republier les annonces selectionnees (delai 24h entre chaque republication)."""
     if request.method != 'POST':
         return redirect('mes_annonces')
 
@@ -691,9 +724,9 @@ def remonter_annonces(request):
             remontees += 1
 
     if remontees:
-        messages.success(request, f"{remontees} annonce(s) remontee(s) avec succes.")
+        messages.success(request, f"{remontees} annonce(s) republiée(s) avec succès.")
     if bloquees:
-        messages.warning(request, f"Annonces non remontees (delai 24h) : {', '.join(bloquees)}")
+        messages.warning(request, f"Annonces non republiées (délai 24h) : {', '.join(bloquees)}")
 
     return redirect('mes_annonces')
 
@@ -837,16 +870,50 @@ def _rate_limited(request, action, max_count=3, period_minutes=60):
     return False
 
 
-# ── Mes Favoris ──────────────────────────────────────────────────────────
+# ── Toggle enregistrement (AJAX) ─────────────────────────────────────────
+@login_required
+@require_POST
+def toggle_enregistrement(request):
+    import json
+    try:
+        data = json.loads(request.body)
+        annonce_id = int(data.get('annonce_id', 0))
+    except (json.JSONDecodeError, ValueError, TypeError):
+        annonce_id = int(request.POST.get('annonce_id', 0))
+    annonce = get_object_or_404(Annonce, pk=annonce_id, statut='actif')
+    obj, created = Enregistrement.objects.get_or_create(user=request.user, annonce=annonce)
+    if not created:
+        obj.delete()
+    count = Enregistrement.objects.filter(annonce=annonce).count()
+    return JsonResponse({
+        'saved': created,
+        'count': count,
+    })
+
+
+# ── Mes Favoris / Mes annonces enregistrees ──────────────────────────────
 def mes_favoris(request):
-    ids_raw = request.GET.get('ids', '')
     annonces = []
-    if ids_raw:
-        try:
-            pk_list = [int(x.strip()) for x in ids_raw.split(',') if x.strip().isdigit()][:50]
-            annonces = list(Annonce.objects.filter(pk__in=pk_list, statut='actif').select_related('user'))
-        except (ValueError, TypeError):
-            pass
+    # Priorite 1 : utilisateur connecte → base de donnees
+    if request.user.is_authenticated:
+        annonces = list(
+            Annonce.objects.filter(
+                enregistrements__user=request.user,
+                statut='actif',
+            ).select_related('user', 'user__profil')
+            .annotate(enregistrement_count=Count('enregistrements'))
+            .order_by('-enregistrements__date_creation')
+        )
+    # Fallback localStorage (ids en parametre GET)
+    if not annonces:
+        ids_raw = request.GET.get('ids', '')
+        if ids_raw:
+            try:
+                pk_list = [int(x.strip()) for x in ids_raw.split(',') if x.strip().isdigit()][:50]
+                annonces = list(Annonce.objects.filter(pk__in=pk_list, statut='actif').select_related('user', 'user__profil')
+                                .annotate(enregistrement_count=Count('enregistrements')))
+            except (ValueError, TypeError):
+                pass
     return render(request, 'ads/mes_favoris.html', {'annonces': annonces})
 
 
@@ -904,7 +971,7 @@ def admin_stats(request):
     for c in par_categorie:
         c['label'] = cat_labels.get(c['categorie'], c['categorie'])
     max_day = max((d['count'] for d in annonces_par_jour), default=1)
-    dernieres         = Annonce.objects.select_related('user').order_by('-created_at')[:15]
+    dernieres         = Annonce.objects.select_related('user', 'user__profil').order_by('-created_at')[:15]
     signalements_list = Signalement.objects.select_related('annonce', 'auteur').order_by('-created_at')[:10]
     return render(request, 'ads/admin_stats.html', {
         'stats':              stats,
@@ -928,7 +995,7 @@ def export_csv(request):
     writer = csv.writer(response)
     writer.writerow(['ID', 'Titre', 'Catégorie', 'Prix (XPF)', 'Localisation',
                      'Vendeur', 'Email', 'Téléphone', 'Statut', 'Vues', 'Date'])
-    for a in Annonce.objects.select_related('user').order_by('-created_at'):
+    for a in Annonce.objects.select_related('user', 'user__profil').order_by('-created_at'):
         writer.writerow([
             a.pk, a.titre, a.get_categorie_display(),
             a.prix, a.localisation,
@@ -1022,6 +1089,29 @@ BOOST_PRIX = {'7jours': 500, '1mois': 1500}
 
 
 @login_required
+def boost_from_edit(request, pk):
+    """Initier un boost depuis la page de modification."""
+    annonce = get_object_or_404(Annonce, pk=pk, user=request.user)
+
+    # Si déjà boostée et pas expirée, ne pas permettre
+    if annonce.boost_status == 'active' and annonce.boost_expires_at and annonce.boost_expires_at > timezone.now():
+        messages.info(request, "Cette annonce est déjà boostée.")
+        return redirect('edit_annonce', pk=pk)
+
+    boost_duree = request.POST.get('boost_duree', '7jours')
+    if boost_duree not in ('7jours', '1mois'):
+        boost_duree = '7jours'
+
+    annonce.boost_duree = boost_duree
+    annonce.boost_status = 'pending'
+    annonce.boost_payment_ref = f"BOOST{uuid.uuid4().hex[:8].upper()}"
+    annonce.save(update_fields=['boost_duree', 'boost_status', 'boost_payment_ref'])
+
+    request.session['boost_pending_pk'] = annonce.pk
+    return redirect('boost_paiement', pk=annonce.pk)
+
+
+@login_required
 def boost_paiement(request, pk):
     """Affiche le formulaire de paiement embarqué pour le boost."""
     annonce = get_object_or_404(Annonce, pk=pk, user=request.user, boost_status='pending')
@@ -1033,7 +1123,7 @@ def boost_paiement(request, pk):
     prix = BOOST_PRIX.get(annonce.boost_duree, 500)
     duree_label = '7 jours' if annonce.boost_duree == '7jours' else '1 mois'
 
-    from pubs.payzen import create_generic_form_token, build_payzen_form
+    from pubs.payzen import create_generic_form_token, build_generic_payzen_form
 
     base_url = request.build_absolute_uri('/')[:-1]
     ipn_url = f"{base_url}/boost/paiement/ipn/"
@@ -1048,9 +1138,22 @@ def boost_paiement(request, pk):
             request=request,
         )
     except RuntimeError:
-        logger.exception("Boost: embedded form token creation failed")
-        messages.error(request, "Erreur lors de la connexion au service de paiement. Veuillez réessayer.")
-        return redirect('annonce_detail', pk=pk)
+        # Fallback : redirection classique V2 si l'API REST échoue
+        logger.exception("Boost: REST API failed, falling back to redirect form")
+        form_data, payment_url = build_generic_payzen_form(
+            amount_xpf=prix,
+            order_id=annonce.boost_payment_ref,
+            customer_email=request.user.email,
+            customer_name=request.user.nom or request.user.email,
+            request=request,
+        )
+        return render(request, 'ads/boost_payzen_redirect.html', {
+            'annonce': annonce,
+            'prix': prix,
+            'duree_label': duree_label,
+            'form_data': form_data,
+            'payment_url': payment_url,
+        })
 
     return render(request, 'ads/paiement_boost.html', {
         'annonce': annonce,
@@ -1074,9 +1177,9 @@ def boost_paiement_valide_js(request, pk):
 
 @_csrf_exempt
 def boost_ipn(request):
-    """IPN PayZen pour le boost — active le boost après paiement vérifié."""
+    """IPN PayZen pour le boost — gère API REST V4 et API Formulaire V2."""
     import json as _json
-    from pubs.payzen import verify_rest_signature
+    from pubs.payzen import verify_rest_signature, verify_signature
 
     if request.method != 'POST':
         return HttpResponse('Method not allowed', status=405)
@@ -1084,27 +1187,41 @@ def boost_ipn(request):
     kr_answer = request.POST.get('kr-answer', '')
     kr_hash = request.POST.get('kr-hash', '')
 
-    if not kr_answer or not kr_hash:
+    # ── Format REST V4 (formulaire embarqué) ──
+    if kr_answer and kr_hash:
+        if not verify_rest_signature(kr_answer, kr_hash):
+            logger.warning("Boost IPN REST: invalid signature")
+            return HttpResponse('Invalid signature', status=400)
+
+        try:
+            answer = _json.loads(kr_answer)
+        except _json.JSONDecodeError:
+            return HttpResponse('Invalid JSON', status=400)
+
+        order_id = answer.get('orderDetails', {}).get('orderId', '')
+        paid = answer.get('orderStatus', '') == 'PAID'
+
+    # ── Format Formulaire V2 (redirection) ──
+    elif request.POST.get('vads_order_id'):
+        if not verify_signature(request.POST):
+            logger.warning("Boost IPN V2: invalid signature")
+            return HttpResponse('Invalid signature', status=400)
+
+        order_id = request.POST.get('vads_order_id', '')
+        result = request.POST.get('vads_result', '')
+        status_v2 = request.POST.get('vads_trans_status', '')
+        paid = result == '00' and status_v2 in ('AUTHORISED', 'CAPTURED')
+
+    else:
         return HttpResponse('Missing data', status=400)
-
-    if not verify_rest_signature(kr_answer, kr_hash):
-        logger.warning("Boost IPN: invalid signature")
-        return HttpResponse('Invalid signature', status=400)
-
-    try:
-        answer = _json.loads(kr_answer)
-    except _json.JSONDecodeError:
-        return HttpResponse('Invalid JSON', status=400)
-
-    order_id = answer.get('orderDetails', {}).get('orderId', '')
-    status = answer.get('orderStatus', '')
 
     try:
         annonce = Annonce.objects.get(boost_payment_ref=order_id)
     except Annonce.DoesNotExist:
+        logger.warning("Boost IPN: order not found (ref=%s)", order_id)
         return HttpResponse('Order not found', status=404)
 
-    if status == 'PAID':
+    if paid:
         annonce.boost = True
         annonce.boost_status = 'active'
         if annonce.boost_duree == '7jours':
@@ -1117,14 +1234,24 @@ def boost_ipn(request):
         annonce.boost_status = ''
         annonce.boost_duree = ''
         annonce.save()
-        logger.warning("Boost paiement échoué pour annonce #%s (status=%s)", annonce.pk, status)
+        logger.warning("Boost paiement échoué pour annonce #%s (ref=%s)", annonce.pk, order_id)
 
     return HttpResponse('OK', status=200)
 
 
+@_csrf_exempt
 def boost_retour_succes(request):
-    """Page de retour après paiement boost réussi."""
+    """Page de retour après paiement boost réussi (GET ou POST V2)."""
     pk = request.session.pop('boost_pending_pk', None)
+
+    # Fallback V2 : retrouver l'annonce via vads_order_id
+    if not pk and request.method == 'POST':
+        order_id = request.POST.get('vads_order_id', '')
+        if order_id:
+            annonce = Annonce.objects.filter(boost_payment_ref=order_id).first()
+            if annonce:
+                pk = annonce.pk
+
     if pk:
         annonce = Annonce.objects.filter(pk=pk).first()
         if annonce:
@@ -1134,9 +1261,18 @@ def boost_retour_succes(request):
     return redirect('mes_annonces')
 
 
+@_csrf_exempt
 def boost_retour_echec(request):
-    """Page de retour après paiement boost échoué."""
+    """Page de retour après paiement boost échoué (GET ou POST V2)."""
     pk = request.session.pop('boost_pending_pk', None)
+
+    if not pk and request.method == 'POST':
+        order_id = request.POST.get('vads_order_id', '')
+        if order_id:
+            annonce = Annonce.objects.filter(boost_payment_ref=order_id).first()
+            if annonce:
+                pk = annonce.pk
+
     if pk:
         messages.error(request, "Le paiement n'a pas abouti. Votre annonce est publiée sans boost.")
         return redirect('annonce_detail', pk=pk)
@@ -1148,14 +1284,19 @@ def boost_retour_echec(request):
 
 from .models import Notation
 from .notation_utils import peut_noter, note_moyenne, stats_vendeur, distribution_notes
+from users.models import Profil
 
 
 def profil_vendeur(request, user_id):
     """Page publique du profil vendeur avec avis et annonces."""
     vendeur = get_object_or_404(User, pk=user_id)
+
+    # Récupérer ou créer le profil enrichi
+    profil, _ = Profil.objects.get_or_create(user=vendeur)
+
     stats = stats_vendeur(vendeur)
     annonces = Annonce.objects.filter(user=vendeur, statut='actif').order_by('-created_at')
-    notations = Notation.objects.filter(vendeur=vendeur).order_by('-date_creation').select_related('acheteur', 'annonce')[:10]
+    notations = Notation.objects.filter(vendeur=vendeur).order_by('-date_creation').select_related('acheteur')[:20]
 
     distribution = distribution_notes(vendeur)
     # Prepare distribution list for template (5 to 1, with percentage)
@@ -1166,23 +1307,17 @@ def profil_vendeur(request, user_id):
         pct = round(count * 100 / total_notes) if total_notes > 0 else 0
         distribution_list.append({'etoiles': i, 'count': count, 'pct': pct})
 
-    annonces_notables = []
+    peut_noter_vendeur = False
     if request.user.is_authenticated and request.user != vendeur:
-        # Annonces du vendeur sur lesquelles l'utilisateur a envoyé un message
-        annonces_avec_message = Annonce.objects.filter(
-            user=vendeur,
-            messages__from_user=request.user,
-        ).distinct()
-        for annonce in annonces_avec_message:
-            if peut_noter(request.user, vendeur, annonce):
-                annonces_notables.append(annonce)
+        peut_noter_vendeur = peut_noter(request.user, vendeur)
 
     return render(request, 'ads/profil_vendeur.html', {
         'vendeur': vendeur,
+        'profil': profil,
         'stats': stats,
         'annonces': annonces,
         'notations': notations,
-        'annonces_notables': annonces_notables,
+        'peut_noter_vendeur': peut_noter_vendeur,
         'distribution_list': distribution_list,
     })
 
@@ -1198,11 +1333,11 @@ def noter_vendeur(request, user_id):
     if request.user == vendeur:
         return JsonResponse({'success': False, 'message': 'Vous ne pouvez pas vous noter vous-même.'}, status=400)
 
-    annonce_id = request.POST.get('annonce_id')
     note_val = request.POST.get('note')
+    avis_ecrit = request.POST.get('avis_ecrit', '').strip()
 
-    if not annonce_id or not note_val:
-        return JsonResponse({'success': False, 'message': 'Annonce et note sont requis.'}, status=400)
+    if not note_val:
+        return JsonResponse({'success': False, 'message': 'La note est requise.'}, status=400)
 
     try:
         note_val = int(note_val)
@@ -1212,24 +1347,244 @@ def noter_vendeur(request, user_id):
     if note_val < 1 or note_val > 5:
         return JsonResponse({'success': False, 'message': 'La note doit être entre 1 et 5.'}, status=400)
 
-    annonce = get_object_or_404(Annonce, pk=annonce_id, user=vendeur)
+    if len(avis_ecrit) > 500:
+        return JsonResponse({'success': False, 'message': 'L\'avis ne peut pas dépasser 500 caractères.'}, status=400)
 
-    if not peut_noter(request.user, vendeur, annonce):
-        return JsonResponse({'success': False, 'message': 'Vous ne pouvez pas noter ce vendeur pour cette annonce.'}, status=403)
+    if not peut_noter(request.user, vendeur):
+        return JsonResponse({'success': False, 'message': 'Vous avez déjà laissé un avis pour ce vendeur.'}, status=403)
 
     try:
-        Notation.objects.create(
+        notation = Notation.objects.create(
             vendeur=vendeur,
             acheteur=request.user,
-            annonce=annonce,
             note=note_val,
+            avis_ecrit=avis_ecrit,
         )
     except Exception:
-        return JsonResponse({'success': False, 'message': 'Vous avez déjà noté ce vendeur pour cette annonce.'}, status=400)
+        return JsonResponse({'success': False, 'message': 'Vous avez déjà laissé un avis pour ce vendeur.'}, status=400)
 
     stats = note_moyenne(vendeur)
+
+    # Construire le HTML du nouvel avis pour insertion dynamique
+    from django.utils.dateformat import format as date_format
+    date_str = date_format(notation.date_creation, 'd/m/Y')
+    etoiles_html = ''
+    for i in range(1, 6):
+        color = '#f59e0b' if i <= notation.note else '#d1d5db'
+        etoiles_html += f'<span style="color:{color}">★</span>'
+
+    avis_html = f'''<div class="flex gap-3 pb-4 border-b border-gray-100">
+        <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-bold flex-shrink-0">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Utilisateur vérifié</span>
+            <span class="text-amber-500 text-sm">{etoiles_html}</span>
+            <span class="text-xs text-gray-400">{date_str}</span>
+          </div>'''
+
+    if avis_ecrit:
+        from django.utils.html import escape
+        avis_html += f'\n          <p class="text-sm text-gray-700 mt-1.5">{escape(avis_ecrit)}</p>'
+
+    avis_html += '''
+        </div>
+      </div>'''
+
     return JsonResponse({
         'success': True,
         'message': 'Merci pour votre avis !',
         'nouvelle_moyenne': stats['moyenne'],
+        'total_avis': stats['total_avis'],
+        'avis_html': avis_html,
+    })
+
+
+# ── Import annonce depuis URL externe ─────────────────────────
+import ipaddress
+import socket
+from urllib.parse import urlparse
+
+import requests as http_requests
+from bs4 import BeautifulSoup
+
+_PRIVATE_NETS = [
+    ipaddress.ip_network('127.0.0.0/8'),
+    ipaddress.ip_network('10.0.0.0/8'),
+    ipaddress.ip_network('172.16.0.0/12'),
+    ipaddress.ip_network('192.168.0.0/16'),
+    ipaddress.ip_network('169.254.0.0/16'),
+    ipaddress.ip_network('::1/128'),
+    ipaddress.ip_network('fc00::/7'),
+]
+
+
+def _is_private_ip(hostname):
+    """Retourne True si le hostname résout vers une IP privée."""
+    try:
+        addr = socket.getaddrinfo(hostname, None)[0][4][0]
+        ip = ipaddress.ip_address(addr)
+        return any(ip in net for net in _PRIVATE_NETS)
+    except (socket.gaierror, ValueError):
+        return True  # En cas de doute, bloquer
+
+
+def _detect_source(url):
+    host = urlparse(url).hostname or ''
+    host = host.lower()
+    if 'facebook.com' in host or 'fb.com' in host:
+        return 'facebook'
+    if 'pa.pf' in host:
+        return 'papf'
+    if 'leboncoin' in host:
+        return 'leboncoin'
+    if 'marketplace' in host:
+        return 'marketplace'
+    return 'autre'
+
+
+@login_required
+def import_url(request):
+    """Scrape une URL externe et retourne titre/description/photo en JSON."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Méthode non autorisée.'}, status=405)
+
+    url = request.POST.get('url', '').strip()
+
+    # Validation URL
+    if not url:
+        return JsonResponse({'success': False, 'error': 'Veuillez entrer une URL.'})
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ('http', 'https'):
+        return JsonResponse({'success': False, 'error': "L'URL doit commencer par http:// ou https://."})
+
+    if not parsed.hostname:
+        return JsonResponse({'success': False, 'error': 'URL invalide.'})
+
+    # Bloquer IPs privées (SSRF)
+    if _is_private_ip(parsed.hostname):
+        return JsonResponse({'success': False, 'error': 'URL invalide.'})
+
+    source = _detect_source(url)
+
+    # Facebook bloque le scraping
+    if source == 'facebook':
+        return JsonResponse({
+            'success': False,
+            'error': "Facebook ne permet pas l'import automatique. Copiez-collez le titre et la description manuellement.",
+        })
+
+    # Requête HTTP
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.5',
+    }
+
+    try:
+        resp = http_requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+        resp.raise_for_status()
+    except http_requests.exceptions.Timeout:
+        return JsonResponse({'success': False, 'error': "Le site n'a pas répondu à temps (10s). Remplissez le formulaire manuellement."})
+    except http_requests.exceptions.RequestException:
+        return JsonResponse({'success': False, 'error': "Impossible d'accéder à ce lien. Vérifiez l'URL ou remplissez le formulaire manuellement."})
+
+    # Parse HTML
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    # Extraire titre
+    titre = ''
+    og_title = soup.find('meta', property='og:title')
+    if og_title and og_title.get('content', '').strip():
+        titre = og_title['content'].strip()
+    elif soup.title and soup.title.string:
+        titre = soup.title.string.strip()
+    else:
+        h1 = soup.find('h1')
+        if h1:
+            titre = h1.get_text(strip=True)
+
+    # Extraire description
+    description = ''
+    og_desc = soup.find('meta', property='og:description')
+    if og_desc and og_desc.get('content', '').strip():
+        description = og_desc['content'].strip()
+    else:
+        meta_desc = soup.find('meta', attrs={'name': 'description'})
+        if meta_desc and meta_desc.get('content', '').strip():
+            description = meta_desc['content'].strip()
+        else:
+            # Premier paragraphe significatif
+            for p in soup.find_all('p'):
+                text = p.get_text(strip=True)
+                if len(text) > 50:
+                    description = text
+                    break
+
+    # Extraire photo
+    photo_url = ''
+    og_img = soup.find('meta', property='og:image')
+    if og_img and og_img.get('content', '').strip():
+        photo_url = og_img['content'].strip()
+    else:
+        for img in soup.find_all('img', src=True):
+            src = img['src']
+            # Ignorer logos, icônes (petites images)
+            w = img.get('width', '')
+            h = img.get('height', '')
+            try:
+                if w and int(w) < 100:
+                    continue
+                if h and int(h) < 100:
+                    continue
+            except (ValueError, TypeError):
+                pass
+            # Ignorer les data URIs très courts et les SVG
+            if src.startswith('data:') or src.endswith('.svg'):
+                continue
+            # URL relative → absolue
+            if src.startswith('//'):
+                src = 'https:' + src
+            elif src.startswith('/'):
+                src = f"{parsed.scheme}://{parsed.hostname}{src}"
+            photo_url = src
+            break
+
+    # Tronquer
+    titre = titre[:200]
+    description = description[:2000]
+
+    if not titre and not description:
+        return JsonResponse({
+            'success': False,
+            'error': "Impossible d'extraire les informations de ce lien. Remplissez le formulaire manuellement.",
+        })
+
+    # Télécharger la photo côté serveur → base64 (évite les blocages CSP côté client)
+    import base64
+    photo_data = ''
+    photo_mime = ''
+    if photo_url:
+        try:
+            img_resp = http_requests.get(photo_url, headers=headers, timeout=8, stream=True)
+            img_resp.raise_for_status()
+            content_type = img_resp.headers.get('Content-Type', '')
+            if content_type.startswith('image/') and int(img_resp.headers.get('Content-Length', 0) or 5_000_000) <= 5_000_000:
+                img_bytes = img_resp.content
+                if len(img_bytes) <= 5_000_000:
+                    photo_data = base64.b64encode(img_bytes).decode('ascii')
+                    photo_mime = content_type.split(';')[0]
+        except Exception:
+            pass  # Photo non importable, pas grave
+
+    return JsonResponse({
+        'success': True,
+        'titre': titre,
+        'description': description,
+        'photo_url': photo_url,
+        'photo_data': photo_data,
+        'photo_mime': photo_mime,
+        'source': source,
     })

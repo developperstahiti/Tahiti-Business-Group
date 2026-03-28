@@ -2,6 +2,130 @@
 {% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
 {% block title %}Modifier — {{ annonce.titre }}{% endblock %}
 
+{% block extra_css %}
+<style nonce="{{ csp_nonce }}">
+/* ══ MODULE BOOST — SLIDER (edit) ═══════════════════════════════════ */
+#boost-wrap {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  transition: border-color .3s, box-shadow .3s;
+}
+#boost-wrap.boost-active {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249,115,22,.12);
+}
+#boost-wrap.boost-max {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239,68,68,.15);
+}
+#boost-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+}
+#boost-flame-display {
+  font-size: 2.2rem;
+  line-height: 1;
+  display: block;
+  transform-origin: bottom center;
+  transition: font-size .3s ease, filter .3s ease;
+}
+#boost-header-text { flex: 1; }
+#boost-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+#boost-subtitle {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 1px;
+}
+#boost-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  transition: background .3s, color .3s;
+}
+#boost-slider-zone {
+  padding: 4px 20px 16px;
+}
+#boost-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+  transition: background .3s;
+}
+#boost-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #111827;
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,.25);
+  transition: background .3s, transform .2s;
+}
+#boost-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+#boost-slider::-moz-range-thumb {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #111827;
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,.25);
+}
+#boost-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.boost-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  transition: color .25s, font-weight .25s;
+}
+.boost-lbl.active { color: #111827; font-weight: 800; }
+@keyframes flicker {
+  0%,100% { transform: scaleY(1)    rotate(-1deg); }
+  25%      { transform: scaleY(1.1)  rotate(1.5deg); }
+  50%      { transform: scaleY(.93)  rotate(-2deg); }
+  75%      { transform: scaleY(1.06) rotate(2deg); }
+}
+@keyframes flicker-big {
+  0%,100% { transform: scaleY(1)    rotate(-2deg); }
+  20%      { transform: scaleY(1.15) rotate(2deg); }
+  40%      { transform: scaleY(.9)   rotate(-3deg); }
+  60%      { transform: scaleY(1.12) rotate(3deg); }
+  80%      { transform: scaleY(.88)  rotate(-2deg); }
+}
+.flame-mid {
+  font-size: 2.6rem;
+  animation: flicker 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(249,115,22,.7));
+}
+.flame-max {
+  font-size: 3.2rem;
+  animation: flicker-big .55s ease-in-out infinite;
+  filter: drop-shadow(0 0 14px rgba(239,68,68,.9));
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
   <div class="layout-with-sidebar">
@@ -11,11 +135,11 @@
       <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
 
         <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-8 py-4 sm:py-6 text-white">
           <a href="{% url 'mes_annonces' %}" class="inline-flex items-center gap-1.5 text-blue-200 hover:text-white text-sm mb-3 transition">
             ← Mes annonces
           </a>
-          <h1 class="text-2xl font-black">Modifier l'annonce</h1>
+          <h1 class="text-xl sm:text-2xl font-black">Modifier l'annonce</h1>
           <p class="text-blue-200 mt-1 text-sm truncate">{{ annonce.titre }}</p>
         </div>
 
@@ -86,7 +210,8 @@
             <div>
               <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Description *</label>
               <textarea name="description" rows="6" required class="form-input"
-                placeholder="Décrivez votre article ou service...">{{ annonce.description }}</textarea>
+                placeholder="Décrivez votre article ou service...&#10;Vous pouvez inclure un lien : https://www.exemple.com">{{ annonce.description }}</textarea>
+              <p class="text-xs text-gray-400 mt-1">💡 Les liens http:// et https:// sont automatiquement cliquables dans votre annonce.</p>
             </div>
 
             <!-- ── Photos actuelles (réordonnables par drag & drop) ── -->
@@ -121,13 +246,12 @@
                 <span class="text-gray-400 font-normal normal-case">({{ annonce.photos|length }}/5 utilisées — encore {{ remaining_slots }} slot(s))</span>
               </label>
               <div id="dropzone"
-                class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50"
-                onclick="document.getElementById('photoInput').click()">
+                class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50">
                 <div class="text-3xl mb-1">📷</div>
                 <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez vos photos ici</div>
                 <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP • Max {{ remaining_slots }} photo(s) • Auto-convertis en WebP</div>
                 <input type="file" id="photoInput" name="photos" multiple accept="image/*"
-                  class="hidden" onchange="previewNewPhotos(this)">
+                  class="hidden">
               </div>
               <div id="newPhotoPreview" class="flex gap-2 flex-wrap mt-3"></div>
             </div>
@@ -149,6 +273,56 @@
           </form>
         </div>
       </div>
+    </div>
+
+    <!-- ── Boost (slider flamme — même système que dépôt) ── -->
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mt-4">
+      {% if annonce.boost_status == 'active' and annonce.boost_expires_at %}
+      <div class="bg-green-50 border-b border-green-200 px-6 py-4">
+        <div class="text-sm font-bold text-green-800 flex items-center gap-2">&#x2705; Boost actif</div>
+        <div class="text-sm text-green-600 mt-1">Expire le {{ annonce.boost_expires_at|date:"d/m/Y à H:i" }}</div>
+      </div>
+      {% endif %}
+      <form method="post" action="{% url 'boost_from_edit' pk=annonce.pk %}" id="boostEditForm">
+        {% csrf_token %}
+        <div id="boost-wrap">
+          <div id="boost-header">
+            <span id="boost-flame-display">&#128164;</span>
+            <div id="boost-header-text">
+              <span id="boost-title">Booster mon annonce</span>
+              <span id="boost-subtitle">Passe en tete de liste</span>
+            </div>
+            <span id="boost-badge"></span>
+          </div>
+
+          <div id="boost-slider-zone">
+            <input type="range" id="boost-slider" min="0" max="2" step="1" value="0">
+            <div id="boost-labels">
+              <span class="boost-lbl" data-pos="0">Pas de boost</span>
+              <span class="boost-lbl" data-pos="1">7 jours — 500 XPF</span>
+              <span class="boost-lbl" data-pos="2">1 mois — 1 500 XPF</span>
+            </div>
+          </div>
+
+          <input type="hidden" name="boost_duree" id="boost-duree-hidden" value="">
+
+          <div id="boost-recap" style="display:none">
+            <div id="boost-recap-inner" style="margin:0 20px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <span id="boost-recap-duree" style="font-size:13px;font-weight:700;color:#166534"></span>
+                <span style="font-size:12px;color:#166534;margin-left:6px">&#8212; Paiement par carte bancaire</span>
+              </div>
+              <span id="boost-recap-prix" style="font-size:18px;font-weight:800;color:#166534"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="boost-submit-zone" style="display:none;padding:0 20px 20px">
+          <button type="submit" id="boost-submit-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition text-sm">
+            Booster cette annonce
+          </button>
+        </div>
+      </form>
     </div>
 
     <!-- SIDEBAR -->
@@ -303,8 +477,19 @@ function _renderNewPreviews() {
   document.getElementById('photoInput').files = dt.files;
 }
 
+// ── Dropzone click → open file picker ──────────────────────────
+var dz = document.getElementById('dropzone');
+if (dz) {
+  dz.addEventListener('click', function() { document.getElementById('photoInput').click(); });
+}
+
+// ── Photo input change → preview ──────────────────────────────
+var photoInput = document.getElementById('photoInput');
+if (photoInput) {
+  photoInput.addEventListener('change', function() { previewNewPhotos(this); });
+}
+
 // ── Drag & drop upload ────────────────────────────────────────
-const dz = document.getElementById('dropzone');
 if (dz) {
   ['dragover', 'dragenter'].forEach(ev => {
     dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('border-blue-500', 'bg-blue-50'); });
@@ -319,5 +504,62 @@ if (dz) {
     _renderNewPreviews();
   });
 }
+
+// ─── Boost slider (flamme) ────────────────────────────────────────────
+function boostUpdate(pos) {
+  var hidden   = document.getElementById('boost-duree-hidden');
+  var flame    = document.getElementById('boost-flame-display');
+  var wrap     = document.getElementById('boost-wrap');
+  var badge    = document.getElementById('boost-badge');
+  var recap    = document.getElementById('boost-recap');
+  var recapDuree = document.getElementById('boost-recap-duree');
+  var recapPrix  = document.getElementById('boost-recap-prix');
+  var slider   = document.getElementById('boost-slider');
+  var lbls     = document.querySelectorAll('.boost-lbl');
+  var submitZone = document.getElementById('boost-submit-zone');
+  var submitBtn  = document.getElementById('boost-submit-btn');
+
+  if (pos === 0) {
+    if (hidden)   hidden.value = '';
+    if (flame)  { flame.textContent = '\uD83D\uDCA4'; flame.className = ''; flame.removeAttribute('style'); }
+    if (wrap)   { wrap.className = ''; }
+    if (badge)  { badge.textContent = ''; badge.style.background = ''; badge.style.color = ''; }
+    if (slider)   slider.style.background = '#e5e7eb';
+    if (recap)    recap.style.display = 'none';
+    if (submitZone) submitZone.style.display = 'none';
+  } else if (pos === 1) {
+    if (hidden)   hidden.value = '7jours';
+    if (flame)  { flame.textContent = '\uD83D\uDD25'; flame.removeAttribute('style'); flame.className = 'flame-mid'; }
+    if (wrap)   { wrap.className = 'boost-active'; }
+    if (badge)  { badge.textContent = '500 XPF'; badge.style.background = '#fff7ed'; badge.style.color = '#c2410c'; }
+    if (slider)   slider.style.background = 'linear-gradient(to right,#f97316 50%,#e5e7eb 50%)';
+    if (recap)    recap.style.display = 'block';
+    if (recapDuree) recapDuree.textContent = 'Boost 7 jours';
+    if (recapPrix)  recapPrix.textContent = '500 XPF';
+    if (submitZone) submitZone.style.display = 'block';
+    if (submitBtn)  submitBtn.textContent = 'Booster cette annonce — 500 XPF';
+  } else if (pos === 2) {
+    if (hidden)   hidden.value = '1mois';
+    if (flame)  { flame.textContent = '\uD83D\uDD25'; flame.removeAttribute('style'); flame.className = 'flame-max'; }
+    if (wrap)   { wrap.className = 'boost-max'; }
+    if (badge)  { badge.textContent = '1 500 XPF'; badge.style.background = '#fef2f2'; badge.style.color = '#b91c1c'; }
+    if (slider)   slider.style.background = '#ef4444';
+    if (recap)    recap.style.display = 'block';
+    if (recapDuree) recapDuree.textContent = 'Boost 1 mois';
+    if (recapPrix)  recapPrix.textContent = '1 500 XPF';
+    if (submitZone) submitZone.style.display = 'block';
+    if (submitBtn)  submitBtn.textContent = 'Booster cette annonce — 1 500 XPF';
+  }
+
+  lbls.forEach(function(l) {
+    l.classList.toggle('active', parseInt(l.dataset.pos) === pos);
+  });
+}
+// Init boost
+var _boostSlider = document.getElementById('boost-slider');
+if (_boostSlider) {
+  _boostSlider.addEventListener('input', function() { boostUpdate(parseInt(this.value)); });
+}
+boostUpdate(0);
 </script>
 {% endblock %}

@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class UserManager(BaseUserManager):
@@ -60,3 +63,33 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin_role(self):
         return self.role == 'admin'
+
+
+class Profil(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profil',
+    )
+    photo_profil = models.ImageField(upload_to='profils/photos/', blank=True, null=True)
+    image_fond = models.ImageField(upload_to='profils/bannieres/', blank=True, null=True)
+    bio = models.TextField(max_length=500, blank=True, default='')
+    localisation = models.CharField(max_length=100, blank=True, default='')
+    whatsapp = models.CharField(max_length=20, blank=True, default='')
+    facebook_url = models.URLField(blank=True, default='')
+    instagram_url = models.URLField(blank=True, default='')
+    site_web = models.URLField(blank=True, default='')
+
+    class Meta:
+        verbose_name = 'Profil'
+        verbose_name_plural = 'Profils'
+
+    def __str__(self):
+        return f"Profil de {self.user}"
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_or_update_profil(sender, instance, created, **kwargs):
+    """Crée automatiquement un Profil quand un User est créé."""
+    if created:
+        Profil.objects.create(user=instance)

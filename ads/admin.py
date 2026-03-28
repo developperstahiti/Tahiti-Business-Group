@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.http import HttpResponse
 import csv
-from .models import Annonce, Message, Signalement, AlerteAnnonce
+from .models import Annonce, Message, Signalement, AlerteAnnonce, Enregistrement
 
 
 def _export_csv(modeladmin, request, queryset):
@@ -109,6 +109,14 @@ class SignalementAdmin(admin.ModelAdmin):
             s.annonce.save()
         self.message_user(request, f"{queryset.count()} annonce(s) modérée(s).")
     supprimer_annonce_signalee.short_description = "Modérer l'annonce signalée"
+
+
+@admin.register(Enregistrement)
+class EnregistrementAdmin(admin.ModelAdmin):
+    list_display = ['user', 'annonce', 'date_creation']
+    list_filter = ['date_creation']
+    search_fields = ['user__email', 'user__nom', 'annonce__titre']
+    readonly_fields = ['date_creation']
 
 
 @admin.register(AlerteAnnonce)

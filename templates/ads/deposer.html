@@ -41,9 +41,30 @@
             <input type="hidden" name="localisation" id="h-localisation" value="Papeete">
             <input type="hidden" name="prix" id="h-prix" value="0">
 
+            {% if user.is_authenticated %}
+            <!-- ═══ IMPORT DEPUIS URL (optionnel) ═════════════════════════ -->
+            <div class="dep-import-section" id="import-section">
+              <div class="dep-import-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <span>Importer depuis un lien <span class="dep-import-optional">(optionnel)</span></span>
+              </div>
+              <div class="dep-import-row">
+                <input type="text" id="import-url-input" class="dep-import-input" placeholder="Collez le lien de votre annonce PA.PF, Leboncoin...">
+                <button type="button" id="import-url-btn" class="dep-import-btn">
+                  <span id="import-btn-text">Importer</span>
+                  <svg id="import-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  <svg id="import-btn-spinner" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none;animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10" stroke-dasharray="40" stroke-dashoffset="10"/></svg>
+                </button>
+              </div>
+              <div class="dep-import-hint">Collez le lien de votre annonce Facebook, PA.PF, Leboncoin...</div>
+              <div id="import-message" style="display:none"></div>
+            </div>
+            {% endif %}
+
             <!-- ═══ ETAPE 1 — CATEGORIE ═══════════════════════════════════ -->
             <div class="dep-step" id="step-categorie">
 
+              <div class="dep-cat-grid-wrapper">
               <div class="dep-cat-grid" id="cat-grid">
                 <button type="button" class="dep-cat-card" data-cat="immobilier">
                   <span class="dep-cat-icon"><img src="{% static 'img/cat-immobilier.webp' %}" alt=""></span>
@@ -65,10 +86,7 @@
                   <span class="dep-cat-icon"><img src="{% static 'img/cat-service.webp' %}" alt=""></span>
                   <span class="dep-cat-name">Service / Prestation</span>
                 </button>
-              </div>
-
-
-              <div class="dep-rubrique-grid">
+                <!-- Rubriques (même ligne) -->
                 {% if user.is_authenticated and user.is_pro %}
                 <a href="{% url 'deposer_info' %}" class="dep-cat-card dep-cat-card--rubrique">
                   <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt=""></span>
@@ -87,17 +105,18 @@
                   <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt=""></span>
                   <span class="dep-cat-name">Infos média / Article de presse</span>
                 </a>
-                <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" title="Compte professionnel requis pour deposer une rubrique">
+                <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" id="locked-promo" title="Compte professionnel requis" style="cursor:pointer">
                   <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt=""></span>
                   <span class="dep-cat-name">Promotion / Offre spéciale</span>
                   <span class="dep-lock-badge">&#128274; Pro</span>
                 </div>
-                <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" title="Compte professionnel requis pour deposer une rubrique">
+                <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" id="locked-nouveaute" title="Compte professionnel requis" style="cursor:pointer">
                   <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt=""></span>
                   <span class="dep-cat-name">Nouveautés / À tester absolument</span>
                   <span class="dep-lock-badge">&#128274; Pro</span>
                 </div>
                 {% endif %}
+              </div>
               </div>
             </div>
 
@@ -137,7 +156,8 @@
               <label class="dep-label" for="id_description">Description *</label>
               <div class="dep-step-content">
                 <textarea name="description" id="id_description" rows="5" class="form-input dep-textarea"
-                          placeholder="Decrivez votre article ou service en detail..."></textarea>
+                          placeholder="Decrivez votre article ou service en detail...&#10;Vous pouvez inclure un lien : https://www.exemple.com"></textarea>
+                <p class="text-xs text-gray-400 mt-1">💡 Les liens http:// et https:// sont automatiquement cliquables dans votre annonce.</p>
                 <div class="dep-char-count" id="desc-count">0 caractere(s) <span class="dep-char-hint">(50 min. recommandes)</span></div>
               </div>
             </div>
@@ -146,11 +166,11 @@
             <div class="dep-step dep-step--row" id="step-photos">
               <label class="dep-label">Photos <span class="dep-label-hint">(1ere = principale)</span></label>
               <div class="dep-step-content">
-                <div id="dropzone" class="dep-dropzone" onclick="document.getElementById('photoInput').click()">
+                <div id="dropzone" class="dep-dropzone">
                   <div class="dep-dz-icon">&#128247;</div>
                   <div class="dep-dz-text">Cliquez ou glissez vos photos ici</div>
                   <div class="dep-dz-hint">JPG, PNG, WebP - Max 5 photos</div>
-                  <input type="file" id="photoInput" name="photos" multiple accept="image/*" class="hidden" onchange="previewPhotos(this)">
+                  <input type="file" id="photoInput" name="photos" multiple accept="image/*" class="hidden">
                 </div>
                 <div id="photoPreview" class="dep-photo-previews"></div>
               </div>
@@ -170,7 +190,7 @@
                 </div>
 
                 <div id="boost-slider-zone">
-                  <input type="range" id="boost-slider" min="0" max="2" step="1" value="0" oninput="boostUpdate(parseInt(this.value))">
+                  <input type="range" id="boost-slider" min="0" max="2" step="1" value="0">
                   <div id="boost-labels">
                     <span class="boost-lbl" data-pos="0">Pas de boost</span>
                     <span class="boost-lbl" data-pos="1">7 jours — 500 XPF</span>
@@ -217,6 +237,92 @@
 
 {% block extra_css %}
 <style>
+/* ══ IMPORT DEPUIS URL ════════════════════════════════════════════════ */
+.dep-import-section {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.dep-import-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #334155;
+  margin-bottom: 10px;
+}
+.dep-import-optional {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 13px;
+}
+.dep-import-row {
+  display: flex;
+  gap: 8px;
+}
+.dep-import-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  transition: border-color .15s;
+}
+.dep-import-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+}
+.dep-import-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.dep-import-btn:hover { background: #333; }
+.dep-import-btn:disabled { opacity: .6; cursor: not-allowed; }
+.dep-import-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+.dep-import-msg {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.dep-import-msg--success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+.dep-import-msg--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 640px) {
+  .dep-import-row { flex-direction: column; }
+  .dep-import-btn { justify-content: center; }
+  .dep-import-section { padding: 14px 16px; }
+}
+
 /* ══ DEPOSER — STEPS LAYOUT ═══════════════════════════════════════════ */
 .dep-step { margin-bottom: 20px; }
 .dep-step--hidden { display: none; }
@@ -246,6 +352,22 @@
   min-width: 0;
 }
 
+/* Stack label above content on mobile */
+@media (max-width: 640px) {
+  .dep-step--row {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dep-step--row > .dep-label {
+    flex: none;
+    width: 100%;
+    padding-top: 0;
+  }
+  .dep-step--row > .dep-step-content {
+    width: 100%;
+  }
+}
+
 .dep-label {
   display: block;
   font-size: 11px;
@@ -263,32 +385,36 @@
 }
 
 /* ══ CATEGORIE CARDS ══════════════════════════════════════════════════ */
+.dep-cat-grid-wrapper { position: relative; }
 .dep-cat-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 4px;
 }
 .dep-cat-card {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px 12px;
+  gap: 6px;
+  padding: 10px 6px;
   background: #fff;
   border: 2px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
   transition: border-color .2s, background .2s, transform .2s, opacity .2s;
   overflow: hidden;
+  flex: 1 1 0;
+  min-width: 90px;
 }
 .dep-cat-card:hover {
   border-color: #9ca3af;
   background: #fafafa;
 }
-.dep-cat-icon { width: 120px; height: 120px; display:flex; align-items:center; justify-content:center; }
+.dep-cat-icon { width: 80px; height: 80px; display:flex; align-items:center; justify-content:center; }
 .dep-cat-icon img { width:100%; height:100%; object-fit:contain; }
-.dep-cat-name { font-size: 13px; font-weight: 700; color: #111827; text-align:center; }
+.dep-cat-name { font-size: 11px; font-weight: 700; color: #111827; text-align:center; max-width: 110px; line-height: 1.3; }
 
 /* Selected state */
 .dep-cat-card--selected {
@@ -303,16 +429,12 @@
 }
 .dep-cat-card--dimmed:hover { opacity: 0.7; }
 
-/* ══ RUBRIQUE CARDS ══════════════════════════════════════════════════ */
-.dep-rubrique-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
+/* ══ RUBRIQUE CARDS (inline dans la même grille) ════════════════════ */
 .dep-cat-card--rubrique {
   text-decoration: none;
   border-color: #c7d2fe;
   background: #eef2ff;
+  flex: 0 0 auto;
 }
 .dep-cat-card--rubrique:hover {
   border-color: #818cf8;
@@ -344,9 +466,14 @@
 /* ══ SOUS-CATEGORIE CHIPS ════════════════════════════════════════════ */
 .dep-chips-scroll {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 8px;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+.dep-chips-scroll::-webkit-scrollbar { display: none; }
 .dep-chip {
   padding: 8px 16px;
   background: #f9fafb;
@@ -657,8 +784,6 @@
 
 /* ══ RESPONSIVE ══════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .dep-cat-grid { grid-template-columns: repeat(3, 1fr); }
-  .dep-rubrique-grid { grid-template-columns: repeat(3, 1fr); }
   .dep-step--row { flex-direction: column; gap: 6px; }
   .dep-step--row > .dep-label { flex: none; padding-top: 0; }
   .dep-fields-grid > div { flex: 1 1 100%; }
@@ -680,6 +805,106 @@
 var _selectedCat = '';
 var _selectedSousCat = '';
 var _photoFiles = [];
+
+// ─── Import depuis URL ───────────────────────────────────────────────
+(function() {
+  var importBtn = document.getElementById('import-url-btn');
+  var importInput = document.getElementById('import-url-input');
+  var importMsg = document.getElementById('import-message');
+  if (!importBtn || !importInput) return;
+
+  importBtn.addEventListener('click', function() {
+    var url = importInput.value.trim();
+    if (!url) {
+      showImportMsg('error', 'Veuillez coller une URL.');
+      return;
+    }
+    if (!/^https?:\/\//i.test(url)) {
+      showImportMsg('error', "L'URL doit commencer par http:// ou https://.");
+      return;
+    }
+
+    // UI loading
+    importBtn.disabled = true;
+    document.getElementById('import-btn-arrow').style.display = 'none';
+    document.getElementById('import-btn-spinner').style.display = '';
+    document.getElementById('import-btn-text').textContent = 'Import...';
+    importMsg.style.display = 'none';
+
+    var formData = new FormData();
+    formData.append('url', url);
+
+    fetch('{% url "import_url" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+      body: formData,
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        // Pre-remplir titre
+        if (data.titre) {
+          var titreEl = document.getElementById('id_titre');
+          if (titreEl) titreEl.value = data.titre;
+        }
+        // Pre-remplir description
+        if (data.description) {
+          var descEl = document.getElementById('id_description');
+          if (descEl) descEl.value = data.description;
+        }
+        // Photo : utiliser les donnees base64 retournees par le serveur
+        if (data.photo_data && data.photo_mime) {
+          importPhotoBase64(data.photo_data, data.photo_mime);
+        }
+        var srcLabel = data.source === 'papf' ? 'PA.PF' :
+                       data.source === 'leboncoin' ? 'Leboncoin' :
+                       data.source === 'marketplace' ? 'Marketplace' :
+                       data.source;
+        showImportMsg('success', 'Annonce importee depuis ' + srcLabel + ' — verifiez et completez les informations avant de publier.');
+      } else {
+        showImportMsg('error', data.error || "Impossible d'importer ce lien. Remplissez le formulaire manuellement.");
+      }
+    })
+    .catch(function() {
+      showImportMsg('error', "Impossible d'importer ce lien. Remplissez le formulaire manuellement.");
+    })
+    .finally(function() {
+      importBtn.disabled = false;
+      document.getElementById('import-btn-arrow').style.display = '';
+      document.getElementById('import-btn-spinner').style.display = 'none';
+      document.getElementById('import-btn-text').textContent = 'Importer';
+    });
+  });
+
+  // Permettre import via Enter
+  importInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); importBtn.click(); }
+  });
+
+  function showImportMsg(type, text) {
+    importMsg.className = 'dep-import-msg dep-import-msg--' + type;
+    importMsg.textContent = (type === 'success' ? '\u2713 ' : '') + text;
+    importMsg.style.display = 'block';
+  }
+
+  function importPhotoBase64(b64data, mime) {
+    try {
+      var byteStr = atob(b64data);
+      var ab = new ArrayBuffer(byteStr.length);
+      var ia = new Uint8Array(ab);
+      for (var i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+      var blob = new Blob([ab], { type: mime });
+      var ext = 'jpg';
+      if (mime === 'image/png') ext = 'png';
+      else if (mime === 'image/webp') ext = 'webp';
+      var file = new File([blob], 'import.' + ext, { type: mime });
+      if (typeof _photoFiles !== 'undefined' && _photoFiles.length < 5) {
+        _photoFiles.push(file);
+        if (typeof _renderPhotoPreviews === 'function') _renderPhotoPreviews();
+      }
+    } catch(e) { /* Photo non importable, pas grave */ }
+  }
+})();
 
 // ─── Data ────────────────────────────────────────────────────────────
 var SOUS_CATS = JSON.parse(document.getElementById('sous-cats-data').textContent);
@@ -762,11 +987,14 @@ function renderTransactionStep() {
   var html = '';
   html += '<label class="dep-label">Type de transaction *</label>';
   html += '<div class="dep-radio-group" id="rg-transaction">';
-  html += '<button type="button" class="dep-radio-btn" data-val="vente" onclick="selectTransaction(this)">&#127991;&#65039; Vente</button>';
-  html += '<button type="button" class="dep-radio-btn" data-val="location" onclick="selectTransaction(this)">&#128273; Location</button>';
-  html += '<button type="button" class="dep-radio-btn" data-val="autre" onclick="selectTransaction(this)">&#128260; Autre</button>';
+  html += '<button type="button" class="dep-radio-btn" data-val="vente">&#127991;&#65039; Vente</button>';
+  html += '<button type="button" class="dep-radio-btn" data-val="location">&#128273; Location</button>';
+  html += '<button type="button" class="dep-radio-btn" data-val="autre">&#128260; Autre</button>';
   html += '</div>';
   container.innerHTML = html;
+  container.querySelectorAll('#rg-transaction .dep-radio-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { selectTransaction(btn); });
+  });
   showStep('step-transaction', true);
 }
 
@@ -870,7 +1098,7 @@ function renderSpecs(cat, sousCat) {
     html += '<label class="dep-label">Tarif</label>';
     html += '<div style="display:flex;gap:8px">';
     html += '<input type="number" name="prix" class="form-input" style="flex:1" placeholder="Ex: 5 000">';
-    html += '<select name="prix_unite" class="form-input" style="width:120px" onchange="document.getElementById(\'h-prix-unite\').value=this.value">';
+    html += '<select name="prix_unite" class="form-input" style="width:120px" id="select-prix-unite">';
     html += '<option value="heure">/ heure</option><option value="jour">/ jour</option><option value="">Forfait</option>';
     html += '</select></div></div>';
     html += '</div>';
@@ -879,6 +1107,17 @@ function renderSpecs(cat, sousCat) {
   if (html) {
     container.innerHTML = html;
     showStep('step-specs', true);
+
+    // Attach click events on dynamically created radio buttons
+    _bindRadioButtons(container);
+
+    // Attach change event on prix_unite select (services)
+    var prixUniteSelect = document.getElementById('select-prix-unite');
+    if (prixUniteSelect) {
+      prixUniteSelect.addEventListener('change', function() {
+        document.getElementById('h-prix-unite').value = this.value;
+      });
+    }
 
     // For immobilier, render sub-fields based on currently selected transaction type
     if (cat === 'immobilier') {
@@ -911,6 +1150,15 @@ function renderImmoFields(txType) {
   container.innerHTML = html;
 }
 
+// ─── Bind radio buttons (after innerHTML injection) ──────────────────
+function _bindRadioButtons(root) {
+  root.querySelectorAll('.dep-radio-btn[data-group]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectRadio(btn.dataset.group, btn.dataset.hidden, btn);
+    });
+  });
+}
+
 // ─── Field helpers ───────────────────────────────────────────────────
 function fieldText(name, label, ph) {
   return '<div><label class="dep-label">' + label + '</label>' +
@@ -929,7 +1177,7 @@ function radioFieldInline(name, label, options, extraClass) {
   var html = '<label class="dep-label">' + label + '</label><div class="dep-radio-group" id="rg-' + name + '">';
   options.forEach(function(o) {
     var val = o.replace(/<[^>]*>/g, '').trim();
-    html += '<button type="button" class="dep-radio-btn" data-val="' + val + '" onclick="selectRadio(\'rg-' + name + '\',\'' + name + '\',this)">' + o + '</button>';
+    html += '<button type="button" class="dep-radio-btn" data-val="' + val + '" data-group="rg-' + name + '" data-hidden="' + name + '">' + o + '</button>';
   });
   return html + '</div>';
 }
@@ -1038,7 +1286,7 @@ function _renderPhotoPreviews() {
     del.type = 'button';
     del.className = 'photo-del';
     del.textContent = '\u2715';
-    del.onclick = function() { _photoFiles.splice(idx, 1); _renderPhotoPreviews(); };
+    del.addEventListener('click', function() { _photoFiles.splice(idx, 1); _renderPhotoPreviews(); });
 
     wrap.appendChild(img);
     wrap.appendChild(num);
@@ -1073,8 +1321,19 @@ function _syncPhotoInput() {
   } catch(e) {}
 }
 
-// Dropzone drag & drop
+// Dropzone click → open file picker (migrated from inline onclick)
 var dz = document.getElementById('dropzone');
+var photoInput = document.getElementById('photoInput');
+if (dz && photoInput) {
+  dz.addEventListener('click', function() {
+    photoInput.click();
+  });
+  photoInput.addEventListener('change', function() {
+    previewPhotos(this);
+  });
+}
+
+// Dropzone drag & drop
 if (dz) {
   ['dragover','dragenter'].forEach(function(ev) {
     dz.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('dz-over'); });
@@ -1134,6 +1393,10 @@ function boostUpdate(pos) {
   });
 }
 // Init boost
+var _boostSlider = document.getElementById('boost-slider');
+if (_boostSlider) {
+  _boostSlider.addEventListener('input', function() { boostUpdate(parseInt(this.value)); });
+}
 boostUpdate(0);
 
 // ─── Form validation ─────────────────────────────────────────────────
@@ -1154,6 +1417,15 @@ function validateForm() {
 ['id_titre', 'id_description'].forEach(function(id) {
   var el = document.getElementById(id);
   if (el) el.addEventListener('input', validateForm);
+});
+
+// ─── Locked rubriques (Pro) → ouvrir modal ──────────────────────────
+['locked-promo', 'locked-nouveaute'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (typeof showProModal === 'function') showProModal();
+  });
 });
 
 // ─── Auto-fill prix_label ────────────────────────────────────────────

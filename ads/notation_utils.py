@@ -1,6 +1,6 @@
 from django.db.models import Avg, Count, Q, Value, IntegerField
 
-from ads.models import Annonce, Message, Notation
+from ads.models import Annonce, Message, Notation  # noqa: F401 (Message used by taux_reponse)
 
 MOIS_FR = {
     1: 'janvier',
@@ -18,30 +18,20 @@ MOIS_FR = {
 }
 
 
-def peut_noter(acheteur, vendeur, annonce):
+def peut_noter(acheteur, vendeur):
     """
-    Retourne True si l'acheteur peut noter le vendeur pour cette annonce.
+    Retourne True si l'acheteur peut noter le vendeur.
 
     Conditions :
     - acheteur != vendeur
-    - acheteur a envoyé au moins un message au vendeur
-    - aucune notation n'existe déjà pour ce triplet (acheteur, vendeur, annonce)
+    - aucune notation n'existe déjà pour ce couple (acheteur, vendeur)
     """
     if acheteur == vendeur:
-        return False
-
-    a_envoye_message = Message.objects.filter(
-        from_user=acheteur,
-        to_user=vendeur,
-    ).exists()
-
-    if not a_envoye_message:
         return False
 
     deja_note = Notation.objects.filter(
         acheteur=acheteur,
         vendeur=vendeur,
-        annonce=annonce,
     ).exists()
 
     return not deja_note

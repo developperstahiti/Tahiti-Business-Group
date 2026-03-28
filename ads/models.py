@@ -208,18 +208,18 @@ class Notation(models.Model):
         on_delete=models.CASCADE,
         related_name='notations_donnees',
     )
-    annonce = models.ForeignKey(Annonce, on_delete=models.CASCADE, related_name='notations')
     note = models.IntegerField()  # 1 à 5
+    avis_ecrit = models.TextField(blank=True, default='', max_length=500)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Notation'
         verbose_name_plural = 'Notations'
-        unique_together = ['acheteur', 'vendeur', 'annonce']
+        unique_together = ['acheteur', 'vendeur']
         ordering = ['-date_creation']
 
     def __str__(self):
-        return f"{self.acheteur} → {self.vendeur} : {self.note}/5 ({self.annonce.titre})"
+        return f"{self.acheteur} → {self.vendeur} : {self.note}/5"
 
     def clean(self):
         from django.core.exceptions import ValidationError
@@ -231,6 +231,28 @@ class Notation(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class Enregistrement(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='enregistrements',
+    )
+    annonce = models.ForeignKey(
+        'Annonce',
+        on_delete=models.CASCADE,
+        related_name='enregistrements',
+    )
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Enregistrement'
+        verbose_name_plural = 'Enregistrements'
+        unique_together = ('user', 'annonce')
+
+    def __str__(self):
+        return f"{self.user} — {self.annonce.titre}"
 
 
 class AlerteAnnonce(models.Model):

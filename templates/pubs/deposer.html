@@ -32,19 +32,19 @@
 
           <!-- Tabs : type de média -->
           <div class="flex flex-wrap gap-2 mb-3">
-            <button type="button" id="tabImageUpload" onclick="switchMediaTab('image_upload')"
+            <button type="button" id="tabImageUpload" data-media-tab="image_upload"
               class="media-tab px-3 py-2 rounded-lg text-sm font-bold border-2 transition border-blue-500 bg-blue-50 text-blue-700">
               Uploader image
             </button>
-            <button type="button" id="tabImageUrl" onclick="switchMediaTab('image_url')"
+            <button type="button" id="tabImageUrl" data-media-tab="image_url"
               class="media-tab px-3 py-2 rounded-lg text-sm font-bold border-2 transition border-gray-200 bg-white text-gray-500 hover:border-gray-300">
               Lien image
             </button>
-            <button type="button" id="tabVideoUpload" onclick="switchMediaTab('video_upload')"
+            <button type="button" id="tabVideoUpload" data-media-tab="video_upload"
               class="media-tab px-3 py-2 rounded-lg text-sm font-bold border-2 transition border-gray-200 bg-white text-gray-500 hover:border-gray-300">
               Uploader vidéo
             </button>
-            <button type="button" id="tabVideoUrl" onclick="switchMediaTab('video_url')"
+            <button type="button" id="tabVideoUrl" data-media-tab="video_url"
               class="media-tab px-3 py-2 rounded-lg text-sm font-bold border-2 transition border-gray-200 bg-white text-gray-500 hover:border-gray-300">
               Lien vidéo
             </button>
@@ -53,12 +53,11 @@
           <!-- Image upload -->
           <div id="zoneImageUpload">
             <div id="pubDropzone"
-              class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50"
-              onclick="document.getElementById('id_image').click()">
+              class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50">
               <div class="text-3xl mb-1">🖼️</div>
               <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez votre image ici</div>
               <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF — sera redimensionnée automatiquement</div>
-              <input type="file" id="id_image" name="image" accept="image/*" class="hidden" onchange="previewPubImage(this)">
+              <input type="file" id="id_image" name="image" accept="image/*" class="hidden">
             </div>
           </div>
 
@@ -67,9 +66,9 @@
             <div class="flex gap-3 items-end">
               <div class="flex-1">
                 <input type="url" id="id_image_url" name="image_url" class="form-input w-full"
-                  placeholder="https://exemple.com/mon-image.jpg" oninput="previewUrlImage(this.value)">
+                  placeholder="https://exemple.com/mon-image.jpg">
               </div>
-              <button type="button" onclick="previewUrlImage(document.getElementById('id_image_url').value)"
+              <button type="button" id="btnPreviewImageUrl"
                 class="px-4 py-2.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200 transition whitespace-nowrap">
                 Aperçu
               </button>
@@ -80,12 +79,11 @@
           <!-- Video upload -->
           <div id="zoneVideoUpload" class="hidden">
             <div id="videoDropzone"
-              class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50"
-              onclick="document.getElementById('id_video').click()">
+              class="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-6 text-center transition cursor-pointer bg-gray-50 hover:bg-blue-50">
               <div class="text-3xl mb-1">🎬</div>
               <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez votre vidéo ici</div>
               <div class="text-xs text-gray-400 mt-1">MP4, WebM, MOV — max 50 Mo</div>
-              <input type="file" id="id_video" name="video" accept="video/*" class="hidden" onchange="previewPubVideo(this)">
+              <input type="file" id="id_video" name="video" accept="video/*" class="hidden">
             </div>
           </div>
 
@@ -94,9 +92,9 @@
             <div class="flex gap-3 items-end">
               <div class="flex-1">
                 <input type="url" id="id_video_url" name="video_url" class="form-input w-full"
-                  placeholder="https://exemple.com/ma-video.mp4" oninput="previewUrlVideo(this.value)">
+                  placeholder="https://exemple.com/ma-video.mp4">
               </div>
-              <button type="button" onclick="previewUrlVideo(document.getElementById('id_video_url').value)"
+              <button type="button" id="btnPreviewVideoUrl"
                 class="px-4 py-2.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200 transition whitespace-nowrap">
                 Aperçu
               </button>
@@ -405,6 +403,35 @@ vdz.addEventListener('drop', function(e) {
   if (e.dataTransfer.files[0]) dt.items.add(e.dataTransfer.files[0]);
   document.getElementById('id_video').files = dt.files;
   previewPubVideo(document.getElementById('id_video'));
+});
+
+// ── Media tab buttons ──
+document.querySelectorAll('[data-media-tab]').forEach(function(btn) {
+  btn.addEventListener('click', function() { switchMediaTab(this.dataset.mediaTab); });
+});
+
+// ── Dropzone clicks ──
+document.getElementById('pubDropzone').addEventListener('click', function() {
+  document.getElementById('id_image').click();
+});
+document.getElementById('videoDropzone').addEventListener('click', function() {
+  document.getElementById('id_video').click();
+});
+
+// ── File input change ──
+document.getElementById('id_image').addEventListener('change', function() { previewPubImage(this); });
+document.getElementById('id_video').addEventListener('change', function() { previewPubVideo(this); });
+
+// ── URL inputs ──
+document.getElementById('id_image_url').addEventListener('input', function() { previewUrlImage(this.value); });
+document.getElementById('id_video_url').addEventListener('input', function() { previewUrlVideo(this.value); });
+
+// ── Preview buttons ──
+document.getElementById('btnPreviewImageUrl').addEventListener('click', function() {
+  previewUrlImage(document.getElementById('id_image_url').value);
+});
+document.getElementById('btnPreviewVideoUrl').addEventListener('click', function() {
+  previewUrlVideo(document.getElementById('id_video_url').value);
 });
 </script>
 {% endblock %}

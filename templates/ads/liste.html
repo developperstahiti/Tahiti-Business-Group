@@ -2,15 +2,16 @@
 {% block title %}{% if cat_active %}{% for code, label in categories %}{% if code == cat_active %}{{ label }} — {% endif %}{% endfor %}{% endif %}Annonces Polynésie{% endblock %}
 {% block meta_desc %}{% if cat_active %}Annonces {{ cat_active }} en Polynésie française sur TBG.{% else %}Toutes les annonces gratuites en Polynésie française — véhicules, immobilier, emploi, services, occasions.{% endif %}{% endblock %}
 
+{% load ads_extras %}
 {% block extra_head %}
-{% if annonces.has_previous %}<link rel="prev" href="?page={{ annonces.previous_page_number }}">{% endif %}
-{% if annonces.has_next %}<link rel="next" href="?page={{ annonces.next_page_number }}">{% endif %}
+{% if annonces.has_previous %}<link rel="prev" href="?{% query_transform page=annonces.previous_page_number %}">{% endif %}
+{% if annonces.has_next %}<link rel="next" href="?{% query_transform page=annonces.next_page_number %}">{% endif %}
 {% endblock %}
 
 {% block pub_spacer %}<div class="pub-spacer"></div>{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-4">
   <div class="layout-with-sidebar">
 
     <div class="layout-main">
@@ -28,7 +29,7 @@
             <!-- Catégorie -->
             <div>
               <label class="block text-xs font-semibold text-gray-500 mb-1">Catégorie</label>
-              <select name="categorie" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-cat" onchange="updateSousCats(this.value)">
+              <select name="categorie" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-cat">
                 <option value="">Toutes</option>
                 {% for code, label in categories %}
                 <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
@@ -67,10 +68,10 @@
             <div class="flex items-center gap-4 flex-wrap">
               <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
                 <input type="checkbox" name="photos" value="1" {% if request.GET.photos %}checked{% endif %}
-                       class="rounded border-gray-300" onchange="this.form.submit()">
+                       class="rounded border-gray-300" id="filter-photos">
                 Avec photos
               </label>
-              <select name="transaction" class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}" onchange="this.form.submit()">
+              <select name="transaction" class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}">
                 <option value="">Vente & Location</option>
                 <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente</option>
                 <option value="location" {% if transaction == 'location' %}selected{% endif %}>Location</option>
@@ -78,16 +79,43 @@
             </div>
             <div class="flex items-center gap-3">
               <a href="{% url 'liste_annonces' %}{% if cat_active %}?categorie={{ cat_active }}{% endif %}" class="text-sm text-gray-500 hover:text-gray-800 font-medium transition">Réinitialiser</a>
-              <button type="submit" class="text-sm font-bold text-white px-5 py-2 rounded-lg transition" style="background:#111" onmouseover="this.style.background='#333'" onmouseout="this.style.background='#111'">Rechercher</button>
+              <button type="submit" class="text-sm font-bold text-white px-5 py-2 rounded-lg transition btn-rechercher">Rechercher</button>
             </div>
           </div>
           <input type="hidden" name="tri" value="{{ tri }}">
         </form>
       </div>
 
-      <div class="over-img text-sm text-gray-500 mb-4 font-medium">
-        {{ annonces.paginator.count }} annonce{{ annonces.paginator.count|pluralize }} trouvée{{ annonces.paginator.count|pluralize }}
+      <div class="over-img text-sm text-gray-500 mb-4 font-medium flex items-center justify-between flex-wrap gap-2" id="liste-top">
+        <span>{{ annonces.paginator.count }} annonce{{ annonces.paginator.count|pluralize }} trouvée{{ annonces.paginator.count|pluralize }}</span>
+        {% if annonces.paginator.num_pages > 1 %}
+        <span class="text-gray-400">Page {{ annonces.number }} sur {{ annonces.paginator.num_pages }}</span>
+        {% endif %}
       </div>
+
+      {% if annonces.paginator.num_pages > 1 %}
+      <nav class="pagination-nav mb-4" aria-label="Pagination haut">
+        {% if annonces.has_previous %}
+        <a href="?{% query_transform page=annonces.previous_page_number %}" class="pagination-btn" aria-label="Page précédente">&larr;</a>
+        {% else %}
+        <span class="pagination-btn pagination-disabled" aria-hidden="true">&larr;</span>
+        {% endif %}
+        {% for p in annonces.paginator.page_range %}
+          {% if annonces.number == p %}
+          <span class="pagination-btn pagination-active" aria-current="page">{{ p }}</span>
+          {% elif p == 1 or p == annonces.paginator.num_pages or p >= annonces.number|add:"-2" and p <= annonces.number|add:"2" %}
+          <a href="?{% query_transform page=p %}" class="pagination-btn">{{ p }}</a>
+          {% elif p == 2 and annonces.number > 4 or p == annonces.paginator.num_pages|add:"-1" and annonces.number < annonces.paginator.num_pages|add:"-3" %}
+          <span class="pagination-ellipsis">&hellip;</span>
+          {% endif %}
+        {% endfor %}
+        {% if annonces.has_next %}
+        <a href="?{% query_transform page=annonces.next_page_number %}" class="pagination-btn" aria-label="Page suivante">&rarr;</a>
+        {% else %}
+        <span class="pagination-btn pagination-disabled" aria-hidden="true">&rarr;</span>
+        {% endif %}
+      </nav>
+      {% endif %}
 
       <!-- PUB CATÉGORIE — HAUT -->
       {% if cat_active %}
@@ -96,9 +124,9 @@
 
       <!-- PRÉ-TRIAGE par sous-catégorie -->
       {% if pretriage_groups %}
-      <div class="mb-8">
+      <div class="mb-4">
         {% for group in pretriage_groups %}
-        <div class="mb-8">
+        <div class="mb-4">
           <div class="flex items-center gap-3 mb-3">
             <h3 class="text-sm font-bold text-gray-700 whitespace-nowrap">{{ group.label }}</h3>
             <div class="flex-1 border-t border-gray-200"></div>
@@ -116,14 +144,14 @@
 
       {% if not pretriage_groups %}
       {% if annonces %}
-      <div class="ads-grid mb-8" id="annonces-grid">
+      <div class="ads-grid mb-4" id="annonces-grid">
         {% for annonce in annonces %}
         {% include 'partials/_annonce_card.html' %}
         {% if forloop.counter == 12 and cat_active %}
         </div>
         <!-- PUB CATÉGORIE — MILIEU -->
         {% with current_strip=pub_cat_milieu strip_label="Strip "|add:strip_cat_label|add:" — Milieu" strip_emp=strip_prefix|add:"_milieu" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
-        <div class="ads-grid mb-8" id="annonces-grid-2">
+        <div class="ads-grid mb-4" id="annonces-grid-2">
         {% endif %}
         {% endfor %}
       </div>
@@ -133,27 +161,30 @@
       {% with current_strip=pub_cat_bas strip_label="Strip "|add:strip_cat_label|add:" — Bas" strip_emp=strip_prefix|add:"_bas" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
       {% endif %}
 
-      <!-- Charger plus -->
-      {% if annonces.has_next %}
-      <div class="flex justify-center mt-6">
-        <button id="load-more-btn"
-          data-next="{{ annonces.next_page_number }}"
-          class="btn btn-outline text-sm px-8 py-3 font-bold">
-          Charger plus
-        </button>
-      </div>
-      {% endif %}
-
-      <noscript>
-      <nav class="pagination flex justify-center gap-4 mt-6" aria-label="Pages">
+      <!-- Pagination bas -->
+      {% if annonces.paginator.num_pages > 1 %}
+      <nav class="pagination-nav mt-6 mb-2" aria-label="Pagination bas">
         {% if annonces.has_previous %}
-        <a href="?page={{ annonces.previous_page_number }}" class="btn btn-outline text-sm">&larr; Précédent</a>
+        <a href="?{% query_transform page=annonces.previous_page_number %}" class="pagination-btn pagination-scroll" aria-label="Page précédente">&larr;</a>
+        {% else %}
+        <span class="pagination-btn pagination-disabled" aria-hidden="true">&larr;</span>
         {% endif %}
+        {% for p in annonces.paginator.page_range %}
+          {% if annonces.number == p %}
+          <span class="pagination-btn pagination-active" aria-current="page">{{ p }}</span>
+          {% elif p == 1 or p == annonces.paginator.num_pages or p >= annonces.number|add:"-2" and p <= annonces.number|add:"2" %}
+          <a href="?{% query_transform page=p %}" class="pagination-btn pagination-scroll">{{ p }}</a>
+          {% elif p == 2 and annonces.number > 4 or p == annonces.paginator.num_pages|add:"-1" and annonces.number < annonces.paginator.num_pages|add:"-3" %}
+          <span class="pagination-ellipsis">&hellip;</span>
+          {% endif %}
+        {% endfor %}
         {% if annonces.has_next %}
-        <a href="?page={{ annonces.next_page_number }}" class="btn btn-outline text-sm">Suivant &rarr;</a>
+        <a href="?{% query_transform page=annonces.next_page_number %}" class="pagination-btn pagination-scroll" aria-label="Page suivante">&rarr;</a>
+        {% else %}
+        <span class="pagination-btn pagination-disabled" aria-hidden="true">&rarr;</span>
         {% endif %}
       </nav>
-      </noscript>
+      {% endif %}
 
       {% else %}
       <div class="bg-white border border-gray-200 rounded-2xl p-16 text-center shadow-sm">
@@ -176,6 +207,7 @@
 
 {% block extra_js %}
 {% load static %}
+<style>.btn-rechercher{background:#111}.btn-rechercher:hover{background:#333}</style>
 {{ sous_cats_data|json_script:"sous-cats-liste" }}
 
 <script nonce="{{ csp_nonce }}" src="{% static 'js/location-selector.js' %}"></script>
@@ -225,38 +257,37 @@ const catSel = document.getElementById('filter-cat');
 if (catSel) {
   if (catSel.value) updateSousCats(catSel.value);
   toggleTransactionFilter(catSel.value);
-  catSel.addEventListener('change', function() { toggleTransactionFilter(this.value); });
+  catSel.addEventListener('change', function() {
+    updateSousCats(this.value);
+    toggleTransactionFilter(this.value);
+  });
 }
 
-// Charger plus
+// Auto-submit on checkbox/select change
+var photosEl = document.getElementById('filter-photos');
+if (photosEl) photosEl.addEventListener('change', function() { this.form.submit(); });
+var transEl = document.getElementById('filter-transaction');
+if (transEl) transEl.addEventListener('change', function() { this.form.submit(); });
+
+// Scroll vers le haut de la liste au clic sur pagination bas
 (function() {
-  const btn = document.getElementById('load-more-btn');
-  if (!btn) return;
-  btn.addEventListener('click', function() {
-    const page = btn.dataset.next;
-    const url = new URL(location.href);
-    url.searchParams.set('page', page);
-    btn.textContent = 'Chargement…';
-    btn.disabled = true;
-    fetch(url.toString(), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('annonces-grid').insertAdjacentHTML('beforeend', data.html);
-        // Relancer le lazy loading pour les nouvelles images
-        if (typeof initLazyImages === 'function') initLazyImages();
-        if (data.has_next) {
-          btn.dataset.next = data.next_page;
-          btn.textContent = 'Charger plus';
-          btn.disabled = false;
-        } else {
-          btn.closest('div').remove();
-        }
-      })
-      .catch(() => {
-        btn.textContent = 'Charger plus';
-        btn.disabled = false;
-      });
+  var links = document.querySelectorAll('.pagination-scroll');
+  if (!links.length) return;
+  var target = document.getElementById('liste-top');
+  if (!target) return;
+  links.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      // Stocker un flag pour scroller après chargement de la page
+      try { sessionStorage.setItem('tbg_scroll_liste', '1'); } catch(err) {}
+    });
   });
+  // Si on arrive sur la page via pagination bas, scroller
+  try {
+    if (sessionStorage.getItem('tbg_scroll_liste')) {
+      sessionStorage.removeItem('tbg_scroll_liste');
+      target.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+  } catch(err) {}
 })();
 </script>
 {% endblock %}

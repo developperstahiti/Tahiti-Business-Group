@@ -142,3 +142,37 @@ def spec_value(val, key):
     if unit and str(val).isdigit():
         return f"{int(val):,} {unit}".replace(',', '\u00a0').strip()
     return val
+
+
+import re
+from django.utils.safestring import mark_safe
+from django.utils.html import escape
+
+
+@register.simple_tag(takes_context=True)
+def query_transform(context, **kwargs):
+    """Return current GET params with overrides, for pagination links.
+
+    Usage: {% query_transform page=3 %}  ->  "categorie=immo&page=3&q=test"
+    """
+    request = context['request']
+    updated = request.GET.copy()
+    for k, v in kwargs.items():
+        if v is not None:
+            updated[k] = v
+        else:
+            updated.pop(k, None)
+    return updated.urlencode()
+
+@register.filter(name='linkify')
+def linkify(text):
+    """Convert URLs in text to clickable links."""
+    if not text:
+        return text
+    escaped = escape(text)
+    url_pattern = re.compile(r'(https?://[^\s<>"{}|\\^`\[\]]+)')
+    result = url_pattern.sub(
+        r'<a href="\1" target="_blank" rel="nofollow noopener noreferrer" class="text-blue-600 hover:underline break-all">\1</a>',
+        escaped
+    )
+    return mark_safe(result)

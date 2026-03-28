@@ -5,7 +5,7 @@
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-8">
 
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
     <h1 class="text-2xl font-bold text-gray-900">Mes annonces</h1>
     <a href="{% url 'deposer_annonce' %}" class="btn btn-accent">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,14 +20,20 @@
   <!-- Barre de remontee -->
   <form method="post" action="{% url 'remonter_annonces' %}" id="remontee-form">
     {% csrf_token %}
-    <div class="flex items-center gap-3 mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3">
+    <div class="flex items-center gap-3 mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 flex-wrap">
       <label class="flex items-center gap-2 text-sm font-medium text-blue-700 cursor-pointer">
         <input type="checkbox" id="select-all-cb" class="rounded border-blue-300">
         Tout selectionner
       </label>
+      {% if request.user.role == 'pro' or request.user.role == 'admin' %}
       <button type="submit" class="ml-auto text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition flex items-center gap-1.5">
-        <span class="text-base leading-none">&uarr;</span> Remonter la selection
+        <span class="text-base leading-none">&uarr;</span> Republier la sélection
       </button>
+      {% else %}
+      <button type="button" id="btn-show-pro-modal" class="ml-auto text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition flex items-center gap-1.5">
+        <span class="text-base leading-none">&uarr;</span> Republier la sélection &#128274;
+      </button>
+      {% endif %}
     </div>
 
   <div class="space-y-3">
@@ -78,14 +84,14 @@
             </span>
             <span class="text-xs text-gray-400">{{ annonce.created_at|date:"d/m/Y" }}</span>
             {% if annonce.derniere_remontee %}
-            <span class="text-xs text-blue-500 font-medium" title="Derniere remontee">&#8593; {{ annonce.derniere_remontee|date:"d/m/Y H:i" }}</span>
+            <span class="text-xs text-blue-500 font-medium" title="Dernière republication">&#8593; {{ annonce.derniere_remontee|date:"d/m/Y H:i" }}</span>
             {% endif %}
           </div>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-t border-gray-100">
+      <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex-wrap">
         <a href="{% url 'annonce_detail' annonce.pk %}"
           class="text-xs px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 font-medium rounded-lg transition">
           Voir
@@ -102,8 +108,7 @@
           </button>
         </form>
         {% endif %}
-        <form method="post" action="{% url 'supprimer_annonce' annonce.pk %}" class="ml-auto"
-          onsubmit="return confirm('Supprimer cette annonce ?')">
+        <form method="post" action="{% url 'supprimer_annonce' annonce.pk %}" class="ml-auto confirm-delete-annonce">
           {% csrf_token %}
           <button type="submit" class="text-xs px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg transition">
             Supprimer
@@ -137,6 +142,19 @@
 // Tout selectionner / deselectionner
 document.getElementById('select-all-cb')?.addEventListener('change', function() {
   document.querySelectorAll('.annonce-cb').forEach(cb => cb.checked = this.checked);
+});
+
+// Bouton Pro modal
+var btnProModal = document.getElementById('btn-show-pro-modal');
+if (btnProModal) {
+  btnProModal.addEventListener('click', function() { showProModal(); });
+}
+
+// Confirm suppression annonce
+document.querySelectorAll('.confirm-delete-annonce').forEach(function(form) {
+  form.addEventListener('submit', function(e) {
+    if (!confirm('Supprimer cette annonce ?')) e.preventDefault();
+  });
 });
 </script>
 {% endblock %}

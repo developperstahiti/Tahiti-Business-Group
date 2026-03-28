@@ -144,8 +144,7 @@
       <div class="flex gap-3">
         {% if pub %}
         <form method="post" action="{% url 'pub_supprimer' pub.pk %}"
-              onsubmit="return confirm('Supprimer définitivement cette publicité ?')"
-              class="inline">
+              class="inline confirm-delete-pub">
           {% csrf_token %}
           <button type="submit"
             class="text-sm px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl font-medium transition">
@@ -162,4 +161,12 @@
 
   </form>
 </div>
+
+<script nonce="{{ csp_nonce }}">
+document.querySelectorAll('.confirm-delete-pub').forEach(function(form) {
+  form.addEventListener('submit', function(e) {
+    if (!confirm('Supprimer définitivement cette publicité ?')) e.preventDefault();
+  });
+});
+</script>
 {% endblock %}

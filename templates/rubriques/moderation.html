@@ -20,7 +20,7 @@
       </p>
     </div>
     <div class="flex gap-3 items-center">
-      <a href="{% url 'run_agents' %}" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded hover:bg-emerald-700 transition" onclick="this.textContent='Scraping en cours...';this.style.pointerEvents='none'">Lancer les agents</a>
+      <a href="{% url 'run_agents' %}" id="btn-run-agents" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded hover:bg-emerald-700 transition">Lancer les agents</a>
       <a href="{% url 'rubriques_index' %}" class="text-sm text-blue-600 hover:underline">← Page publique</a>
     </div>
   </div>
@@ -250,6 +250,15 @@
 </style>
 
 <script nonce="{{ csp_nonce }}">
+// Run agents button feedback
+var btnRunAgents = document.getElementById('btn-run-agents');
+if (btnRunAgents) {
+  btnRunAgents.addEventListener('click', function() {
+    this.textContent = 'Scraping en cours...';
+    this.style.pointerEvents = 'none';
+  });
+}
+
 (function(){
   const tabs   = document.querySelectorAll('.mod-tab');
   const panels = document.querySelectorAll('.mod-panel');
