@@ -1,13 +1,10 @@
 // Service Worker — Tahiti Business Group PWA
-const CACHE_NAME = 'tbg-v1';
+const CACHE_NAME = 'tbg-v2';
 const STATIC_ASSETS = [
-    '/',
-    '/static/css/style.css',
-    '/static/manifest.json',
     '/offline.html',
 ];
 
-// Install — cache les assets statiques
+// Install — cache la page offline uniquement
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
@@ -27,23 +24,10 @@ self.addEventListener('activate', event => {
     self.clients.claim();
 });
 
-// Fetch — cache-first pour les assets, network-first pour les pages
+// Fetch — intervention minimale
 self.addEventListener('fetch', event => {
-    const url = new URL(event.request.url);
-
-    // Assets statiques : cache-first
-    if (url.pathname.startsWith('/static/')) {
-        event.respondWith(
-            caches.match(event.request).then(cached =>
-                cached || fetch(event.request).then(response => {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                    return response;
-                })
-            )
-        );
-        return;
-    }
+    // Ne PAS intercepter les requêtes cross-origin (images S3, API externes, etc.)
+    if (new URL(event.request.url).origin !== self.location.origin) return;
 
     // Pages HTML : network-first, fallback offline
     if (event.request.mode === 'navigate') {
@@ -53,6 +37,5 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Autres requetes : network only
-    event.respondWith(fetch(event.request));
+    // Tout le reste (static, media, API) : laisser le navigateur gérer normalement
 });
