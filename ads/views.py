@@ -241,7 +241,7 @@ _PRETRIAGE_MAP = {
 
 def _build_pretriage_groups(cat, base_qs, limit=4):
     """Construit les groupes de pré-triage pour une catégorie."""
-    groups_def = _PRETRIAGE_MAP.get(cat) or _pretriage_from_sous_cats(cat)
+    groups_def = _PRETRIAGE_MAP.get(cat) if cat in _PRETRIAGE_MAP else _pretriage_from_sous_cats(cat)
     groups = []
     for label, filters, qs_params in groups_def:
         group_qs = base_qs.filter(**filters)
@@ -809,15 +809,16 @@ def mes_messages(request):
         Q(from_user=request.user) | Q(to_user=request.user)
     ).select_related('annonce', 'from_user', 'to_user').order_by('-created_at')
 
-    # One conversation entry per annonce
+    # One conversation entry per (annonce, other_user) pair
     seen = set()
     conversations = []
     for msg in all_msgs:
-        if msg.annonce_id not in seen:
-            seen.add(msg.annonce_id)
-            other = msg.to_user if msg.from_user == request.user else msg.from_user
+        other = msg.to_user if msg.from_user == request.user else msg.from_user
+        key = (msg.annonce_id, other.pk)
+        if key not in seen:
+            seen.add(key)
             unread = Message.objects.filter(
-                annonce=msg.annonce, to_user=request.user, read=False
+                annonce=msg.annonce, to_user=request.user, from_user=other, read=False
             ).count()
             conversations.append({
                 'annonce':    msg.annonce,

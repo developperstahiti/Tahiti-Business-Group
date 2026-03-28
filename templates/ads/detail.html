@@ -228,32 +228,30 @@
       {% if annonce.user != user %}
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
         <h2 class="font-bold text-lg mb-5 text-gray-900">Envoyer un message au vendeur</h2>
-        <form method="post" class="space-y-4">
+        {% if user.is_authenticated %}
+        <button type="button" id="openContactBtn" class="btn btn-primary w-full justify-center py-3 text-base"
+                data-contact-url="{% url 'contact_annonce' pk=annonce.pk %}">
+          Contacter le vendeur
+        </button>
+        <noscript>
+        <form method="post" class="space-y-4 mt-4">
           {% csrf_token %}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">{{ form_message.contact_nom.label }}</label>
-              {{ form_message.contact_nom }}
-              {% if form_message.contact_nom.errors %}<p class="text-red-500 text-xs mt-1">{{ form_message.contact_nom.errors.0 }}</p>{% endif %}
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">{{ form_message.contact_email.label }}</label>
-              {{ form_message.contact_email }}
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">{{ form_message.contact_tel.label }}</label>
-              {{ form_message.contact_tel }}
-            </div>
-          </div>
           <div>
-            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">{{ form_message.contenu.label }}</label>
-            {{ form_message.contenu }}
-            {% if form_message.contenu.errors %}<p class="text-red-500 text-xs mt-1">{{ form_message.contenu.errors.0 }}</p>{% endif %}
+            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Votre message</label>
+            <textarea name="content" rows="4" placeholder="Votre message..." required
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
           </div>
           <button type="submit" class="btn btn-primary w-full justify-center py-3 text-base">
             Envoyer le message
           </button>
         </form>
+        </noscript>
+        {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}&msg=contact"
+           class="btn btn-primary w-full justify-center py-3 text-base inline-block text-center">
+          Connectez-vous pour contacter le vendeur
+        </a>
+        {% endif %}
       </div>
       {% endif %}
 
@@ -348,18 +346,17 @@
       {% if annonce.user != user %}
       <div class="mt-4 pt-4 border-t border-gray-100">
         <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Envoyer un message au vendeur</p>
-        <form method="post" action="{% url 'annonce_detail' annonce.pk %}" class="space-y-3">
-          {% csrf_token %}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input type="text" name="contact_nom" placeholder="Votre nom" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="email" name="contact_email" placeholder="Email" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <input type="tel" name="contact_tel" placeholder="Téléphone" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <textarea name="contenu" rows="3" placeholder="Votre message..." required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
-          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition text-sm">
-            Envoyer le message
-          </button>
-        </form>
+        {% if user.is_authenticated %}
+        <button type="button" class="lightbox-open-contact-btn w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                data-contact-url="{% url 'contact_annonce' pk=annonce.pk %}">
+          Contacter le vendeur
+        </button>
+        {% else %}
+        <a href="{% url 'login' %}?next={{ request.path }}&msg=contact"
+           class="block w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition text-sm text-center">
+          Connectez-vous pour contacter
+        </a>
+        {% endif %}
       </div>
       {% endif %}
     </div>
@@ -807,5 +804,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// ── Bouton "Contacter le vendeur" (body) → ouvre le modal AJAX ────────
+(function() {
+  var btn = document.getElementById('openContactBtn');
+  if (btn) {
+    btn.addEventListener('click', function() {
+      openContact(this.dataset.contactUrl);
+    });
+  }
+})();
+
+// ── Bouton "Contacter le vendeur" (lightbox) → ferme lightbox + ouvre modal ──
+(function() {
+  document.querySelectorAll('.lightbox-open-contact-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      closeLightbox();
+      openContact(this.dataset.contactUrl);
+    });
+  });
+})();
 </script>
 {% endblock %}
