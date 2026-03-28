@@ -3,6 +3,8 @@ from django.urls import reverse
 from .models import Annonce, CATEGORIES
 
 
+
+
 class StaticSitemap(Sitemap):
     """Pages statiques publiques du site."""
 
@@ -57,4 +59,4 @@ class AnnonceSitemap(Sitemap):
         return obj.updated_at
 
     def location(self, obj):
-        return reverse('annonce_detail', args=[obj.pk])
+        return obj.get_absolute_url()

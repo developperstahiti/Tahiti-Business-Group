@@ -187,7 +187,7 @@
               {% endif %}
             </div>
             <div class="flex-1 min-w-0">
-              <a href="{% url 'annonce_detail' annonce.pk %}" class="text-sm font-medium hover:text-accent transition truncate block">
+              <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="text-sm font-medium hover:text-accent transition truncate block">
                 {{ annonce.titre }}
               </a>
               <div class="text-xs text-muted">{{ annonce.views }} vues • {{ annonce.clics }} clics • {{ annonce.created_at|date:"d/m/Y" }}</div>

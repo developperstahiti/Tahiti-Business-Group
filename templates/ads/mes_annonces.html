@@ -47,7 +47,7 @@
         {% endif %}
 
         <!-- Miniature -->
-        <a href="{% url 'annonce_detail' annonce.pk %}" class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 block">
+        <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 block">
           {% if annonce.get_main_photo %}
           <img src="{{ annonce.get_main_photo }}" class="w-full h-full object-cover" alt="{{ annonce.titre }}" loading="lazy">
           {% else %}
@@ -64,7 +64,7 @@
 
         <!-- Infos -->
         <div class="flex-1 min-w-0">
-          <a href="{% url 'annonce_detail' annonce.pk %}"
+          <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}"
             class="font-semibold text-gray-900 hover:text-blue-600 transition truncate block text-sm">
             {{ annonce.titre }}
           </a>
@@ -92,7 +92,7 @@
 
       <!-- Actions -->
       <div class="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-t border-gray-100 flex-wrap">
-        <a href="{% url 'annonce_detail' annonce.pk %}"
+        <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}"
           class="text-xs px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 font-medium rounded-lg transition">
           Voir
         </a>

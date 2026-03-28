@@ -36,7 +36,7 @@
   {% endfor %}
   {% for annonce in annonces %}
   <url>
-    <loc>{{ base }}/annonces/{{ annonce.pk }}/</loc>
+    <loc>{{ base }}/annonces/{{ annonce.pk }}/{{ annonce.slug }}/</loc>
     <lastmod>{{ annonce.updated_at|date:"Y-m-d" }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

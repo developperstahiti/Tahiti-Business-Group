@@ -402,10 +402,21 @@ def liste_annonces(request):
     })
 
 
-def annonce_detail(request, pk):
+def annonce_detail_redirect(request, pk):
+    """Redirection 301 depuis l'ancienne URL /annonces/<pk>/ vers /annonces/<pk>/<slug>/."""
+    annonce = get_object_or_404(Annonce, pk=pk)
+    return redirect(annonce.get_absolute_url(), permanent=True)
+
+
+def annonce_detail(request, pk, slug=''):
     from .notation_utils import stats_vendeur, peut_noter
 
     annonce = get_object_or_404(Annonce.objects.select_related('user', 'user__profil'), pk=pk)
+
+    # Si le slug ne correspond pas, rediriger 301 vers le bon slug
+    if slug != annonce.slug:
+        return redirect(annonce.get_absolute_url(), permanent=True)
+
     # Seuls les annonces actives sont visibles publiquement ;
     # le propriétaire et les admins peuvent voir toute annonce.
     is_owner = request.user.is_authenticated and request.user == annonce.user
@@ -424,7 +435,7 @@ def annonce_detail(request, pk):
                 content=content,
             )
             messages.success(request, "Votre message a bien été envoyé !")
-            return redirect('annonce_detail', pk=pk)
+            return redirect(annonce.get_absolute_url())
 
     # Compteur d'enregistrements
     enregistrement_count = Enregistrement.objects.filter(annonce=annonce).count()
@@ -556,6 +567,7 @@ def deposer_annonce(request):
                     'categorie': annonce.get_categorie_display(),
                     'prix': annonce.get_prix_display_label(),
                     'annonce_pk': annonce.pk,
+                    'annonce_slug': annonce.slug,
                 })
                 send_mail(
                     subject=f'Votre annonce "{annonce.titre}" est en ligne sur TBG',
@@ -579,7 +591,7 @@ def deposer_annonce(request):
                 })
             else:
                 messages.success(request, f"Annonce publiée ! {len(photos)} photo(s) ajoutée(s).")
-            return redirect('annonce_detail', pk=annonce.pk)
+            return redirect(annonce.get_absolute_url())
     else:
         form = AnnonceForm()
 
@@ -663,7 +675,7 @@ def edit_annonce(request, pk):
         annonce.photos = current
         annonce.save()
         messages.success(request, "Annonce modifiée avec succès.")
-        return redirect('annonce_detail', pk=annonce.pk)
+        return redirect(annonce.get_absolute_url())
 
     return render(request, 'ads/edit_annonce.html', {
         'annonce':              annonce,
@@ -962,7 +974,7 @@ def signaler_annonce(request, pk):
             details=details,
         )
         messages.success(request, "Merci, votre signalement a été envoyé à l'équipe TBG.")
-        return redirect('annonce_detail', pk=pk)
+        return redirect(annonce.get_absolute_url())
     return render(request, 'ads/signaler.html', {'annonce': annonce})
 
 
@@ -1124,7 +1136,7 @@ def boost_paiement(request, pk):
 
     if request.session.get('boost_pending_pk') != annonce.pk:
         messages.error(request, "Accès non autorisé.")
-        return redirect('annonce_detail', pk=pk)
+        return redirect(annonce.get_absolute_url())
 
     prix = BOOST_PRIX.get(annonce.boost_duree, 500)
     duree_label = '7 jours' if annonce.boost_duree == '7jours' else '1 mois'
@@ -1163,7 +1175,7 @@ def boost_paiement(request, pk):
         except Exception as e2:
             logger.exception("Boost: V2 fallback also failed: %s", e2)
             messages.error(request, f"Erreur paiement : {e} | Fallback : {e2}")
-            return redirect('annonce_detail', pk=pk)
+            return redirect(annonce.get_absolute_url())
 
         return render(request, 'ads/boost_payzen_redirect.html', {
             'annonce': annonce,
@@ -1282,7 +1294,7 @@ def boost_retour_succes(request):
         annonce = Annonce.objects.filter(pk=pk).first()
         if annonce:
             messages.success(request, f'Paiement accepté ! Votre boost est actif pour "{annonce.titre}".')
-            return redirect('annonce_detail', pk=pk)
+            return redirect(annonce.get_absolute_url())
     messages.success(request, "Paiement accepté ! Votre boost est actif.")
     return redirect('mes_annonces')
 
@@ -1303,8 +1315,10 @@ def boost_retour_echec(request):
                 pk = annonce.pk
 
     if pk:
-        messages.error(request, "Le paiement n'a pas abouti. Votre annonce est publiée sans boost.")
-        return redirect('annonce_detail', pk=pk)
+        annonce = Annonce.objects.filter(pk=pk).first()
+        if annonce:
+            messages.error(request, "Le paiement n'a pas abouti. Votre annonce est publiée sans boost.")
+            return redirect(annonce.get_absolute_url())
     messages.error(request, "Le paiement n'a pas abouti.")
     return redirect('mes_annonces')
 

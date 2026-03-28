@@ -151,7 +151,7 @@
           {% for annonce in annonces_recentes %}
           <div class="flex items-center gap-3 px-6 py-3 hover:bg-gray-50 transition">
             <div class="flex-1 min-w-0">
-              <a href="{% url 'annonce_detail' annonce.pk %}"
+              <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}"
                  class="text-sm font-medium text-gray-900 hover:text-blue-600 transition truncate block">
                 {{ annonce.titre }}
               </a>

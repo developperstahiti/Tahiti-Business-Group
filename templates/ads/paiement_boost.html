@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Paiement Boost — {{ annonce.titre }}{% endblock %}
+{% block title %}Paiement Boost — {{ annonce.titre }} — TBG{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto px-4 py-10">
@@ -61,7 +61,7 @@
         <div class="text-5xl mb-4">&#10060;</div>
         <h2 class="text-xl font-bold text-gray-900 mb-2">Paiement refuse</h2>
         <p class="text-gray-500 text-sm mb-6">Votre annonce a ete publiee sans boost.</p>
-        <a href="{% url 'annonce_detail' pk=annonce.pk %}" class="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white font-bold px-6 py-3 rounded-xl transition">
+        <a href="{% url 'annonce_detail' pk=annonce.pk slug=annonce.slug %}" class="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white font-bold px-6 py-3 rounded-xl transition">
           Voir mon annonce
         </a>
       </div>
@@ -69,7 +69,7 @@
   </div>
 
   <div class="flex items-center justify-between">
-    <a href="{% url 'annonce_detail' pk=annonce.pk %}" class="text-sm text-gray-400 hover:text-gray-600 transition">Passer sans boost</a>
+    <a href="{% url 'annonce_detail' pk=annonce.pk slug=annonce.slug %}" class="text-sm text-gray-400 hover:text-gray-600 transition">Passer sans boost</a>
     <p class="text-xs text-gray-400">Paiement securise par <strong>PayZen by OSB</strong></p>
   </div>
 

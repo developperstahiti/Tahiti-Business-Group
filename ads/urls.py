@@ -4,7 +4,8 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('annonces/', views.liste_annonces, name='liste_annonces'),
-    path('annonces/<int:pk>/', views.annonce_detail, name='annonce_detail'),
+    path('annonces/<int:pk>/<slug:slug>/', views.annonce_detail, name='annonce_detail'),
+    path('annonces/<int:pk>/', views.annonce_detail_redirect, name='annonce_detail_old'),
     path('deposer/', views.deposer_annonce, name='deposer_annonce'),
     path('mes-annonces/', views.mes_annonces, name='mes_annonces'),
     path('annonces/<int:pk>/edit/', views.edit_annonce, name='edit_annonce'),

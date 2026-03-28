@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator
+from django.utils.text import slugify
+from django.urls import reverse
 
 CATEGORIES = [
     ('vehicules',    'Véhicules'),
@@ -114,6 +116,7 @@ class Annonce(models.Model):
     )
     boost_expires_at = models.DateTimeField(null=True, blank=True)
     boost_payment_ref = models.CharField(max_length=30, blank=True, default='')
+    slug           = models.SlugField(max_length=200, blank=True, default='')
     verified       = models.BooleanField(default=False)
     views          = models.PositiveIntegerField(default=0)  # impressions (vu a l'ecran)
     clics          = models.PositiveIntegerField(default=0)  # clics (ouverture detail)
@@ -134,6 +137,28 @@ class Annonce(models.Model):
 
     def __str__(self):
         return self.titre
+
+    def save(self, *args, **kwargs):
+        # Si update_fields est specifie sans 'slug', on ne regenere pas le slug
+        # (ex: increment_clics appelle save(update_fields=['clics']))
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None and 'slug' not in update_fields:
+            super().save(*args, **kwargs)
+            return
+
+        # On doit d'abord sauvegarder pour avoir un pk (creation)
+        if not self.pk:
+            super().save(*args, **kwargs)
+            # Apres la premiere sauvegarde, on genere le slug avec le pk
+            self.slug = f"{slugify(self.titre)}-{self.pk}"
+            super().save(update_fields=['slug'])
+        else:
+            # Mise a jour : regenerer le slug si le titre a change
+            self.slug = f"{slugify(self.titre)}-{self.pk}"
+            super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('annonce_detail', kwargs={'pk': self.pk, 'slug': self.slug})
 
     def get_prix_display_label(self):
         if self.prix_label:
