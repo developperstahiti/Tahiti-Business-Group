@@ -72,7 +72,7 @@
 
       {% else %}
       <div class="bg-white border border-gray-200 rounded-2xl h-64 flex items-center justify-center text-7xl shadow-sm">
-        {% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule.webp' %}" alt="" class="cat-icon--lg">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier.webp' %}" alt="" class="cat-icon--lg">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion.webp' %}" alt="" class="cat-icon--lg">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi.webp' %}" alt="" class="cat-icon--lg">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service.webp' %}" alt="" class="cat-icon--lg">{% else %}<img src="{% static 'img/cat-occasion.webp' %}" alt="" class="cat-icon--lg">{% endif %}
+        {% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule.webp' %}" alt="Catégorie Véhicules" class="cat-icon--lg">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier.webp' %}" alt="Catégorie Immobilier" class="cat-icon--lg">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion.webp' %}" alt="Catégorie Occasion" class="cat-icon--lg">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi.webp' %}" alt="Catégorie Emploi" class="cat-icon--lg">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service.webp' %}" alt="Catégorie Service" class="cat-icon--lg">{% else %}<img src="{% static 'img/cat-occasion.webp' %}" alt="Catégorie Occasion" class="cat-icon--lg">{% endif %}
       </div>
       {% endif %}
 
@@ -95,7 +95,7 @@
           {% endif %}
         </div>
         <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
-          <span class="flex items-center gap-1.5">{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% endif %} {{ annonce.get_categorie_display }}</span>
+          <span class="flex items-center gap-1.5">{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" class="cat-icon">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" class="cat-icon">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" class="cat-icon">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon">{% endif %} {{ annonce.get_categorie_display }}</span>
           <span class="flex items-center gap-1.5">📍 {% firstof annonce.commune annonce.localisation %}{% if annonce.quartier %} — {{ annonce.quartier }}{% endif %}</span>
           <span class="flex items-center gap-1.5">👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
           <span class="flex items-center gap-1.5">🖱 {{ annonce.clics }} clic{{ annonce.clics|pluralize }}</span>
@@ -238,8 +238,8 @@
         <form method="post" class="space-y-4 mt-4">
           {% csrf_token %}
           <div>
-            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Votre message</label>
-            <textarea name="content" rows="4" placeholder="Votre message..." required
+            <label for="id_contact_message" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Votre message</label>
+            <textarea name="content" id="id_contact_message" rows="4" placeholder="Votre message..." required
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
           </div>
           <button type="submit" class="btn btn-primary w-full justify-center py-3 text-base">
@@ -320,9 +320,9 @@
         <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Vendeur</p>
         <div class="flex items-center gap-3">
           {% if annonce.user.profil.photo_profil %}
-          <img src="{{ annonce.user.profil.photo_profil.url }}" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+          <img src="{{ annonce.user.profil.photo_profil.url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
           {% elif annonce.user.avatar_url %}
-          <img src="{{ annonce.user.avatar_url }}" alt="" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+          <img src="{{ annonce.user.avatar_url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
           {% else %}
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-lg font-black text-white flex-shrink-0">
             {{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}

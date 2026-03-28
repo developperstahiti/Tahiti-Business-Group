@@ -43,7 +43,7 @@
       <!-- Haut : checkbox + miniature + infos -->
       <div class="flex items-center gap-3 p-4 pb-3">
         {% if annonce.statut == 'actif' %}
-        <input type="checkbox" name="annonce_ids" value="{{ annonce.pk }}" class="annonce-cb rounded border-gray-300 flex-shrink-0">
+        <input type="checkbox" name="annonce_ids" value="{{ annonce.pk }}" class="annonce-cb rounded border-gray-300 flex-shrink-0" aria-label="Sélectionner {{ annonce.titre }}">
         {% endif %}
 
         <!-- Miniature -->

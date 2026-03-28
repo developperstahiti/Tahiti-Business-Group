@@ -30,7 +30,7 @@
 
       <!-- Titre -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+        <label for="{{ form.titre.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">
           Titre de la pub <span class="text-red-500">*</span>
         </label>
         {{ form.titre }}
@@ -41,13 +41,13 @@
 
       <!-- Description -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Description courte</label>
+        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Description courte</label>
         {{ form.description }}
       </div>
 
       <!-- Emplacement -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+        <label for="{{ form.emplacement.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">
           Emplacement <span class="text-red-500">*</span>
         </label>
         {{ form.emplacement }}
@@ -59,7 +59,7 @@
 
       <!-- Lien -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+        <label for="{{ form.lien.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">
           Lien de destination (URL)
         </label>
         {{ form.lien }}
@@ -83,11 +83,11 @@
 
       <!-- Upload image -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">Importer une image</label>
+        <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Importer une image</label>
         {% if pub and pub.image %}
         <div class="mb-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
           <p class="text-xs text-gray-500 mb-2">Image actuelle :</p>
-          <img src="{{ pub.image.url }}" alt="Aperçu" class="max-h-24 rounded-lg object-contain">
+          <img src="{{ pub.image.url }}" alt="Aperçu de la publicité {{ pub.titre }}" class="max-h-24 rounded-lg object-contain">
         </div>
         {% endif %}
         {{ form.image }}
@@ -96,7 +96,7 @@
 
       <!-- URL image externe -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+        <label for="{{ form.image_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">
           Ou : URL d'image externe
         </label>
         {{ form.image_url }}
@@ -110,26 +110,26 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Nom du client</label>
+          <label for="{{ form.client_nom.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Nom du client</label>
           {{ form.client_nom }}
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+          <label for="{{ form.client_email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
           {{ form.client_email }}
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
+          <label for="{{ form.client_tel.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
           {{ form.client_tel }}
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Date de début</label>
+          <label for="{{ form.date_debut.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Date de début</label>
           {{ form.date_debut }}
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1.5">Date de fin</label>
+          <label for="{{ form.date_fin.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1.5">Date de fin</label>
           {{ form.date_fin }}
         </div>
       </div>

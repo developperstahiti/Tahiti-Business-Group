@@ -49,6 +49,7 @@
                 <span>Importer depuis un lien <span class="dep-import-optional">(optionnel)</span></span>
               </div>
               <div class="dep-import-row">
+                <label for="import-url-input" class="sr-only">URL de l'annonce à importer</label>
                 <input type="text" id="import-url-input" class="dep-import-input" placeholder="Collez le lien de votre annonce PA.PF, Leboncoin...">
                 <button type="button" id="import-url-btn" class="dep-import-btn">
                   <span id="import-btn-text">Importer</span>
@@ -67,51 +68,51 @@
               <div class="dep-cat-grid-wrapper">
               <div class="dep-cat-grid" id="cat-grid">
                 <button type="button" class="dep-cat-card" data-cat="immobilier">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-immobilier.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-immobilier.webp' %}" alt="Catégorie Immobilier"></span>
                   <span class="dep-cat-name">Immobilier</span>
                 </button>
                 <button type="button" class="dep-cat-card" data-cat="vehicules">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-vehicule.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-vehicule.webp' %}" alt="Catégorie Véhicules"></span>
                   <span class="dep-cat-name">Vehicules</span>
                 </button>
                 <button type="button" class="dep-cat-card" data-cat="occasion">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-occasion.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-occasion.webp' %}" alt="Catégorie Occasion"></span>
                   <span class="dep-cat-name">Occasion / Bon Plan</span>
                 </button>
                 <button type="button" class="dep-cat-card" data-cat="emploi">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-emploi.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-emploi.webp' %}" alt="Catégorie Emploi"></span>
                   <span class="dep-cat-name">Offre et Demande d'emploi</span>
                 </button>
                 <button type="button" class="dep-cat-card" data-cat="services">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-service.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-service.webp' %}" alt="Catégorie Service"></span>
                   <span class="dep-cat-name">Service / Prestation</span>
                 </button>
                 <!-- Rubriques (même ligne) -->
                 {% if user.is_authenticated and user.is_pro %}
                 <a href="{% url 'deposer_info' %}" class="dep-cat-card dep-cat-card--rubrique">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt="Catégorie Infos média"></span>
                   <span class="dep-cat-name">Infos média / Article de presse</span>
                 </a>
                 <a href="{% url 'deposer_promo' %}" class="dep-cat-card dep-cat-card--rubrique">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt="Catégorie Promotion"></span>
                   <span class="dep-cat-name">Promotion / Offre spéciale</span>
                 </a>
                 <a href="{% url 'deposer_nouveaute' %}" class="dep-cat-card dep-cat-card--rubrique">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="Catégorie Nouveautés"></span>
                   <span class="dep-cat-name">Nouveautés / À tester absolument</span>
                 </a>
                 {% else %}
                 <a href="{% url 'deposer_info' %}" class="dep-cat-card dep-cat-card--rubrique">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-infos.webp' %}" alt="Catégorie Infos média"></span>
                   <span class="dep-cat-name">Infos média / Article de presse</span>
                 </a>
                 <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" id="locked-promo" title="Compte professionnel requis" style="cursor:pointer">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-promotion.webp' %}" alt="Catégorie Promotion"></span>
                   <span class="dep-cat-name">Promotion / Offre spéciale</span>
                   <span class="dep-lock-badge">&#128274; Pro</span>
                 </div>
                 <div class="dep-cat-card dep-cat-card--rubrique dep-cat-card--locked" id="locked-nouveaute" title="Compte professionnel requis" style="cursor:pointer">
-                  <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt=""></span>
+                  <span class="dep-cat-icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="Catégorie Nouveautés"></span>
                   <span class="dep-cat-name">Nouveautés / À tester absolument</span>
                   <span class="dep-lock-badge">&#128274; Pro</span>
                 </div>
@@ -189,6 +190,7 @@
                 </div>
 
                 <div id="boost-slider-zone">
+                  <label for="boost-slider" class="sr-only">Durée du boost</label>
                   <input type="range" id="boost-slider" min="0" max="2" step="1" value="0">
                   <div id="boost-labels">
                     <span class="boost-lbl" data-pos="0">Pas de boost</span>

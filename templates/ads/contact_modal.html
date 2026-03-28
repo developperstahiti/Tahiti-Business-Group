@@ -2,10 +2,10 @@
 <!-- Annonce header -->
 <div class="flex gap-3 mb-4">
   {% if annonce.get_main_photo %}
-  <img src="{{ annonce.get_main_photo }}" class="w-14 h-14 object-cover rounded-xl flex-shrink-0 border border-gray-200" alt="" loading="lazy">
+  <img src="{{ annonce.get_main_photo }}" class="w-14 h-14 object-cover rounded-xl flex-shrink-0 border border-gray-200" alt="{{ annonce.titre }}" loading="lazy">
   {% else %}
   <div class="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-2xl flex-shrink-0">
-    {% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% endif %}
+    {% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:28px;height:28px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:28px;height:28px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:28px;height:28px;object-fit:contain">{% endif %}
   </div>
   {% endif %}
   <div class="min-w-0">
@@ -37,6 +37,7 @@
 <!-- Send form -->
 <form id="contactForm" data-url="{% url 'contact_annonce' pk=annonce.pk %}{% if with_pk %}?with={{ with_pk }}{% endif %}" class="mt-3 flex gap-2 items-end">
   {% csrf_token %}
+  <label for="contactContent" class="sr-only">Votre message</label>
   <textarea name="content" id="contactContent" class="form-input flex-1 text-sm"
     rows="2" placeholder="Votre message…" required style="resize:none; min-height:60px"></textarea>
   <button type="submit"

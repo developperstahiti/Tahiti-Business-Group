@@ -144,14 +144,14 @@
         <form method="post" action="{% url 'upgrade_to_pro' %}" id="pro-upgrade-form" class="hidden mt-6 bg-white/10 rounded-xl p-5 space-y-4">
           {% csrf_token %}
           <div>
-            <label class="block text-sm font-semibold text-blue-100 mb-1">Nom d'entreprise <span class="text-red-300">*</span></label>
-            <input type="text" name="nom_entreprise" required placeholder="Ex : Ma Boutique Tahiti"
+            <label for="id_nom_entreprise_pro" class="block text-sm font-semibold text-blue-100 mb-1">Nom d'entreprise <span class="text-red-300">*</span></label>
+            <input type="text" name="nom_entreprise" id="id_nom_entreprise_pro" required placeholder="Ex : Ma Boutique Tahiti"
                    value="{{ user.nom_entreprise }}"
                    class="w-full px-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm border-0 focus:ring-2 focus:ring-blue-300">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-blue-100 mb-1">Numéro Tahiti (ISPF) <span class="text-blue-200 font-normal">— optionnel</span></label>
-            <input type="text" name="numero_tahiti" placeholder="Ex : N°A12345"
+            <label for="id_numero_tahiti_pro" class="block text-sm font-semibold text-blue-100 mb-1">Numéro Tahiti (ISPF) <span class="text-blue-200 font-normal">— optionnel</span></label>
+            <input type="text" name="numero_tahiti" id="id_numero_tahiti_pro" placeholder="Ex : N°A12345"
                    value="{{ user.numero_tahiti }}"
                    class="w-full px-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm border-0 focus:ring-2 focus:ring-blue-300">
           </div>
@@ -179,10 +179,10 @@
           <div class="flex items-center gap-3 p-3 bg-dark rounded-xl">
             <div class="w-12 h-10 bg-border rounded-lg overflow-hidden flex-shrink-0">
               {% if annonce.get_main_photo %}
-              <img src="{{ annonce.get_main_photo }}" class="w-full h-full object-cover" loading="lazy">
+              <img src="{{ annonce.get_main_photo }}" alt="{{ annonce.titre }}" class="w-full h-full object-cover" loading="lazy">
               {% else %}
               <div class="w-full h-full flex items-center justify-center text-sm">
-                {% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" style="width:24px;height:24px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:24px;height:24px;object-fit:contain">{% endif %}
+                {% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:24px;height:24px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:24px;height:24px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:24px;height:24px;object-fit:contain">{% endif %}
               </div>
               {% endif %}
             </div>

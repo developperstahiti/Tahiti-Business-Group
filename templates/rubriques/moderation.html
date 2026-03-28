@@ -34,13 +34,13 @@
       {% endif %}
     </button>
     <button class="mod-tab" data-tab="info">
-      <img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Infos média
+      <img src="{% static 'img/cat-infos-sm.webp' %}" alt="Catégorie Infos média" class="cat-icon"> Infos média
       {% if infos_attente %}
       <span class="ml-1.5 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{{ infos_attente|length }}</span>
       {% endif %}
     </button>
     <button class="mod-tab" data-tab="nouveaute">
-      <img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Nouveautés
+      <img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="Catégorie Nouveautés" class="cat-icon"> Nouveautés
       {% if nouveautes_attente %}
       <span class="ml-1.5 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{{ nouveautes_attente|length }}</span>
       {% endif %}
@@ -107,7 +107,7 @@
 
   <!-- ── TAB: INFO ── -->
   <div id="tab-info" class="mod-panel hidden">
-    <h2 class="text-base font-semibold text-gray-700 mb-4"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Infos média en attente</h2>
+    <h2 class="text-base font-semibold text-gray-700 mb-4"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="Catégorie Infos média" class="cat-icon"> Infos média en attente</h2>
     {% if infos_attente %}
     <div class="space-y-4 mb-10">
       {% for a in infos_attente %}
@@ -169,7 +169,7 @@
 
   <!-- ── TAB: NOUVEAUTÉ ── -->
   <div id="tab-nouveaute" class="mod-panel hidden">
-    <h2 class="text-base font-semibold text-gray-700 mb-4"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Nouveautés en attente</h2>
+    <h2 class="text-base font-semibold text-gray-700 mb-4"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="Catégorie Nouveautés" class="cat-icon"> Nouveautés en attente</h2>
     {% if nouveautes_attente %}
     <div class="space-y-4 mb-10">
       {% for n in nouveautes_attente %}

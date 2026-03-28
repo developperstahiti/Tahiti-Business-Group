@@ -9,7 +9,7 @@
   <div class="w-full max-w-md">
 
     <div class="text-center mb-8">
-      <img src="{% static 'img/logo-tbg.webp' %}" alt="TBG" class="h-16 w-auto mx-auto mb-4">
+      <img src="{% static 'img/logo-tbg.webp' %}" alt="Tahiti Business Group" class="h-16 w-auto mx-auto mb-4">
       <h1 class="text-2xl font-bold">Créer un compte</h1>
       <p class="text-muted mt-1 text-sm">Gratuit — déposez vos annonces en quelques secondes</p>
     </div>
@@ -25,30 +25,30 @@
         {% endif %}
 
         <div>
-          <label class="block text-sm font-medium mb-1.5">{{ form.email.label }}</label>
+          <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium mb-1.5">{{ form.email.label }}</label>
           {{ form.email }}
           {% if form.email.errors %}<p class="text-red-400 text-xs mt-1">{{ form.email.errors.0 }}</p>{% endif %}
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1.5">{{ form.nom.label }}</label>
+          <label for="{{ form.nom.id_for_label }}" class="block text-sm font-medium mb-1.5">{{ form.nom.label }}</label>
           {{ form.nom }}
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-medium mb-1.5">{{ form.tel.label }}</label>
+            <label for="{{ form.tel.id_for_label }}" class="block text-sm font-medium mb-1.5">{{ form.tel.label }}</label>
             {{ form.tel }}
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1.5">{{ form.role.label }}</label>
+            <label for="{{ form.role.id_for_label }}" class="block text-sm font-medium mb-1.5">{{ form.role.label }}</label>
             {{ form.role }}
           </div>
         </div>
 
         <div id="pro_fields" style="display:none" class="space-y-3">
           <div>
-            <label class="block text-sm font-medium mb-1.5">
+            <label for="{{ form.nom_entreprise.id_for_label }}" class="block text-sm font-medium mb-1.5">
               {{ form.nom_entreprise.label }} <span class="text-red-500">*</span>
             </label>
             {{ form.nom_entreprise }}
@@ -58,7 +58,7 @@
             <p class="text-xs text-muted mt-1">Affiché sur vos annonces professionnelles</p>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1.5">
+            <label for="{{ form.numero_tahiti.id_for_label }}" class="block text-sm font-medium mb-1.5">
               {{ form.numero_tahiti.label }} <span class="text-red-500">*</span>
             </label>
             {{ form.numero_tahiti }}
@@ -73,12 +73,12 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1.5">{{ form.password.label }}</label>
+          <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium mb-1.5">{{ form.password.label }}</label>
           {{ form.password }}
           {% if form.password.errors %}<p class="text-red-400 text-xs mt-1">{{ form.password.errors.0 }}</p>{% endif %}
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1.5">{{ form.password2.label }}</label>
+          <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium mb-1.5">{{ form.password2.label }}</label>
           {{ form.password2 }}
         </div>
 

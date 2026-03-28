@@ -149,15 +149,15 @@
 
             <!-- Titre -->
             <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Titre *</label>
-              <input type="text" name="titre" value="{{ annonce.titre }}" required
+              <label for="id_titre_edit" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Titre *</label>
+              <input type="text" name="titre" id="id_titre_edit" value="{{ annonce.titre }}" required
                 class="form-input" placeholder="Titre de l'annonce">
             </div>
 
             <!-- Catégorie + Sous-catégorie -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Catégorie *</label>
+                <label for="id_categorie" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Catégorie *</label>
                 <select name="categorie" id="id_categorie" class="form-input" required>
                   {% for code, label in categories %}
                   <option value="{{ code }}" {% if annonce.categorie == code %}selected{% endif %}>{{ label }}</option>
@@ -165,7 +165,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Sous-catégorie</label>
+                <label for="id_sous_categorie" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Sous-catégorie</label>
                 <select name="sous_categorie" id="id_sous_categorie" class="form-input">
                   <option value="">— Toutes / Général</option>
                 </select>
@@ -175,7 +175,7 @@
             <!-- Type de transaction (immobilier uniquement) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="transaction-row" style="{% if annonce.categorie != 'immobilier' %}display:none{% endif %}">
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Type de transaction *</label>
+                <label for="id_type_transaction" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Type de transaction *</label>
                 <select name="type_transaction" id="id_type_transaction" class="form-input">
                   <option value="vente" {% if annonce.type_transaction == 'vente' %}selected{% endif %}>Vente</option>
                   <option value="location" {% if annonce.type_transaction == 'location' %}selected{% endif %}>Location</option>
@@ -186,21 +186,21 @@
             <!-- Prix -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="prix-row">
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Prix (XPF)</label>
-                <input type="number" name="prix" value="{{ annonce.prix }}" min="0" class="form-input">
+                <label for="id_prix_edit" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Prix (XPF)</label>
+                <input type="number" name="prix" id="id_prix_edit" value="{{ annonce.prix }}" min="0" class="form-input">
                 <p class="text-xs text-gray-400 mt-1">Laissez 0 pour "Prix sur demande"</p>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Unité de prix</label>
-                <select name="prix_unite" class="form-input">
+                <label for="id_prix_unite_edit" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Unité de prix</label>
+                <select name="prix_unite" id="id_prix_unite_edit" class="form-input">
                   {% for value, label in prix_unite_choices %}
                   <option value="{{ value }}" {% if annonce.prix_unite == value %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Affichage prix</label>
-                <input type="text" name="prix_label" value="{{ annonce.prix_label }}"
+                <label for="id_prix_label_edit" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Affichage prix</label>
+                <input type="text" name="prix_label" id="id_prix_label_edit" value="{{ annonce.prix_label }}"
                   placeholder="Ex: À débattre, 15 000 XPF" class="form-input">
               </div>
             </div>
@@ -212,15 +212,15 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
               <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision lieu</label>
-                <input type="text" name="precision_lieu" value="{{ annonce.precision_lieu }}" class="form-input" placeholder="Ex: PK18...">
+                <label for="id_precision_lieu_edit" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Precision lieu</label>
+                <input type="text" name="precision_lieu" id="id_precision_lieu_edit" value="{{ annonce.precision_lieu }}" class="form-input" placeholder="Ex: PK18...">
               </div>
             </div>
 
             <!-- Description -->
             <div>
-              <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Description *</label>
-              <textarea name="description" rows="6" required class="form-input"
+              <label for="id_description_edit" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Description *</label>
+              <textarea name="description" id="id_description_edit" rows="6" required class="form-input"
                 placeholder="Décrivez votre article ou service...&#10;Vous pouvez inclure un lien : https://www.exemple.com">{{ annonce.description }}</textarea>
               <p class="text-xs text-gray-400 mt-1">💡 Les liens http:// et https:// sont automatiquement cliquables dans votre annonce.</p>
             </div>
@@ -307,6 +307,7 @@
           </div>
 
           <div id="boost-slider-zone">
+            <label for="boost-slider" class="sr-only">Durée du boost</label>
             <input type="range" id="boost-slider" min="0" max="2" step="1" value="0">
             <div id="boost-labels">
               <span class="boost-lbl" data-pos="0">Pas de boost</span>

@@ -26,10 +26,10 @@
       <form method="post" class="space-y-4">
         {% csrf_token %}
         <div>
-          <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">
+          <label for="id_password_confirm" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">
             Entrez votre mot de passe pour confirmer
           </label>
-          <input type="password" name="password" class="form-input w-full" placeholder="Mot de passe" autocomplete="current-password" required>
+          <input type="password" name="password" id="id_password_confirm" class="form-input w-full" placeholder="Mot de passe" autocomplete="current-password" required>
         </div>
         <button type="submit"
           class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition text-sm">

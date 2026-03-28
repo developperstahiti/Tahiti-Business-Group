@@ -12,7 +12,7 @@
     <form method="post" action="{% url 'creer_alerte' %}" class="flex flex-wrap gap-3 items-end">
       {% csrf_token %}
       <div class="flex-1 min-w-[160px]">
-        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Catégorie *</label>
+        <label for="alerte-cat" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Catégorie *</label>
         <select name="categorie" required class="form-input w-full" id="alerte-cat">
           <option value="">Choisir...</option>
           {% for code, label in categories %}
@@ -21,7 +21,7 @@
         </select>
       </div>
       <div class="flex-1 min-w-[160px]">
-        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Sous-catégorie</label>
+        <label for="alerte-sous-cat" class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Sous-catégorie</label>
         <select name="sous_categorie" class="form-input w-full" id="alerte-sous-cat">
           <option value="">Toutes</option>
         </select>

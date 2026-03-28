@@ -28,7 +28,7 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-3">
             <!-- Catégorie -->
             <div>
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Catégorie</label>
+              <label for="filter-cat" class="block text-xs font-semibold text-gray-500 mb-1">Catégorie</label>
               <select name="categorie" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-cat">
                 <option value="">Toutes</option>
                 {% for code, label in categories %}
@@ -38,7 +38,7 @@
             </div>
             <!-- Sous-catégorie -->
             <div>
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Sous-catégorie</label>
+              <label for="filter-sous-cat" class="block text-xs font-semibold text-gray-500 mb-1">Sous-catégorie</label>
               <select name="sous_cat" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-sous-cat">
                 <option value="">Toutes</option>
                 {% for val, lbl in sous_cats_dispo %}
@@ -55,10 +55,12 @@
             <div>
               <label class="block text-xs font-semibold text-gray-500 mb-1">Prix (XPF)</label>
               <div class="flex items-center gap-1.5">
-                <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Min" min="0"
+                <label for="filter-prix-min" class="sr-only">Prix minimum</label>
+                <input type="number" name="prix_min" id="filter-prix-min" value="{{ prix_min }}" placeholder="Min" min="0"
                   class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
                 <span class="text-gray-400 text-xs">—</span>
-                <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Max" min="0"
+                <label for="filter-prix-max" class="sr-only">Prix maximum</label>
+                <input type="number" name="prix_max" id="filter-prix-max" value="{{ prix_max }}" placeholder="Max" min="0"
                   class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
               </div>
             </div>
@@ -71,6 +73,7 @@
                        class="rounded border-gray-300" id="filter-photos">
                 Avec photos
               </label>
+              <label for="filter-transaction" class="sr-only">Type de transaction</label>
               <select name="transaction" class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}">
                 <option value="">Vente & Location</option>
                 <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente</option>

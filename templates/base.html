@@ -139,7 +139,8 @@
       <!-- Barre de recherche -->
       <form action="{% url 'liste_annonces' %}" method="get" class="flex-1 max-w-2xl mx-auto">
         <div class="search-bar">
-          <input type="text" name="q" value="{{ request.GET.q }}"
+          <label for="search-q" class="sr-only">Rechercher une annonce</label>
+          <input type="text" name="q" id="search-q" value="{{ request.GET.q }}"
             placeholder="Rechercher une annonce..."
             class="search-bar__input">
           <button type="submit" class="search-bar__btn" aria-label="Rechercher">
@@ -326,14 +327,14 @@
       <!-- 5. Occasion -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=occasion" class="cat-nav-link">
-          <img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon"> Occasion / Bon Plan
+          <img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon"> Occasion / Bon Plan
         </a>
       </div>
 
       <!-- 7. Emploi -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=emploi" class="cat-nav-link">
-          <img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"> Offre et Demande d'emploi
+          <img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" class="cat-icon"> Offre et Demande d'emploi
           <svg class="cat-nav-chevron w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
           </svg>
@@ -349,7 +350,7 @@
       <!-- 8. Services -->
       <div class="cat-nav-item">
         <a href="{% url 'liste_annonces' %}?categorie=services" class="cat-nav-link">
-          <img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon"> Service / Prestation
+          <img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" class="cat-icon"> Service / Prestation
         </a>
       </div>
 
@@ -379,12 +380,12 @@
   </div>
   <div class="slide-menu__body">
     <!-- Rubriques -->
-    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"></span> Promotions et Rubriques</a>
+    <a href="{% url 'rubriques_index' %}" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="Catégorie Promotion" class="cat-icon"></span> Promotions et Rubriques</a>
 
     <!-- Catégories avec sous-catégories en accordéon -->
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle">
-        <span class="slide-cat-icon"><img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon"></span> Véhicules
+        <span class="slide-cat-icon"><img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" class="cat-icon"></span> Véhicules
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
@@ -397,11 +398,11 @@
       </div>
     </div>
 
-    <a href="{% url 'liste_annonces' %}?categorie=occasion" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon"></span> Occasion / Bon Plan</a>
+    <a href="{% url 'liste_annonces' %}?categorie=occasion" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon"></span> Occasion / Bon Plan</a>
 
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle">
-        <span class="slide-cat-icon"><img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon"></span> Immobilier
+        <span class="slide-cat-icon"><img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" class="cat-icon"></span> Immobilier
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
@@ -419,7 +420,7 @@
 
     <div class="slide-accordion">
       <button type="button" class="slide-cat-link slide-accordion__toggle">
-        <span class="slide-cat-icon"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"></span> Offre et Demande d'emploi
+        <span class="slide-cat-icon"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" class="cat-icon"></span> Offre et Demande d'emploi
         <svg class="slide-accordion__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="slide-accordion__panel">
@@ -429,7 +430,7 @@
       </div>
     </div>
 
-    <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon"></span> Service / Prestation</a>
+    <a href="{% url 'liste_annonces' %}?categorie=services" class="slide-cat-link"><span class="slide-cat-icon"><img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" class="cat-icon"></span> Service / Prestation</a>
 
     {% if user.is_staff %}
     <div class="slide-menu__sep"></div>
@@ -486,11 +487,11 @@
       <div>
         <h4 class="text-xs font-bold uppercase tracking-wider mb-3 text-gray-900">Catégories</h4>
         <ul class="space-y-1.5 text-sm text-gray-500">
-          <li><a href="{% url 'liste_annonces' %}?categorie=vehicules" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon"> Véhicules</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=immobilier" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon"> Immobilier</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=occasion" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon"> Occasion / Bon Plan</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=emploi" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"> Offre et Demande d'emploi</a></li>
-          <li><a href="{% url 'liste_annonces' %}?categorie=services" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon"> Service / Prestation</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=vehicules" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" class="cat-icon"> Véhicules</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=immobilier" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" class="cat-icon"> Immobilier</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=occasion" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon"> Occasion / Bon Plan</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=emploi" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" class="cat-icon"> Offre et Demande d'emploi</a></li>
+          <li><a href="{% url 'liste_annonces' %}?categorie=services" class="hover:text-blue-600 transition"><img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" class="cat-icon"> Service / Prestation</a></li>
         </ul>
       </div>
 
@@ -602,9 +603,9 @@
   {% if user.is_authenticated %}
   <a href="{% url 'mon_compte' %}" class="bottom-nav__item">
     {% if user.profil.photo_profil %}
-    <img src="{{ user.profil.photo_profil.url }}" alt="" class="w-6 h-6 rounded-full object-cover">
+    <img src="{{ user.profil.photo_profil.url }}" alt="Photo de profil de {{ user.nom|default:user.email }}" class="w-6 h-6 rounded-full object-cover">
     {% elif user.avatar_url %}
-    <img src="{{ user.avatar_url }}" alt="" class="w-6 h-6 rounded-full object-cover">
+    <img src="{{ user.avatar_url }}" alt="Photo de profil de {{ user.nom|default:user.email }}" class="w-6 h-6 rounded-full object-cover">
     {% else %}
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -914,7 +915,7 @@ document.getElementById('contactCloseBtn').addEventListener('click', closeContac
 <div id="pwaInstallBanner" style="display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999;width:calc(100% - 2rem);max-width:420px;background:linear-gradient(135deg,#1a6cf1,#0f4fc2);border-radius:16px;padding:16px 18px;box-shadow:0 8px 32px rgba(0,0,0,.25);color:#fff;font-family:Arial,sans-serif">
   <button id="pwaDismissBtn" style="position:absolute;top:8px;right:12px;background:none;border:none;color:rgba(255,255,255,.7);font-size:20px;cursor:pointer;line-height:1">&times;</button>
   <div style="display:flex;align-items:center;gap:14px">
-    <img src="{% static 'img/favicon-192.png' %}" alt="TBG" style="width:48px;height:48px;border-radius:12px;flex-shrink:0">
+    <img src="{% static 'img/favicon-192.png' %}" alt="Tahiti Business Group" style="width:48px;height:48px;border-radius:12px;flex-shrink:0">
     <div style="flex:1;min-width:0">
       <div style="font-weight:700;font-size:15px;margin-bottom:2px">Installer Tahiti Business Group</div>
       <div style="font-size:12px;opacity:.85">Accédez rapidement depuis votre écran d'accueil</div>

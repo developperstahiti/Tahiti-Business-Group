@@ -22,10 +22,10 @@
       <!-- Annonce thumbnail -->
       <div class="flex-shrink-0">
         {% if conv.annonce.get_main_photo %}
-        <img src="{{ conv.annonce.get_main_photo }}" class="w-16 h-16 object-cover rounded-xl border border-gray-200" alt="" loading="lazy">
+        <img src="{{ conv.annonce.get_main_photo }}" class="w-16 h-16 object-cover rounded-xl border border-gray-200" alt="{{ conv.annonce.titre }}" loading="lazy">
         {% else %}
         <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-2xl">
-          {% if conv.annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% endif %}
+          {% if conv.annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:28px;height:28px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:28px;height:28px;object-fit:contain">{% endif %}
         </div>
         {% endif %}
       </div>

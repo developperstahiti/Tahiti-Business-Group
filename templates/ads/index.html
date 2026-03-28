@@ -21,7 +21,7 @@
       <div class="mb-4">
         <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="cat-section-header">
           <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2" style="margin:0">
-            {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" class="cat-icon">{% endif %}
+            {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" class="cat-icon">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" class="cat-icon">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" class="cat-icon">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" class="cat-icon">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" class="cat-icon">{% endif %}
             {{ cat_data.label }}
           </h2>
           <span class="text-sm text-blue-600 font-medium">Voir tout →</span>
@@ -32,7 +32,7 @@
           <a href="{% url 'liste_annonces' %}?categorie={{ cat_data.code }}" class="cat-label-card">
             <div class="cat-label-card__top">{{ cat_data.label }}</div>
             <div class="cat-label-card__icon">
-              {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi.webp' %}" alt="" class="cat-icon--card">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service.webp' %}" alt="" class="cat-icon--card">{% else %}<img src="{% static 'img/cat-occasion.webp' %}" alt="" class="cat-icon--card">{% endif %}
+              {% if cat_data.code == 'vehicules' %}<img src="{% static 'img/cat-vehicule.webp' %}" alt="Catégorie Véhicules" class="cat-icon--card">{% elif cat_data.code == 'immobilier' %}<img src="{% static 'img/cat-immobilier.webp' %}" alt="Catégorie Immobilier" class="cat-icon--card">{% elif cat_data.code == 'occasion' %}<img src="{% static 'img/cat-occasion.webp' %}" alt="Catégorie Occasion" class="cat-icon--card">{% elif cat_data.code == 'emploi' %}<img src="{% static 'img/cat-emploi.webp' %}" alt="Catégorie Emploi" class="cat-icon--card">{% elif cat_data.code == 'services' %}<img src="{% static 'img/cat-service.webp' %}" alt="Catégorie Service" class="cat-icon--card">{% else %}<img src="{% static 'img/cat-occasion.webp' %}" alt="Catégorie Occasion" class="cat-icon--card">{% endif %}
             </div>
             <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
@@ -68,13 +68,13 @@
       {% if infos_home %}
       <div class="mb-4">
         <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"> Infos média / Article de presse</h2>
+          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="Catégorie Infos média" class="cat-icon"> Infos média / Article de presse</h2>
           <a href="{% url 'rubriques_index' %}#info" class="text-sm text-sky-600 hover:text-sky-800 font-medium transition">Voir tout →</a>
         </div>
         <div class="cat-section-row">
           <a href="{% url 'rubriques_index' %}#info" class="cat-label-card">
             <div class="cat-label-card__top">Infos média</div>
-            <div class="cat-label-card__icon"><img src="{% static 'img/cat-infos.webp' %}" alt="" class="cat-icon--card"></div>
+            <div class="cat-label-card__icon"><img src="{% static 'img/cat-infos.webp' %}" alt="Catégorie Infos média" class="cat-icon--card"></div>
             <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
@@ -83,7 +83,7 @@
                 {% for a in infos_home %}
                 <div class="cat-carousel__item">
                   <div class="info-card rubrique-card" data-href="{% url 'info_detail' a.pk %}">
-                    {% if a.photo %}<img src="{{ a.photo }}" alt="" class="info-card__photo" loading="lazy">{% endif %}
+                    {% if a.photo %}<img src="{{ a.photo }}" alt="{{ a.titre }}" class="info-card__photo" loading="lazy">{% endif %}
                     <span class="info-card__badge"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Infos média</span>
                     <div class="info-card__title">{{ a.titre }}</div>
                     <div class="info-card__preview">{{ a.contenu }}</div>
@@ -119,13 +119,13 @@
       {% if nouveautes_home %}
       <div class="mb-4">
         <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" class="cat-icon"> Nouveautés / À tester absolument</h2>
+          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="Catégorie Nouveautés" class="cat-icon"> Nouveautés / À tester absolument</h2>
           <a href="{% url 'rubriques_index' %}#nouveautes" class="text-sm text-emerald-600 hover:text-emerald-800 font-medium transition">Voir tout →</a>
         </div>
         <div class="cat-section-row">
           <a href="{% url 'rubriques_index' %}#nouveautes" class="cat-label-card">
             <div class="cat-label-card__top">Nouveautés</div>
-            <div class="cat-label-card__icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="" class="cat-icon--card"></div>
+            <div class="cat-label-card__icon"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="Catégorie Nouveautés" class="cat-icon--card"></div>
             <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
@@ -134,7 +134,7 @@
                 {% for n in nouveautes_home %}
                 <div class="cat-carousel__item">
                   <div class="nouv-card rubrique-card" data-href="{% url 'nouveaute_detail' n.pk %}">
-                    {% if n.photo %}<img src="{{ n.photo }}" alt="" class="info-card__photo" loading="lazy">{% endif %}
+                    {% if n.photo %}<img src="{{ n.photo }}" alt="{{ n.titre }}" class="info-card__photo" loading="lazy">{% endif %}
                     <span class="nouv-card__badge"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Nouveautés</span>
                     <div class="nouv-card__title">{{ n.titre }}</div>
                     <div class="nouv-card__preview">{{ n.contenu }}</div>
@@ -170,13 +170,13 @@
       {% if promos_home %}
       <div class="promo-carousel mb-4">
         <div class="over-img flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" class="cat-icon"> Promotion / Offre spéciale</h2>
+          <h2 class="text-xl font-bold text-gray-900"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="Catégorie Promotion" class="cat-icon"> Promotion / Offre spéciale</h2>
           <a href="{% url 'rubriques_index' %}" class="text-sm text-amber-600 hover:text-amber-800 font-medium transition">Voir tout →</a>
         </div>
         <div class="cat-section-row">
           <a href="{% url 'rubriques_index' %}" class="cat-label-card">
             <div class="cat-label-card__top">Promotion</div>
-            <div class="cat-label-card__icon"><img src="{% static 'img/cat-promotion.webp' %}" alt="" class="cat-icon--card"></div>
+            <div class="cat-label-card__icon"><img src="{% static 'img/cat-promotion.webp' %}" alt="Catégorie Promotion" class="cat-icon--card"></div>
             <div class="cat-label-card__bottom">Voir tout →</div>
           </a>
           <div class="cat-carousel-wrapper cat-section-row__carousel">
@@ -185,7 +185,7 @@
                 {% for p in promos_home %}
                 <div class="cat-carousel__item">
                   <div class="promo-card rubrique-card" data-href="{% url 'promo_detail' p.pk %}">
-                    {% if p.photo %}<img src="{{ p.photo }}" alt="" class="info-card__photo" loading="lazy">{% endif %}
+                    {% if p.photo %}<img src="{{ p.photo }}" alt="{{ p.titre }}" class="info-card__photo" loading="lazy">{% endif %}
                     <span class="promo-card__badge"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle"> Promotion</span>
                     <div class="promo-card__title">{{ p.titre }}</div>
                     <div class="promo-card__preview">{{ p.contenu }}</div>

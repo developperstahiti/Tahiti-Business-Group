@@ -57,6 +57,7 @@
               <div class="text-3xl mb-1">🖼️</div>
               <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez votre image ici</div>
               <div class="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF — sera redimensionnée automatiquement</div>
+              <label for="id_image" class="sr-only">Image de la publicité</label>
               <input type="file" id="id_image" name="image" accept="image/*" class="hidden">
             </div>
           </div>
@@ -65,6 +66,7 @@
           <div id="zoneImageUrl" class="hidden">
             <div class="flex gap-3 items-end">
               <div class="flex-1">
+                <label for="id_image_url" class="sr-only">URL de l'image</label>
                 <input type="url" id="id_image_url" name="image_url" class="form-input w-full"
                   placeholder="https://exemple.com/mon-image.jpg">
               </div>
@@ -83,6 +85,7 @@
               <div class="text-3xl mb-1">🎬</div>
               <div class="text-sm font-semibold text-gray-600">Cliquez ou glissez votre vidéo ici</div>
               <div class="text-xs text-gray-400 mt-1">MP4, WebM, MOV — max 50 Mo</div>
+              <label for="id_video" class="sr-only">Vidéo de la publicité</label>
               <input type="file" id="id_video" name="video" accept="video/*" class="hidden">
             </div>
           </div>
@@ -91,6 +94,7 @@
           <div id="zoneVideoUrl" class="hidden">
             <div class="flex gap-3 items-end">
               <div class="flex-1">
+                <label for="id_video_url" class="sr-only">URL de la vidéo</label>
                 <input type="url" id="id_video_url" name="video_url" class="form-input w-full"
                   placeholder="https://exemple.com/ma-video.mp4">
               </div>
@@ -104,7 +108,7 @@
 
           <!-- Preview image -->
           <div id="pubImagePreview" class="mt-3 hidden">
-            <img id="pubPreviewImg" class="max-h-32 rounded-xl border border-gray-200 shadow-sm" alt="Aperçu">
+            <img id="pubPreviewImg" class="max-h-32 rounded-xl border border-gray-200 shadow-sm" alt="Aperçu de la publicité">
           </div>
           <!-- Preview video -->
           <div id="pubVideoPreview" class="mt-3 hidden">
@@ -164,7 +168,7 @@
               <div class="text-xs text-emerald-600 font-bold mt-1">28 000 XPF</div>
             </button>
             <button type="button" data-emp="sidebar_bas" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
-              <div class="text-lg mb-1"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" class="cat-icon"></div>
+              <div class="text-lg mb-1"><img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" class="cat-icon"></div>
               <div class="text-xs font-bold">Sidebar — Bas</div>
               <div class="text-xs text-emerald-600 font-bold mt-1">20 000 XPF</div>
             </button>
@@ -174,7 +178,7 @@
               <div class="text-xs text-emerald-600 font-bold mt-1">35 000 XPF</div>
             </button>
             <button type="button" data-emp="strip_accueil_haut" class="emp-card border-2 rounded-xl p-3 text-center transition hover:border-blue-400 bg-white">
-              <div class="text-lg mb-1"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" class="cat-icon"></div>
+              <div class="text-lg mb-1"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="Catégorie Infos média" class="cat-icon"></div>
               <div class="text-xs font-bold">Strip Accueil</div>
               <div class="text-xs text-emerald-600 font-bold mt-1">8 000 XPF</div>
             </button>
