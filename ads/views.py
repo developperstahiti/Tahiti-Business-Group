@@ -1149,18 +1149,18 @@ def boost_paiement(request, pk):
 
     try:
         form_token, public_key = create_embedded_form_token(boost_pub, request, ipn_path='/boost/paiement/ipn/')
-    except RuntimeError:
+    except Exception as e:
+        logger.exception("Boost: create_embedded_form_token failed: %s", e)
         # Fallback : redirection classique V2 si l'API REST échoue
-        logger.exception("Boost: REST API failed, falling back to redirect form")
         try:
             form_data, payment_url = build_payzen_form(
                 boost_pub, request,
                 return_path='/boost/paiement/succes/',
                 ipn_path='/boost/paiement/ipn/',
             )
-        except Exception:
-            logger.exception("Boost: V2 fallback also failed")
-            messages.error(request, "Erreur lors de la connexion au service de paiement. Veuillez réessayer.")
+        except Exception as e2:
+            logger.exception("Boost: V2 fallback also failed: %s", e2)
+            messages.error(request, f"Erreur paiement : {e} | Fallback : {e2}")
             return redirect('annonce_detail', pk=pk)
 
         return render(request, 'ads/boost_payzen_redirect.html', {

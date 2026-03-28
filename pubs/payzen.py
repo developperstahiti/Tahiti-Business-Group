@@ -159,6 +159,9 @@ def create_embedded_form_token(publicite, request, ipn_path='/pubs/paiement/ipn/
     }
 
     body = json.dumps(payload).encode('utf-8')
+    logger.info("PayZen REST: shop=%s, mode=%s, amount=%s, order=%s, ipn=%s%s",
+                shop_id, settings.PAYZEN_MODE, publicite.prix,
+                publicite.payment_ref, base_url, ipn_path)
 
     req = Request(REST_API_URL, data=body, method='POST')
     req.add_header('Content-Type', 'application/json')
@@ -166,18 +169,25 @@ def create_embedded_form_token(publicite, request, ipn_path='/pubs/paiement/ipn/
 
     try:
         with urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode('utf-8'))
+            raw = resp.read().decode('utf-8')
+            data = json.loads(raw)
     except URLError as e:
-        logger.error("PayZen REST API error: %s", e)
-        raise RuntimeError(f"Erreur de connexion PayZen : {e}")
+        logger.error("PayZen REST API URLError: %s", e)
+        raise RuntimeError(f"Connexion PayZen échouée : {e}")
+    except Exception as e:
+        logger.error("PayZen REST API unexpected error: %s", e)
+        raise RuntimeError(f"Erreur PayZen inattendue : {e}")
 
     if data.get('status') != 'SUCCESS':
         error_msg = data.get('answer', {}).get('errorMessage', str(data))
-        logger.error("PayZen CreatePayment failed: %s", error_msg)
-        raise RuntimeError(f"Erreur PayZen : {error_msg}")
+        error_code = data.get('answer', {}).get('errorCode', '')
+        logger.error("PayZen CreatePayment failed: code=%s msg=%s full=%s",
+                     error_code, error_msg, str(data)[:500])
+        raise RuntimeError(f"PayZen erreur {error_code}: {error_msg}")
 
     form_token = data['answer']['formToken']
     public_key = _get_public_key()
+    logger.info("PayZen REST: formToken obtained for order %s", publicite.payment_ref)
 
     return form_token, public_key
 
