@@ -4112,3 +4112,62 @@ body .bg-gradient-to-r {
   body { padding-bottom: 0 !important; }
   #main-frame { overflow: visible !important; }
 }
+
+/* ============================================
+   SKELETON LOADING — Placeholders images
+   ============================================ */
+
+.img-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e8e8e8;
+}
+
+.img-skeleton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: img-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes img-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.img-skeleton img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.img-skeleton.loaded img {
+  opacity: 1;
+}
+
+.img-skeleton.loaded::before {
+  display: none;
+}
+
+/* Placeholder erreur image */
+.img-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 2rem;
+}

@@ -2,11 +2,13 @@
   <!-- Main link: photo + body -->
   <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="block annonce-card__link">
     <!-- Photo -->
-    <div class="relative overflow-hidden bg-gray-100" style="aspect-ratio:4/3">
+    <div class="relative overflow-hidden bg-gray-100 img-skeleton" style="aspect-ratio:4/3">
       {% if annonce.get_main_photo %}
       <img data-src="{{ annonce.get_main_photo }}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3C/svg%3E"
         alt="{{ annonce.titre }}"
-        class="annonce-card__img lazy w-full h-full absolute inset-0">
+        class="annonce-card__img lazy w-full h-full absolute inset-0"
+        onload="var p=this.closest('.img-skeleton');if(p&&!this.src.startsWith('data:'))p.classList.add('loaded')"
+        onerror="var p=this.closest('.img-skeleton');if(p&&!this.src.startsWith('data:'))p.innerHTML='<div class=img-error>📷</div>'">
       {% else %}
       <div class="w-full h-full absolute inset-0 flex items-center justify-center text-4xl bg-gray-100">
         {% load static %}{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:32px;height:32px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain">{% endif %}
