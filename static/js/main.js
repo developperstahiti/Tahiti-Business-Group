@@ -28,7 +28,15 @@ function initLazyImages() {
     if (!img.dataset.src) return;
     img.src = img.dataset.src;
     img.removeAttribute('data-src');
-    img.onload = function() { img.classList.add('loaded'); };
+    img.onload = function() {
+      img.classList.add('loaded');
+      var p = img.closest('.img-skeleton');
+      if (p) p.classList.add('loaded');
+    };
+    img.onerror = function() {
+      var p = img.closest('.img-skeleton');
+      if (p) p.innerHTML = '<div class="img-error">📷</div>';
+    };
   }
 
   function check() {
