@@ -105,6 +105,7 @@ class Annonce(models.Model):
     quartier       = models.CharField(max_length=100, blank=True, default='')
     precision_lieu = models.CharField(max_length=150, blank=True, default='')
     photos         = models.JSONField(default=list, blank=True)
+    photos_thumbs  = models.JSONField(default=list, blank=True)
     specs          = models.JSONField(default=dict, blank=True)
     statut         = models.CharField(max_length=20, choices=STATUTS, default='actif')
     boost            = models.BooleanField(default=False)
@@ -175,6 +176,12 @@ class Annonce(models.Model):
 
     def get_main_photo(self):
         return self.photos[0] if self.photos else None
+
+    def get_main_photo_thumb(self):
+        """Retourne le thumbnail de la photo principale, ou la photo principale à défaut."""
+        if self.photos_thumbs:
+            return self.photos_thumbs[0]
+        return self.get_main_photo()
 
     def increment_clics(self):
         """Incrémente le compteur de clics."""

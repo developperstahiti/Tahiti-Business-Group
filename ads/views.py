@@ -29,7 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 def _save_webp(file_obj, user_pk):
-    return save_webp(file_obj, 'annonces', str(user_pk), max_size=(900, 700))
+    """Upload une photo d'annonce en WebP 1200x900 + thumbnail 400x300.
+    Retourne un tuple (url, thumb_url)."""
+    return save_webp(file_obj, 'annonces', str(user_pk), max_size=(1200, 900), with_thumb=True)
 
 
 _SPEC_KEY_RE = re.compile(r'^[a-z0-9_]{1,50}$')
@@ -494,15 +496,18 @@ def deposer_annonce(request):
                 annonce.type_transaction = 'non_applicable'
             annonce.specs = _clean_specs(request.POST)
             photos = []
+            thumbs = []
             for f in request.FILES.getlist('photos')[:5]:
                 try:
-                    url = _save_webp(f, request.user.pk)
-                    logger.info("Photo sauvegardée OK: %s", url)
+                    url, thumb_url = _save_webp(f, request.user.pk)
+                    logger.info("Photo sauvegardée OK: %s (thumb: %s)", url, thumb_url)
                     photos.append(url)
+                    thumbs.append(thumb_url)
                 except Exception as e:
                     logger.error("Erreur upload photo annonce: %s", e, exc_info=True)
             logger.info("=== PHOTOS FINAL: %d photo(s) => %s", len(photos), photos)
             annonce.photos = photos
+            annonce.photos_thumbs = thumbs
 
             # ── Boost (payant uniquement) ───────────────────────────────────
             boost_duree   = request.POST.get('boost_duree', '').strip()
@@ -641,38 +646,62 @@ def edit_annonce(request, pk):
         except (ValueError, TypeError):
             annonce.prix = 0
 
-        # Supprimer les photos cochées
+        # Supprimer les photos cochées (et leurs thumbnails associés)
         to_delete = request.POST.getlist('delete_photos')
-        current   = [p for p in annonce.photos if p not in to_delete]
-        for url in to_delete:
-            try:
-                rel  = url.replace(django_settings.MEDIA_URL, '')
-                path = os.path.join(django_settings.MEDIA_ROOT, rel)
-                if os.path.exists(path):
-                    os.remove(path)
-            except Exception as e:
-                logger.error("Erreur suppression photo: %s", e)
+        # Construire une map index→url pour synchroniser photos_thumbs
+        old_photos = annonce.photos
+        old_thumbs = list(annonce.photos_thumbs) if annonce.photos_thumbs else []
+        # Padder thumbs si nécessaire (annonces sans thumbnails existants)
+        while len(old_thumbs) < len(old_photos):
+            old_thumbs.append(None)
+
+        current = []
+        current_thumbs = []
+        for i, p in enumerate(old_photos):
+            if p not in to_delete:
+                current.append(p)
+                current_thumbs.append(old_thumbs[i])
+            else:
+                # Tenter de supprimer le fichier local (ignoré pour S3)
+                try:
+                    rel  = p.replace(django_settings.MEDIA_URL, '')
+                    path = os.path.join(django_settings.MEDIA_ROOT, rel)
+                    if os.path.exists(path):
+                        os.remove(path)
+                except Exception as e:
+                    logger.error("Erreur suppression photo: %s", e)
 
         # Réordonner les photos existantes selon l'ordre envoyé
         photo_order = request.POST.getlist('photo_order')
         if photo_order:
-            ordered = [url for url in photo_order if url in current]
+            ordered = []
+            ordered_thumbs = []
+            for url in photo_order:
+                if url in current:
+                    idx = current.index(url)
+                    ordered.append(url)
+                    ordered_thumbs.append(current_thumbs[idx])
             # Ajouter les photos pas dans l'ordre (sécurité)
-            for url in current:
+            for i, url in enumerate(current):
                 if url not in ordered:
                     ordered.append(url)
+                    ordered_thumbs.append(current_thumbs[i])
             current = ordered
+            current_thumbs = ordered_thumbs
 
         # Ajouter nouvelles photos (max 5 total)
         for photo_file in request.FILES.getlist('photos'):
             if len(current) >= 5:
                 break
             try:
-                current.append(_save_webp(photo_file, request.user.pk))
+                url, thumb_url = _save_webp(photo_file, request.user.pk)
+                current.append(url)
+                current_thumbs.append(thumb_url)
             except Exception as e:
                 logger.error("Erreur upload nouvelle photo: %s", e)
 
         annonce.photos = current
+        annonce.photos_thumbs = current_thumbs
         annonce.save()
         messages.success(request, "Annonce modifiée avec succès.")
         return redirect(annonce.get_absolute_url())
