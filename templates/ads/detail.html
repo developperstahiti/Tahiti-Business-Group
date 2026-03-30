@@ -34,23 +34,19 @@
         <div class="p-4">
           {% if photo_count == 1 %}
           <!-- Une seule photo -->
-          <div class="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center img-skeleton" style="max-height:500px">
+          <div class="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center" style="max-height:500px">
             <img id="mainPhotoSingle" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
               class="rounded-xl cursor-zoom-in" style="max-height:500px;max-width:100%;object-fit:contain"
-              loading="eager" decoding="async" width="800" height="600"
-              onload="var p=this.closest('.img-skeleton');if(p)p.classList.add('loaded')"
-              onerror="var p=this.closest('.img-skeleton');if(p)p.innerHTML='<div class=img-error>📷</div>'">
+              loading="eager" decoding="async" width="800" height="600">
           </div>
           {% else %}
           <!-- Mosaique : grande photo + miniatures -->
           <div class="detail-mosaic">
             <!-- Photo principale avec fleches -->
-            <div class="detail-mosaic__main relative rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center img-skeleton">
+            <div class="detail-mosaic__main relative rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
               <img id="mainPhotoMosaic" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
                 class="cursor-zoom-in" style="max-height:400px;max-width:100%;object-fit:contain"
-                loading="eager" decoding="async" width="800" height="600"
-                onload="var p=this.closest('.img-skeleton');if(p)p.classList.add('loaded')"
-                onerror="var p=this.closest('.img-skeleton');if(p)p.innerHTML='<div class=img-error>📷</div>'">
+                loading="eager" decoding="async" width="800" height="600">
               <!-- Fleches navigation -->
               <button id="navPhotoPrev" class="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo precedente">&lsaquo;</button>
               <button id="navPhotoNext" class="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xl transition backdrop-blur-sm" aria-label="Photo suivante">&rsaquo;</button>
