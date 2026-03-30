@@ -37,7 +37,7 @@
           <div class="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center img-skeleton" style="max-height:500px">
             <img id="mainPhotoSingle" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
               class="rounded-xl cursor-zoom-in" style="max-height:500px;max-width:100%;object-fit:contain"
-              loading="eager" decoding="async"
+              loading="eager" decoding="async" width="800" height="600"
               onload="var p=this.closest('.img-skeleton');if(p)p.classList.add('loaded')"
               onerror="var p=this.closest('.img-skeleton');if(p)p.innerHTML='<div class=img-error>📷</div>'">
           </div>
@@ -48,7 +48,7 @@
             <div class="detail-mosaic__main relative rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center img-skeleton">
               <img id="mainPhotoMosaic" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
                 class="cursor-zoom-in" style="max-height:400px;max-width:100%;object-fit:contain"
-                loading="eager" decoding="async"
+                loading="eager" decoding="async" width="800" height="600"
                 onload="var p=this.closest('.img-skeleton');if(p)p.classList.add('loaded')"
                 onerror="var p=this.closest('.img-skeleton');if(p)p.innerHTML='<div class=img-error>📷</div>'">
               <!-- Fleches navigation -->
@@ -60,9 +60,9 @@
             <div class="detail-mosaic__thumbs">
               {% for photo in annonce.photos|slice:":4" %}
               <div class="relative rounded-lg overflow-hidden cursor-pointer flex-1 min-h-0 mosaic-thumb-click" data-photo-idx="{{ forloop.counter0 }}">
-                <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" loading="lazy"
+                <img src="{{ photo }}" alt="Photo {{ forloop.counter }}" loading="lazy" decoding="async"
                   class="w-full h-full object-cover photo-mosaic-thumb {% if forloop.first %}ring-2 ring-blue-500{% endif %}"
-                  data-idx="{{ forloop.counter0 }}">
+                  data-idx="{{ forloop.counter0 }}" width="200" height="150">
                 {% if forloop.counter == 4 and photo_count > 4 %}
                 <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg" id="extraPhotosOverlay">
                   +{{ photo_count|add:"-4" }}

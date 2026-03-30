@@ -38,7 +38,7 @@
     {% if article.photo %}
     <div class="border-b border-gray-200">
       <img src="{{ article.photo }}" alt="{{ article.titre }}"
-           class="w-full max-h-80 object-cover" loading="lazy">
+           class="w-full max-h-80 object-cover" loading="eager" decoding="async" width="800" height="320">
     </div>
     {% endif %}
 

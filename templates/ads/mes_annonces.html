@@ -49,7 +49,7 @@
         <!-- Miniature -->
         <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 block">
           {% if annonce.get_main_photo %}
-          <img src="{{ annonce.get_main_photo }}" class="w-full h-full object-cover" alt="{{ annonce.titre }}" loading="lazy">
+          <img src="{{ annonce.get_main_photo }}" class="w-full h-full object-cover" alt="{{ annonce.titre }}" loading="lazy" decoding="async" width="64" height="64">
           {% else %}
           <div class="w-full h-full flex items-center justify-center text-2xl">
             {% if annonce.categorie == 'vehicules' %}&#x1F697;

@@ -44,9 +44,9 @@
 
     <!-- Banniere -->
     {% if profil.image_fond_url %}
-    <img src="{{ profil.image_fond_url }}" alt="Banniere de {{ vendeur.nom|default:vendeur.email }}" class="profil-banner">
+    <img src="{{ profil.image_fond_url }}" alt="Banniere de {{ vendeur.nom|default:vendeur.email }}" class="profil-banner" loading="eager" decoding="async" width="1200" height="200">
     {% elif profil.image_fond %}
-    <img src="{{ profil.image_fond.url }}" alt="Banniere de {{ vendeur.nom|default:vendeur.email }}" class="profil-banner">
+    <img src="{{ profil.image_fond.url }}" alt="Banniere de {{ vendeur.nom|default:vendeur.email }}" class="profil-banner" loading="eager" decoding="async" width="1200" height="200">
     {% else %}
     <div class="profil-banner-default"></div>
     {% endif %}
@@ -54,11 +54,11 @@
     <!-- Avatar chevauchant -->
     <div class="profil-avatar-wrapper">
       {% if profil.photo_profil_url %}
-      <img src="{{ profil.photo_profil_url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar">
+      <img src="{{ profil.photo_profil_url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar" loading="eager" decoding="async" width="80" height="80">
       {% elif profil.photo_profil %}
-      <img src="{{ profil.photo_profil.url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar">
+      <img src="{{ profil.photo_profil.url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar" loading="eager" decoding="async" width="80" height="80">
       {% elif vendeur.avatar_url %}
-      <img src="{{ vendeur.avatar_url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar">
+      <img src="{{ vendeur.avatar_url }}" alt="{{ vendeur.nom|default:vendeur.email }}" class="profil-avatar" loading="eager" decoding="async" width="80" height="80">
       {% else %}
       <div class="profil-avatar-initials bg-blue-600">
         {{ vendeur.nom|first|upper|default:vendeur.email|first|upper }}
