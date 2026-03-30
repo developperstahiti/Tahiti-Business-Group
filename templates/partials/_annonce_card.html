@@ -2,7 +2,7 @@
   <!-- Main link: photo + body -->
   <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="block annonce-card__link">
     <!-- Photo -->
-    <div class="relative overflow-hidden bg-gray-100 img-skeleton" style="aspect-ratio:4/3">
+    <div class="relative overflow-hidden bg-gray-100{% if annonce.get_main_photo %} img-skeleton{% endif %}" style="aspect-ratio:4/3">
       {% if annonce.get_main_photo %}
       <img data-src="{{ annonce.get_main_photo }}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3C/svg%3E"
         alt="{{ annonce.titre }}"
@@ -11,7 +11,7 @@
         onerror="var p=this.closest('.img-skeleton');if(p&&!this.src.startsWith('data:'))p.innerHTML='<div class=img-error>📷</div>'">
       {% else %}
       <div class="w-full h-full absolute inset-0 flex items-center justify-center text-4xl bg-gray-100">
-        {% load static %}{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:32px;height:32px;object-fit:contain">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:32px;height:32px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain">{% endif %}
+        {% load static %}{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% endif %}
       </div>
       {% endif %}
       {% if annonce.boost %}
@@ -39,7 +39,7 @@
       </div>
       {% load notation_tags %}{% vendeur_note annonce.user as vn %}
       <div class="annonce-card__seller">
-        <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__avatar-link js-stop-propagation">{% if annonce.user.profil.photo_profil %}<img src="{{ annonce.user.profil.photo_profil.url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="annonce-card__avatar">{% elif annonce.user.avatar_url %}<img src="{{ annonce.user.avatar_url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="annonce-card__avatar">{% else %}<span class="annonce-card__avatar annonce-card__avatar--initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>{% endif %}</a>
+        <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__avatar-link js-stop-propagation">{% if annonce.user.profil.photo_profil %}<img src="{{ annonce.user.profil.photo_profil.url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="annonce-card__avatar" loading="lazy" decoding="async" width="28" height="28">{% elif annonce.user.avatar_url %}<img src="{{ annonce.user.avatar_url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="annonce-card__avatar" loading="lazy" decoding="async" width="28" height="28">{% else %}<span class="annonce-card__avatar annonce-card__avatar--initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>{% endif %}</a>
         <span class="annonce-card__name">{{ annonce.user.nom|default:annonce.user.email }}</span>
         {% if vn.moyenne %}<span class="annonce-card__note">★ {{ vn.moyenne }}</span>{% endif %}
         <span class="annonce-card__loc">📍 {% firstof annonce.commune annonce.localisation %}</span>
