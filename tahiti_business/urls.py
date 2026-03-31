@@ -88,6 +88,11 @@ urlpatterns = [
         open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'manifest.json'), 'rb'),
         content_type='application/manifest+json',
     ), name='manifest'),
+    path('.well-known/assetlinks.json', lambda r: FileResponse(
+        open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), '.well-known', 'assetlinks.json'), 'rb'),
+        content_type='application/json',
+        headers={'Cache-Control': 'no-cache'},
+    )),
 ]
 
 # Serve media files in all environments (DEBUG=True and DEBUG=False)

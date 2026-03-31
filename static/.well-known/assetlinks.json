@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.tahitibusinessgroup.app",
+    "sha256_cert_fingerprints":
+    ["C6:A1:2A:8C:6B:40:2C:7C:FF:1C:1C:C6:2F:21:7D:1C:95:BE:E1:B2:DD:0C:9C:CE:49:8F:58:24:09:FB:6A:F6"]
+  }
+}]
