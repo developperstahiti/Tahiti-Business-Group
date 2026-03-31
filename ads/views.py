@@ -639,12 +639,20 @@ def edit_annonce(request, pk):
         annonce.quartier       = request.POST.get('quartier', '')
         annonce.precision_lieu = request.POST.get('precision_lieu', '')
         annonce.localisation   = annonce.commune or request.POST.get('localisation', '').strip() or annonce.localisation
-        annonce.prix_label     = request.POST.get('prix_label', '').strip()
-        annonce.prix_unite     = request.POST.get('prix_unite', '')
+        annonce.prix_label       = request.POST.get('prix_label', '').strip()
+        annonce.prix_unite       = request.POST.get('prix_unite', '')
+        annonce.type_transaction = request.POST.get('type_transaction', annonce.type_transaction)
         try:
             annonce.prix = int(request.POST.get('prix', 0) or 0)
         except (ValueError, TypeError):
             annonce.prix = 0
+
+        # Champs réservés aux admins
+        if request.user.is_staff:
+            new_statut = request.POST.get('statut', '')
+            if new_statut in ('actif', 'inactif', 'vendu'):
+                annonce.statut = new_statut
+            annonce.verified = request.POST.get('verified') == '1'
 
         # Supprimer les photos cochées (et leurs thumbnails associés)
         to_delete = request.POST.getlist('delete_photos')

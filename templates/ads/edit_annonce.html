@@ -273,6 +273,28 @@
             </div>
             {% endif %}
 
+            {% if request.user.is_staff %}
+            <!-- ── Section admin ── -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+              <div class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1">Options admin</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Statut</label>
+                  <select name="statut" class="form-input">
+                    <option value="actif"   {% if annonce.statut == 'actif'   %}selected{% endif %}>Actif</option>
+                    <option value="inactif" {% if annonce.statut == 'inactif' %}selected{% endif %}>Inactif</option>
+                    <option value="vendu"   {% if annonce.statut == 'vendu'   %}selected{% endif %}>Vendu / Pourvu</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-2 pt-5">
+                  <input type="checkbox" name="verified" id="id_verified" value="1" {% if annonce.verified %}checked{% endif %}
+                    class="w-4 h-4 accent-emerald-600">
+                  <label for="id_verified" class="text-sm font-semibold text-gray-700">Annonce vérifiée ✓</label>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
             <!-- Actions -->
             <div class="flex gap-3 pt-2">
               <button type="submit" class="btn btn-primary flex-1 justify-center py-3 text-base font-black">
