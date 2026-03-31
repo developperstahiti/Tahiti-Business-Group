@@ -18,7 +18,8 @@ def vendeur_note(user):
     )
     moyenne = stats['moyenne']
     if moyenne is not None:
-        moyenne = round(moyenne, 1)
+        r = round(moyenne, 1)
+        moyenne = int(r) if r == int(r) else r
     return {
         'moyenne': moyenne,
         'total_avis': stats['total_avis'],

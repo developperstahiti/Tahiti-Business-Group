@@ -4171,3 +4171,163 @@ body .bg-gradient-to-r {
   color: #9ca3af;
   font-size: 2rem;
 }
+
+/* ── Barre vendeur au-dessus de la photo ─────────────────── */
+.annonce-card__seller-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px;
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+  min-height: 26px;
+  background: var(--color-surface, #fff);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+.annonce-card__seller-bar-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.annonce-card__seller-bar-initials {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d1d5db;
+  color: #374151;
+  font-size: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.annonce-card__seller-bar-name {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  color: var(--color-text-secondary, #374151);
+}
+
+.annonce-card__seller-bar-note {
+  font-size: 10px;
+  color: #F59E0B;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+/* ── Étoiles avec remplissage partiel ─────────────────────── */
+.annonce-card__stars {
+  position: relative;
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+.annonce-card__stars-empty {
+  color: #d1d5db;
+}
+.annonce-card__stars-filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: #F59E0B;
+}
+
+/* Sur très petits écrans (< 200px de card) : masquer les étoiles, garder avatar+nom */
+@media (max-width: 360px) {
+  .annonce-card__stars { display: none; }
+  .annonce-card__seller-bar-name { font-size: 10px; }
+}
+
+/* ── Localisation standalone dans le body (sans barre vendeur) */
+.annonce-card__body .annonce-card__loc {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Bouton favori sur la photo des cards ─────────────────────── */
+.annonce-card__fav-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.45);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+  z-index: 2;
+}
+.annonce-card__fav-btn--saved {
+  background: rgba(220, 38, 38, 0.75);
+}
+.annonce-card__fav-btn--saved .annonce-card__fav-icon {
+  fill: #fff;
+  stroke: #fff;
+}
+@keyframes heartbeat {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.35); }
+  50%  { transform: scale(1.1); }
+  75%  { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+.annonce-card__fav-btn--beat {
+  animation: heartbeat 0.45s ease;
+}
+
+/* ── Badge Boost avec flamme animée ──────────────────────── */
+.annonce-card__boost-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 5px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+@keyframes flame {
+  0%, 100% { transform: scaleY(1) rotate(-3deg); }
+  25%       { transform: scaleY(1.15) rotate(2deg); }
+  50%       { transform: scaleY(0.9) rotate(-2deg); }
+  75%       { transform: scaleY(1.1) rotate(3deg); }
+}
+
+.annonce-card__boost-flame {
+  display: inline-block;
+  animation: flame 0.8s ease-in-out infinite;
+  transform-origin: bottom center;
+  font-size: 9px;
+  line-height: 1;
+}

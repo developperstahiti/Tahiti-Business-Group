@@ -34,7 +34,7 @@
         <div class="p-4">
           {% if photo_count == 1 %}
           <!-- Une seule photo -->
-          <div class="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center" style="max-height:500px">
+          <div class="rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center relative" style="max-height:500px">
             <img id="mainPhotoSingle" src="{{ annonce.photos.0 }}" alt="{{ annonce.titre }}"
               class="rounded-xl cursor-zoom-in" style="max-height:500px;max-width:100%;object-fit:contain"
               loading="eager" decoding="async" width="800" height="600">
@@ -84,7 +84,7 @@
         <div class="flex items-start justify-between gap-4 mb-3 flex-wrap">
           <h1 class="text-2xl font-black text-gray-900 leading-tight" style="min-width:0;word-break:break-word">{{ annonce.titre }}</h1>
           {% if annonce.verified %}<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-sm font-bold px-3 py-1 rounded-full mt-2">&#10003; Annonce vérifiée</span>{% endif %}
-          {% if annonce.boost %}<span class="badge badge-pro flex-shrink-0">⭐ Boost</span>{% endif %}
+          {% if annonce.boost %}<span class="annonce-card__boost-badge" style="position:static;box-shadow:none;"><span class="annonce-card__boost-flame">🔥</span> Boosté</span>{% endif %}
           {% if user.is_staff or user == annonce.user %}
           <a href="{% url 'edit_annonce' annonce.pk %}" class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition">✏️ Modifier</a>
           {% endif %}
@@ -122,27 +122,49 @@
 
       <!-- Action bar: Enregistrer · Partager · Signaler -->
       <div class="detail-actions-bar flex flex-wrap gap-2 items-center">
-        <!-- Enregistrer -->
-        <button class="enregistrer-btn inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2.5 hover:bg-gray-100 transition{% if is_enregistre %} enregistrer-btn--active{% endif %}"
+        <!-- Enregistrer (icône ronde) — logique JS via .enregistrer-btn[data-annonce-pk] -->
+        <button class="enregistrer-btn w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer{% if is_enregistre %} enregistrer-btn--active{% endif %}"
                 data-annonce-pk="{{ annonce.pk }}"
                 data-saved="{{ is_enregistre|yesno:'true,false' }}"
                 data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
-                aria-label="Enregistrer l'annonce">
-          <span class="enregistrer-icon">{% if is_enregistre %}&#10003;{% else %}&#9829;{% endif %}</span>
-          <span class="enregistrer-label">{% if is_enregistre %}Enregistr&eacute;{% else %}Enregistrer{% endif %}</span>
+                aria-label="Enregistrer l'annonce"
+                title="Enregistrer"
+                style="background:{% if is_enregistre %}#111827{% else %}var(--color-surface,#f3f4f6){% endif %};border-color:var(--color-border,#e5e7eb);color:{% if is_enregistre %}#fff{% else %}inherit{% endif %}"
+                onmouseover="if(this.dataset.saved!=='true'){this.style.background='var(--color-surface-hover,#e5e7eb)'}"
+                onmouseout="if(this.dataset.saved!=='true'){this.style.background='var(--color-surface,#f3f4f6)'}">
+          <!-- Spans cachés conservés pour la logique JS updateUI() -->
+          <span class="enregistrer-icon" style="display:none">{% if is_enregistre %}&#10003;{% else %}&#9829;{% endif %}</span>
+          <span class="enregistrer-label" style="display:none">{% if is_enregistre %}Enregistr&eacute;{% else %}Enregistrer{% endif %}</span>
+          <svg id="icon-coeur" width="16" height="16" viewBox="0 0 24 24" fill="{% if is_enregistre %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
         </button>
         <span class="text-xs text-gray-400 enregistrer-count" data-annonce-pk="{{ annonce.pk }}">{{ enregistrement_count }} personne{{ enregistrement_count|pluralize }} {{ enregistrement_count|pluralize:"a,ont" }} enregistr&eacute; cette annonce</span>
-        <!-- Partager -->
+        <!-- Partager (icône ronde) — logique JS via id="share-btn" (Web Share API ou clipboard) -->
         <button id="share-btn"
-                class="inline-flex items-center gap-1.5 border-2 border-gray-900 text-gray-900 text-xs font-bold px-4 py-2.5 hover:bg-gray-100 transition"
-                aria-label="Partager l'annonce">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Partager
+                aria-label="Partager l'annonce"
+                title="Partager"
+                class="w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer"
+                style="background:var(--color-surface,#f3f4f6);border-color:var(--color-border,#e5e7eb)"
+                onmouseover="this.style.background='var(--color-surface-hover,#e5e7eb)'"
+                onmouseout="this.style.background='var(--color-surface,#f3f4f6)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
         </button>
-        <!-- Signaler -->
+        <!-- Signaler (icône ronde) -->
         <a href="{% url 'signaler_annonce' annonce.pk %}"
-           class="inline-flex items-center gap-1.5 border border-red-200 text-red-500 text-xs font-semibold px-4 py-2.5 hover:border-red-400 hover:text-red-700 transition ml-auto">
-          🚨 Signaler
+           aria-label="Signaler l'annonce"
+           title="Signaler"
+           class="w-9 h-9 rounded-full border flex items-center justify-center transition-colors ml-auto"
+           style="background:var(--color-surface,#f3f4f6);border-color:#fecaca;color:#ef4444"
+           onmouseover="this.style.background='#fee2e2'"
+           onmouseout="this.style.background='var(--color-surface,#f3f4f6)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+            <line x1="4" y1="22" x2="4" y2="15"/>
+          </svg>
         </a>
       </div>
 
@@ -740,18 +762,21 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateUI(isSaved, count) {
     saved = isSaved;
     btn.dataset.saved = isSaved ? 'true' : 'false';
+    var coeur = document.getElementById('icon-coeur');
     if (isSaved) {
       icon.innerHTML = '&#10003;';
       label.textContent = 'Enregistr\u00e9';
       btn.style.background = '#111827';
       btn.style.color = '#fff';
       btn.classList.add('enregistrer-btn--active');
+      if (coeur) coeur.setAttribute('fill', 'currentColor');
     } else {
       icon.innerHTML = '&#9829;';
       label.textContent = 'Enregistrer';
       btn.style.background = '';
       btn.style.color = '';
       btn.classList.remove('enregistrer-btn--active');
+      if (coeur) coeur.setAttribute('fill', 'none');
     }
     if (countEl && count !== undefined) {
       var txt = count + ' personne';

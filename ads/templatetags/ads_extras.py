@@ -1,6 +1,17 @@
 from django import template
+from django.utils import timezone
+import datetime
 
 register = template.Library()
+
+
+@register.filter
+def note_pct(moyenne):
+    """Convertit une note /5 en pourcentage pour les étoiles partielles."""
+    try:
+        return f"{min(max(float(moyenne) / 5 * 100, 0), 100):.1f}%"
+    except (TypeError, ValueError):
+        return "0%"
 
 # Human-readable labels for spec keys stored in Annonce.specs
 SPEC_LABELS = {
@@ -129,6 +140,29 @@ SPEC_UNITS = {
     'experience_ans':   ' ans',
     'surface_m2':       ' m²',
 }
+
+
+@register.filter
+def date_courte(dt):
+    """Retourne 'Aujourd'hui', 'Hier', ou 'JJ mois' (ex: '24 mars')."""
+    if not dt:
+        return ''
+    now = timezone.now()
+    if timezone.is_aware(dt):
+        dt_local = timezone.localtime(dt)
+        now_local = timezone.localtime(now)
+    else:
+        dt_local = dt
+        now_local = now
+    delta = now_local.date() - dt_local.date()
+    if delta.days == 0:
+        return "Aujourd'hui"
+    elif delta.days == 1:
+        return 'Hier'
+    else:
+        MOIS = ['jan', 'fév', 'mars', 'avr', 'mai', 'juin',
+                'juil', 'août', 'sept', 'oct', 'nov', 'déc']
+        return f"{dt_local.day} {MOIS[dt_local.month - 1]}"
 
 
 @register.filter

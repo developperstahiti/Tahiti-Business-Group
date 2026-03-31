@@ -150,6 +150,57 @@ function initSectionReveals() {
   sections.forEach(s => observer.observe(s));
 }
 
+// ── Bouton favori ♡ sur les cards d'annonces (AJAX) ───────────
+function initCardFavButtons() {
+  document.querySelectorAll('.annonce-card__fav-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      var authenticated = btn.dataset.authenticated === 'true';
+      if (!authenticated) {
+        window.location.href = '/users/login/';
+        return;
+      }
+      var pk = btn.dataset.pk;
+      // Animation battement de cœur
+      btn.classList.remove('annonce-card__fav-btn--beat');
+      void btn.offsetWidth; // force reflow pour relancer l'animation
+      btn.classList.add('annonce-card__fav-btn--beat');
+      btn.addEventListener('animationend', function() {
+        btn.classList.remove('annonce-card__fav-btn--beat');
+      }, { once: true });
+      // Récupération du token CSRF (CSRF_COOKIE_HTTPONLY=True → lecture depuis le DOM)
+      var csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+      var csrfToken = csrfEl ? csrfEl.value : '';
+      // AJAX vers toggle_enregistrement
+      fetch('/annonces/toggle-enregistrement/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ annonce_id: parseInt(pk, 10) }),
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.saved !== undefined) {
+          btn.dataset.saved = data.saved ? 'true' : 'false';
+          var icon = btn.querySelector('.annonce-card__fav-icon');
+          if (data.saved) {
+            btn.classList.add('annonce-card__fav-btn--saved');
+            if (icon) icon.setAttribute('fill', '#fff');
+          } else {
+            btn.classList.remove('annonce-card__fav-btn--saved');
+            if (icon) icon.setAttribute('fill', 'none');
+          }
+        }
+      })
+      .catch(function() {});
+    });
+  });
+}
+
 // ── Main init ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initLazyImages();
@@ -162,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSectionReveals();
   initFormSpinners();
   initFavorisCards();
+  initCardFavButtons();
 
   // Keyboard shortcut: / → focus search
   document.addEventListener('keydown', (e) => {

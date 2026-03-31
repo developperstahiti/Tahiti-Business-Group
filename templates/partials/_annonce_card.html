@@ -1,5 +1,25 @@
 <div class="annonce-card group" data-annonce-id="{{ annonce.pk }}">
-  <!-- Main link: photo + body -->
+  <!-- Barre vendeur — HORS du lien principal pour éviter <a> dans <a> -->
+  {% load notation_tags %}{% vendeur_note annonce.user as vn %}
+  <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__seller-bar js-stop-propagation">
+    {% if annonce.user.profil.photo_profil_url %}
+      <img src="{{ annonce.user.profil.photo_profil_url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
+    {% elif annonce.user.profil.photo_profil %}
+      <img src="{{ annonce.user.profil.photo_profil.url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
+    {% elif annonce.user.avatar_url %}
+      <img src="{{ annonce.user.avatar_url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
+    {% else %}
+      <span class="annonce-card__seller-bar-initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>
+    {% endif %}
+    <span class="annonce-card__seller-bar-name">{{ annonce.user.nom|default:annonce.user.email }}</span>
+    {% if vn.moyenne %}{% load ads_extras %}
+    <span class="annonce-card__stars ml-auto flex-shrink-0" title="{{ vn.moyenne }}/5">
+      <span class="annonce-card__stars-empty">★★★★★</span>
+      <span class="annonce-card__stars-filled" style="width:{{ vn.moyenne|note_pct }}">★★★★★</span>
+    </span>
+    {% endif %}
+  </a>
+  <!-- Lien principal : photo + body -->
   <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="block annonce-card__link">
     <!-- Photo -->
     <div class="relative overflow-hidden bg-gray-100{% if annonce.get_main_photo %} img-skeleton{% endif %}" style="aspect-ratio:4/3">
@@ -14,35 +34,48 @@
         {% load static %}{% if annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% elif annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">{% endif %}
       </div>
       {% endif %}
-      {% if annonce.boost %}
-      <div class="annonce-card__badge">⭐ Boost</div>
-      {% endif %}
       {% if annonce.type_transaction == 'vente' %}
       <div class="absolute top-2 right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Vente</div>
       {% elif annonce.type_transaction == 'location' %}
       <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Location</div>
       {% endif %}
+      <!-- Date — haut gauche -->
+      <div class="absolute top-2 left-2 text-white font-medium" style="font-size:10px;padding:3px 6px;border-radius:5px;background:rgba(0,0,0,0.45);line-height:1.3">
+        {{ annonce.created_at|date:"d/m/y" }}
+      </div>
       {% if annonce.photos|length > 1 %}
-      <div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full backdrop-blur-sm">
+      <!-- Compteur photos — juste sous la date -->
+      <div class="absolute text-white font-medium" style="top:30px;left:8px;font-size:10px;padding:3px 6px;border-radius:5px;background:rgba(0,0,0,0.45);line-height:1.3;white-space:nowrap">
         📷 {{ annonce.photos|length }}
       </div>
       {% endif %}
+      {% if annonce.boost %}
+      <!-- Badge Boost — bas gauche avec flamme animée -->
+      <div class="annonce-card__boost-badge">
+        <span class="annonce-card__boost-flame">🔥</span> Boosté
+      </div>
+      {% endif %}
+      <!-- Bouton favori — bas droite -->
+      <button class="annonce-card__fav-btn js-stop-propagation{% if annonce.is_enregistre %} annonce-card__fav-btn--saved{% endif %}"
+              data-pk="{{ annonce.pk }}"
+              data-saved="{{ annonce.is_enregistre|yesno:'true,false' }}"
+              data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
+              aria-label="Enregistrer l'annonce"
+              title="Enregistrer">
+        <svg class="annonce-card__fav-icon" width="13" height="13" viewBox="0 0 24 24" fill="{% if annonce.is_enregistre %}#fff{% else %}none{% endif %}" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </button>
     </div>
     <!-- Body -->
     <div class="annonce-card__body">
       <div class="annonce-card__title">{{ annonce.titre }}{% if annonce.verified %}<span class="inline-flex items-center text-emerald-600 text-xs font-bold ml-1" title="Annonce vérifiée">&#10003; Vérifiée</span>{% endif %}</div>
       <div class="annonce-card__price">{{ annonce.get_prix_display_label }}</div>
       <div class="annonce-card__meta">
-        <span>👁 {{ annonce.views }} vue{{ annonce.views|pluralize }}</span>
-        <span>🖱 {{ annonce.clics }} clic{{ annonce.clics|pluralize }}</span>
+        <span>👁 {{ annonce.views }}</span>
+        <span>🖱 {{ annonce.clics }}</span>
         {% if annonce.enregistrement_count %}<span class="annonce-card__saves" title="Enregistrements">&#128278; {{ annonce.enregistrement_count }}</span>{% endif %}
-      </div>
-      {% load notation_tags %}{% vendeur_note annonce.user as vn %}
-      <div class="annonce-card__seller">
-        <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__avatar-link js-stop-propagation">{% if annonce.user.profil.photo_profil %}<img src="{{ annonce.user.profil.photo_profil.url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="annonce-card__avatar" loading="lazy" decoding="async" width="28" height="28">{% elif annonce.user.avatar_url %}<img src="{{ annonce.user.avatar_url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="annonce-card__avatar" loading="lazy" decoding="async" width="28" height="28">{% else %}<span class="annonce-card__avatar annonce-card__avatar--initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>{% endif %}</a>
-        <span class="annonce-card__name">{{ annonce.user.nom|default:annonce.user.email }}</span>
-        {% if vn.moyenne %}<span class="annonce-card__note">★ {{ vn.moyenne }}</span>{% endif %}
-        <span class="annonce-card__loc">📍 {% firstof annonce.commune annonce.localisation %}</span>
+        <span class="annonce-card__loc ml-auto">📍 {% firstof annonce.commune annonce.localisation %}</span>
       </div>
     </div>
   </a>
