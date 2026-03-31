@@ -4,16 +4,18 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('annonces/', views.liste_annonces, name='liste_annonces'),
+    # Specific action paths MUST come before the generic <slug> pattern
+    path('annonces/<int:pk>/edit/', views.edit_annonce, name='edit_annonce'),
+    path('annonces/<int:pk>/supprimer/', views.supprimer_annonce, name='supprimer_annonce'),
+    path('annonces/<int:pk>/vendu/', views.marquer_vendu, name='marquer_vendu'),
+    path('annonces/<int:pk>/contact/', views.contact_annonce, name='contact_annonce'),
+    path('annonces/<int:pk>/signaler/', views.signaler_annonce, name='signaler_annonce'),
+    # Generic detail patterns after all specific ones
     path('annonces/<int:pk>/<slug:slug>/', views.annonce_detail, name='annonce_detail'),
     path('annonces/<int:pk>/', views.annonce_detail_redirect, name='annonce_detail_old'),
     path('deposer/', views.deposer_annonce, name='deposer_annonce'),
     path('mes-annonces/', views.mes_annonces, name='mes_annonces'),
-    path('annonces/<int:pk>/edit/', views.edit_annonce, name='edit_annonce'),
-    path('annonces/<int:pk>/supprimer/', views.supprimer_annonce, name='supprimer_annonce'),
-    path('annonces/<int:pk>/vendu/', views.marquer_vendu, name='marquer_vendu'),
     path('mes-annonces/remonter/', views.remonter_annonces, name='remonter_annonces'),
-    path('annonces/<int:pk>/contact/', views.contact_annonce, name='contact_annonce'),
-    path('annonces/<int:pk>/signaler/', views.signaler_annonce, name='signaler_annonce'),
     path('mes-messages/', views.mes_messages, name='mes_messages'),
     path('mes-favoris/', views.mes_favoris, name='mes_favoris'),
     path('annonces/toggle-enregistrement/', views.toggle_enregistrement, name='toggle_enregistrement'),
