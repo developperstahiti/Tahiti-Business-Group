@@ -432,8 +432,8 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
 }
 .pub-strip-empty__cta {
   display: inline-block;
-  background: #1D9E75;
-  color: #fff;
+  background: #fff;
+  color: #111;
   font-size: 12px;
   font-weight: 700;
   padding: 6px 16px;
@@ -445,9 +445,9 @@ textarea.form-input       { resize: vertical; min-height: 100px; }
   position: relative; z-index: 2;
 }
 .pub-strip-empty__cta:hover {
-  background: #17875f;
+  background: #f0f0f0;
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(29,158,117,.4);
+  box-shadow: 0 4px 14px rgba(255,255,255,.3);
 }
 /* Responsive strip : colonne sur mobile */
 @media (max-width: 479px) {
