@@ -27,11 +27,11 @@
       </label>
       {% if request.user.role == 'pro' or request.user.role == 'admin' %}
       <button type="submit" class="ml-auto text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition flex items-center gap-1.5">
-        <span class="text-base leading-none">&uarr;</span> Republier la sélection
+        <span class="text-base leading-none">&uarr;</span> Republier les Annonces
       </button>
       {% else %}
       <button type="button" id="btn-show-pro-modal" class="ml-auto text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition flex items-center gap-1.5">
-        <span class="text-base leading-none">&uarr;</span> Republier la sélection &#128274;
+        <span class="text-base leading-none">&uarr;</span> Republier les Annonces &#128274;
       </button>
       {% endif %}
     </div>
