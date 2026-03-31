@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 from django.urls import reverse
 
@@ -250,7 +250,7 @@ class Notation(models.Model):
         on_delete=models.CASCADE,
         related_name='notations_donnees',
     )
-    note = models.IntegerField()  # 1 à 5
+    note = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])  # 1 à 5
     avis_ecrit = models.TextField(blank=True, default='', max_length=500)
     date_creation = models.DateTimeField(auto_now_add=True)
 

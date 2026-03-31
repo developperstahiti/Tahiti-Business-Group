@@ -1013,6 +1013,7 @@ def mes_favoris(request):
 
 
 # ── Signaler une annonce ─────────────────────────────────────────────────
+@login_required
 def signaler_annonce(request, pk):
     annonce = get_object_or_404(Annonce, pk=pk, statut='actif')
     if request.method == 'POST':
