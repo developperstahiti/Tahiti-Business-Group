@@ -836,6 +836,15 @@ document.addEventListener('DOMContentLoaded', function() {
       openContact(this.dataset.contactUrl);
     });
   }
+
+  // Auto-open contact modal si ?contact=<pk> dans l'URL (ex: depuis mes messages)
+  var contactPk = new URLSearchParams(window.location.search).get('contact');
+  if (contactPk) {
+    var baseUrl = '{% url "contact_annonce" pk=annonce.pk %}';
+    openContact(baseUrl + '?with=' + encodeURIComponent(contactPk));
+    // Nettoyer l'URL sans recharger la page
+    history.replaceState(null, '', window.location.pathname);
+  }
 })();
 
 // ── Bouton "Contacter le vendeur" (lightbox) → ferme lightbox + ouvre modal ──

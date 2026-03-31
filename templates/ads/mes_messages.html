@@ -16,8 +16,7 @@
   {% if conversations %}
   <div class="space-y-2">
     {% for conv in conversations %}
-    <div class="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-sm transition cursor-pointer flex gap-4 items-center group conv-row"
-      data-contact-url="{% url 'contact_annonce' pk=conv.annonce.pk %}?with={{ conv.other_user.pk }}">
+    <a href="{% url 'annonce_detail' conv.annonce.pk conv.annonce.slug %}?contact={{ conv.other_user.pk }}" class="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-sm transition cursor-pointer flex gap-4 items-center group conv-row">
 
       <!-- Annonce thumbnail -->
       <div class="flex-shrink-0">
@@ -52,7 +51,7 @@
       </div>
       {% endif %}
 
-    </div>
+    </a>
     {% endfor %}
   </div>
 
@@ -69,11 +68,4 @@
 
 </div>
 
-<script nonce="{{ csp_nonce }}">
-document.querySelectorAll('.conv-row').forEach(function(row) {
-  row.addEventListener('click', function() {
-    openContact(this.dataset.contactUrl);
-  });
-});
-</script>
 {% endblock %}
