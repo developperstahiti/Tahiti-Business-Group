@@ -1433,6 +1433,9 @@ main {
   max-height: 60vh;
   object-fit: contain;
   border-radius: 10px;
+  cursor: zoom-in;
+  transition: transform .2s ease;
+  user-select: none;
   user-select: none;
 }
 
