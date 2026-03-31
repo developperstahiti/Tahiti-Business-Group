@@ -17,6 +17,7 @@ urlpatterns = [
     path('mes-annonces/', views.mes_annonces, name='mes_annonces'),
     path('mes-annonces/remonter/', views.remonter_annonces, name='remonter_annonces'),
     path('mes-messages/', views.mes_messages, name='mes_messages'),
+    path('mes-messages/<int:annonce_pk>/supprimer/<int:other_user_pk>/', views.supprimer_conversation, name='supprimer_conversation'),
     path('mes-favoris/', views.mes_favoris, name='mes_favoris'),
     path('annonces/toggle-enregistrement/', views.toggle_enregistrement, name='toggle_enregistrement'),
     path('info/', views.page_info, name='page_info'),

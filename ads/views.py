@@ -903,6 +903,20 @@ def mes_messages(request):
     return render(request, 'ads/mes_messages.html', {'conversations': conversations})
 
 
+@login_required
+@require_POST
+def supprimer_conversation(request, annonce_pk, other_user_pk):
+    User = get_user_model()
+    other = get_object_or_404(User, pk=other_user_pk)
+    Message.objects.filter(
+        annonce_id=annonce_pk
+    ).filter(
+        Q(from_user=request.user, to_user=other) |
+        Q(from_user=other, to_user=request.user)
+    ).delete()
+    return redirect('mes_messages')
+
+
 # ── Impressions (vues au scroll) ──────────────────────────────────────────
 from django.views.decorators.http import require_POST
 import json

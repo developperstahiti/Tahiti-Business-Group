@@ -16,42 +16,57 @@
   {% if conversations %}
   <div class="space-y-2">
     {% for conv in conversations %}
-    <a href="{% url 'annonce_detail' conv.annonce.pk conv.annonce.slug %}?contact={{ conv.other_user.pk }}" class="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-sm transition cursor-pointer flex gap-4 items-center group conv-row">
+    <div class="flex items-stretch bg-white border border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-sm transition overflow-hidden group">
+      <a href="{% url 'annonce_detail' conv.annonce.pk conv.annonce.slug %}?contact={{ conv.other_user.pk }}" class="flex-1 p-4 flex gap-4 items-center min-w-0">
 
-      <!-- Annonce thumbnail -->
-      <div class="flex-shrink-0">
-        {% if conv.annonce.get_main_photo %}
-        <img src="{{ conv.annonce.get_main_photo }}" class="w-16 h-16 object-cover rounded-xl border border-gray-200" alt="{{ conv.annonce.titre }}" loading="lazy">
-        {% else %}
-        <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-2xl">
-          {% if conv.annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="Catégorie Véhicules" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="Catégorie Immobilier" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="Catégorie Emploi" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="Catégorie Service" style="width:28px;height:28px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="Catégorie Occasion" style="width:28px;height:28px;object-fit:contain">{% endif %}
+        <!-- Annonce thumbnail -->
+        <div class="flex-shrink-0">
+          {% if conv.annonce.get_main_photo %}
+          <img src="{{ conv.annonce.get_main_photo }}" class="w-16 h-16 object-cover rounded-xl border border-gray-200" alt="{{ conv.annonce.titre }}" loading="lazy">
+          {% else %}
+          <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-2xl">
+            {% if conv.annonce.categorie == 'vehicules' %}<img src="{% static 'img/cat-vehicule-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'immobilier' %}<img src="{% static 'img/cat-immobilier-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'occasion' %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'emploi' %}<img src="{% static 'img/cat-emploi-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% elif conv.annonce.categorie == 'services' %}<img src="{% static 'img/cat-service-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% else %}<img src="{% static 'img/cat-occasion-sm.webp' %}" alt="" style="width:28px;height:28px;object-fit:contain">{% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-0.5">
+            <div class="font-bold text-gray-900 text-sm truncate group-hover:text-blue-600 transition">{{ conv.annonce.titre }}</div>
+            <div class="text-xs text-gray-400 flex-shrink-0 ml-3">{{ conv.last_msg.created_at|timesince }}</div>
+          </div>
+          <div class="text-xs text-gray-500 mb-1">
+            Avec <span class="font-semibold">{{ conv.other_user.nom|default:conv.other_user.email }}</span>
+          </div>
+          <div class="text-sm truncate {% if conv.unread %}text-gray-900 font-medium{% else %}text-gray-500{% endif %}">
+            {% if conv.last_msg.from_user == request.user %}<span class="text-gray-400">Vous : </span>{% endif %}
+            {{ conv.last_msg.content }}
+          </div>
+        </div>
+
+        <!-- Unread badge -->
+        {% if conv.unread %}
+        <div class="flex-shrink-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold ml-2">
+          {{ conv.unread }}
         </div>
         {% endif %}
-      </div>
 
-      <!-- Content -->
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-0.5">
-          <div class="font-bold text-gray-900 text-sm truncate group-hover:text-blue-600 transition">{{ conv.annonce.titre }}</div>
-          <div class="text-xs text-gray-400 flex-shrink-0 ml-3">{{ conv.last_msg.created_at|timesince }}</div>
-        </div>
-        <div class="text-xs text-gray-500 mb-1">
-          Avec <span class="font-semibold">{{ conv.other_user.nom|default:conv.other_user.email }}</span>
-        </div>
-        <div class="text-sm truncate {% if conv.unread %}text-gray-900 font-medium{% else %}text-gray-500{% endif %}">
-          {% if conv.last_msg.from_user == request.user %}<span class="text-gray-400">Vous : </span>{% endif %}
-          {{ conv.last_msg.content }}
-        </div>
-      </div>
+      </a>
 
-      <!-- Unread badge -->
-      {% if conv.unread %}
-      <div class="flex-shrink-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-        {{ conv.unread }}
-      </div>
-      {% endif %}
-
-    </a>
+      <!-- Bouton supprimer conversation -->
+      <form method="post" action="{% url 'supprimer_conversation' conv.annonce.pk conv.other_user.pk %}" class="flex items-center px-3 border-l border-gray-100">
+        {% csrf_token %}
+        <button type="submit"
+          onclick="return confirm('Supprimer cette conversation ? Cette action est irréversible.')"
+          class="text-gray-300 hover:text-red-500 transition p-1 rounded"
+          title="Supprimer la conversation">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </form>
+    </div>
     {% endfor %}
   </div>
 
