@@ -811,8 +811,8 @@ def contact_annonce(request, pk):
 
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
-        if len(content) < 10:
-            return JsonResponse({'error': 'Message trop court (10 caractères minimum)'}, status=400)
+        if len(content) < 1:
+            return JsonResponse({'error': 'Message vide'}, status=400)
         content = content[:2000]
         to_user = buyer if request.user == seller else seller
         msg = Message.objects.create(

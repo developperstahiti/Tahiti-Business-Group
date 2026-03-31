@@ -794,13 +794,7 @@ function submitContact(e) {
   var btn  = form.querySelector('button[type=submit]');
   var textarea = form.querySelector('textarea');
   var msgText = textarea ? textarea.value.trim() : '';
-  if (msgText.length < 10) {
-    var existing = form.querySelector('.contact-form-error');
-    if (existing) existing.remove();
-    var errDiv = document.createElement('div');
-    errDiv.className = 'contact-form-error text-red-500 text-xs font-medium mt-1';
-    errDiv.textContent = 'Votre message doit contenir au moins 10 caract\u00e8res.';
-    textarea.parentNode.insertBefore(errDiv, textarea.nextSibling);
+  if (msgText.length < 1) {
     return;
   }
   btn.disabled = true;

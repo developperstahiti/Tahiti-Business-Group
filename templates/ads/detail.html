@@ -838,12 +838,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Auto-open contact modal si ?contact=<pk> dans l'URL (ex: depuis mes messages)
-  var contactPk = new URLSearchParams(window.location.search).get('contact');
-  if (contactPk) {
-    var baseUrl = '{% url "contact_annonce" pk=annonce.pk %}';
-    openContact(baseUrl + '?with=' + encodeURIComponent(contactPk));
-    // Nettoyer l'URL sans recharger la page
+  // Différé au DOMContentLoaded car openContact() est défini plus tard dans base.html
+  var _contactPk = new URLSearchParams(window.location.search).get('contact');
+  if (_contactPk) {
     history.replaceState(null, '', window.location.pathname);
+    var _contactUrl = '{% url "contact_annonce" pk=annonce.pk %}?with=' + encodeURIComponent(_contactPk);
+    document.addEventListener('DOMContentLoaded', function() {
+      openContact(_contactUrl);
+    });
   }
 })();
 
