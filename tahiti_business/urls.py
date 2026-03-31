@@ -88,10 +88,9 @@ urlpatterns = [
         open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'manifest.json'), 'rb'),
         content_type='application/manifest+json',
     ), name='manifest'),
-    path('.well-known/assetlinks.json', lambda r: FileResponse(
-        open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), '.well-known', 'assetlinks.json'), 'rb'),
+    path('.well-known/assetlinks.json', lambda r: HttpResponse(
+        '[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"com.tahitibusinessgroup.app","sha256_cert_fingerprints":["C6:A1:2A:8C:6B:40:2C:7C:FF:1C:1C:C6:2F:21:7D:1C:95:BE:E1:B2:DD:0C:9C:CE:49:8F:58:24:09:FB:6A:F6"]}}]',
         content_type='application/json',
-        headers={'Cache-Control': 'no-cache'},
     )),
 ]
 
