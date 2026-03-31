@@ -2750,16 +2750,18 @@ body .bg-gradient-to-r {
     font-size: 1.2rem;
   }
 
-  /* Barre d'actions détail : empilement en colonne sous 480px */
+  /* Barre d'actions détail : boutons circulaires en ligne */
   .detail-actions-bar {
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
   }
   body .detail-actions-bar > * {
-    justify-content: center;
-    width: 100%;
-    min-height: 44px;
+    width: auto;
+    min-height: unset;
     margin-left: 0;
+  }
+  body .detail-actions-bar > .ml-auto {
+    margin-left: auto;
   }
 
   /* Bulle "annonce parfaite" : étire sur la largeur au-dessus de la bottom nav */
@@ -3741,24 +3743,25 @@ body .bg-gradient-to-r {
     word-break: break-word;
   }
 
-  /* ── Detail action bar: full width stacked buttons ── */
+  /* ── Detail action bar: boutons circulaires en ligne ── */
   .detail-actions-bar {
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
   }
   body .detail-actions-bar > * {
-    width: 100%;
-    justify-content: center;
-    min-height: 44px;
+    width: auto;
+    min-height: unset;
     margin-left: 0;
-    text-align: center;
+    text-align: unset;
   }
-  /* Enregistrer/Partager/Signaler buttons: proper touch size */
+  body .detail-actions-bar > .ml-auto {
+    margin-left: auto;
+  }
   .detail-actions-bar button,
   .detail-actions-bar a {
-    min-height: 44px;
-    padding: 10px 16px;
-    font-size: 13px;
+    min-height: unset;
+    padding: 0;
+    font-size: unset;
   }
 
   /* ── Detail vendeur section: compact layout ── */
@@ -3965,13 +3968,13 @@ body .bg-gradient-to-r {
     height: 350px;
   }
 
-  /* ── Detail action bar: horizontal but with wrapping ── */
+  /* ── Detail action bar: horizontal sans wrap ── */
   .detail-actions-bar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
   }
   .detail-actions-bar > * {
-    min-height: 44px;
+    min-height: unset;
   }
 
   /* ── Filters: 2x2 grid on tablet portrait ── */
