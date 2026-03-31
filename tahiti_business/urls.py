@@ -76,6 +76,7 @@ urlpatterns = [
     path('pubs/', include('pubs.urls')),
     path('rubriques/', include('rubriques.urls')),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('favicon.ico', lambda r: HttpResponse(status=301, headers={'Location': '/static/img/favicon-tbg-32.png'})),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('sw.js', lambda r: FileResponse(
         open(os.path.join(settings.STATIC_ROOT or os.path.join(settings.BASE_DIR, 'static'), 'sw.js'), 'rb'),
