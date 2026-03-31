@@ -21,15 +21,18 @@ class Command(BaseCommand):
             },
         )
 
-        if not created:
-            user.is_staff = True
-            user.is_superuser = True
-            user.role = "admin"
+        if created:
+            user.set_password(password)
+            user.save()
+        else:
+            # Mise à jour des permissions uniquement, sans toucher au mot de passe
+            User.objects.filter(email=email).update(
+                is_staff=True,
+                is_superuser=True,
+                role="admin",
+            )
 
-        user.set_password(password)
-        user.save()
-
-        status = "cree" if created else "reset"
+        status = "cree" if created else "mis a jour (mdp inchange)"
         self.stdout.write(self.style.SUCCESS(
             f"Admin {email} {status} avec succes."
         ))
