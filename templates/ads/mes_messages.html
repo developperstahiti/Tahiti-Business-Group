@@ -58,7 +58,7 @@
       <form method="post" action="{% url 'supprimer_conversation' conv.annonce.pk conv.other_user.pk %}" class="flex items-center px-3 border-l border-gray-100">
         {% csrf_token %}
         <button type="submit"
-          onclick="return confirm('Supprimer cette conversation ? Cette action est irréversible.')"
+          data-confirm="Supprimer cette conversation ? Cette action est irréversible."
           class="text-gray-300 hover:text-red-500 transition p-1 rounded"
           title="Supprimer la conversation">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -83,4 +83,11 @@
 
 </div>
 
+<script nonce="{{ csp_nonce }}">
+document.querySelectorAll('button[data-confirm]').forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    if (!confirm(this.dataset.confirm)) e.preventDefault();
+  });
+});
+</script>
 {% endblock %}
