@@ -4191,7 +4191,7 @@ body .bg-gradient-to-r {
   border-bottom: 0.5px solid rgba(0,0,0,0.08);
   min-height: 26px;
   background: var(--color-surface, #fff);
-  overflow: hidden;
+  overflow: visible;
   text-decoration: none;
   color: inherit;
 }
@@ -4240,14 +4240,15 @@ body .bg-gradient-to-r {
 .annonce-card__stars {
   position: relative;
   display: inline-block;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   flex-shrink: 0;
-  margin-left: 2px;
+  margin-left: auto; /* pousse vers la droite (équivalent ml-auto) */
+  white-space: nowrap;
 }
 .annonce-card__stars-empty {
-  color: #d1d5db;
+  color: #9ca3af;
 }
 .annonce-card__stars-filled {
   position: absolute;
