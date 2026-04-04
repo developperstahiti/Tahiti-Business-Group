@@ -9,6 +9,7 @@ urlpatterns = [
     path('promo/<int:pk>/', views.promo_detail, name='promo_detail'),
     path('info/<int:pk>/', views.info_detail, name='info_detail'),
     path('nouveaute/<int:pk>/', views.nouveaute_detail, name='nouveaute_detail'),
+    path('track/<str:type_article>/<int:pk>/clic/', views.track_rubrique_clic, name='track_rubrique_clic'),
     path('run-agents/', views.run_agents_view, name='run_agents'),
     path('moderation/', views.moderation_dashboard, name='moderation_dashboard'),
     path('moderation/<str:type_article>/<int:pk>/<str:action>/',

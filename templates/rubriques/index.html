@@ -45,22 +45,9 @@
       <span class="rubrique-section-badge">PRO</span>
     </div>
     {% if promos %}
-    <div class="rubrique-grid">
+    <div class="ads-grid">
       {% for p in promos %}
-      <a href="{% url 'promo_detail' p.pk %}" class="article-card">
-        <div class="article-card__image">
-          {% if p.photo %}<img src="{{ p.photo }}" alt="{{ p.titre }}" loading="lazy" decoding="async" width="400" height="240">{% else %}<span class="article-card__emoji"><img src="{% static 'img/cat-promotion.webp' %}" alt="Catégorie Promotion" class="cat-icon--lg" loading="lazy" decoding="async" width="64" height="64"></span>{% endif %}
-        </div>
-        <div class="article-card__body">
-          <span class="article-card__badge">Promotion</span>
-          <div class="article-card__title">{{ p.titre }}</div>
-          <div class="article-card__desc">{{ p.contenu }}</div>
-          <div class="article-card__meta">
-            <span>{{ p.pro_user.nom|default:p.pro_user.email }} · {{ p.created_at|date:"d/m/Y" }}</span>
-            <span class="article-card__cta">Lire →</span>
-          </div>
-        </div>
-      </a>
+        {% include 'partials/_promo_card.html' with article=p %}
       {% endfor %}
     </div>
     {% else %}
@@ -82,22 +69,9 @@
       <h2>Infos média / Article de presse</h2>
     </div>
     {% if infos %}
-    <div class="rubrique-grid">
+    <div class="ads-grid">
       {% for a in infos %}
-      <a href="{% url 'info_detail' a.pk %}" class="article-card">
-        <div class="article-card__image">
-          {% if a.photo %}<img src="{{ a.photo }}" alt="{{ a.titre }}" loading="lazy" decoding="async" width="400" height="240">{% else %}<span class="article-card__emoji"><img src="{% static 'img/cat-infos.webp' %}" alt="Catégorie Infos média" class="cat-icon--lg" loading="lazy" decoding="async" width="64" height="64"></span>{% endif %}
-        </div>
-        <div class="article-card__body">
-          <span class="article-card__badge">Infos média</span>
-          <div class="article-card__title">{{ a.titre }}</div>
-          <div class="article-card__desc">{{ a.contenu }}</div>
-          <div class="article-card__meta">
-            <span>{% if a.auteur %}{{ a.auteur.nom|default:a.auteur.email }}{% else %}TBG{% endif %} · {{ a.created_at|date:"d/m/Y" }}</span>
-            <span class="article-card__cta">Lire →</span>
-          </div>
-        </div>
-      </a>
+        {% include 'partials/_info_card.html' with article=a %}
       {% endfor %}
     </div>
     {% else %}
@@ -120,22 +94,9 @@
       <span class="rubrique-section-badge">PRO</span>
     </div>
     {% if nouveautes %}
-    <div class="rubrique-grid">
+    <div class="ads-grid">
       {% for n in nouveautes %}
-      <a href="{% url 'nouveaute_detail' n.pk %}" class="article-card">
-        <div class="article-card__image">
-          {% if n.photo %}<img src="{{ n.photo }}" alt="{{ n.titre }}" loading="lazy" decoding="async" width="400" height="240">{% else %}<span class="article-card__emoji"><img src="{% static 'img/cat-nouveaute.webp' %}" alt="Catégorie Nouveautés" class="cat-icon--lg" loading="lazy" decoding="async" width="64" height="64"></span>{% endif %}
-        </div>
-        <div class="article-card__body">
-          <span class="article-card__badge">Nouveautés</span>
-          <div class="article-card__title">{{ n.titre }}</div>
-          <div class="article-card__desc">{{ n.contenu }}</div>
-          <div class="article-card__meta">
-            <span>{{ n.pro_user.nom|default:n.pro_user.email }} · {{ n.created_at|date:"d/m/Y" }}</span>
-            <span class="article-card__cta">Lire →</span>
-          </div>
-        </div>
-      </a>
+        {% include 'partials/_nouveaute_card.html' with article=n %}
       {% endfor %}
     </div>
     {% else %}
