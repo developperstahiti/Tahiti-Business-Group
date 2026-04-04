@@ -119,6 +119,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Les fichiers avec hash dans le nom (ex: style.abc123.css) peuvent être mis en cache longtemps.
+# Les fichiers SANS hash (ex: style.css, sw.js, manifest.json) doivent avoir un TTL court
+# pour éviter que les navigateurs servent une version périmée après un déploiement.
+WHITENOISE_MAX_AGE = 300  # 5 minutes pour les fichiers sans hash dans le nom
 
 # Version hash pour cache-busting (généré au démarrage = unique par déploiement)
 STATIC_VERSION = str(int(time.time()))

@@ -1,5 +1,5 @@
 // Service Worker — Tahiti Business Group PWA
-const CACHE_NAME = 'tbg-v2';
+const CACHE_NAME = 'tbg-v3';
 const STATIC_ASSETS = [
     '/offline.html',
 ];
@@ -12,7 +12,7 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// Activate — supprime les anciens caches
+// Activate — supprime TOUS les anciens caches (y compris tbg-v1, tbg-v2, etc.)
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(keys =>
@@ -24,10 +24,22 @@ self.addEventListener('activate', event => {
     self.clients.claim();
 });
 
-// Fetch — intervention minimale
+// Fetch — intervention minimale, ne jamais mettre en cache CSS/JS/media
 self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+
     // Ne PAS intercepter les requêtes cross-origin (images S3, API externes, etc.)
-    if (new URL(event.request.url).origin !== self.location.origin) return;
+    if (url.origin !== self.location.origin) return;
+
+    // Ne JAMAIS intercepter les fichiers statiques CSS/JS/fonts/images
+    // pour éviter de servir une version périmée depuis le cache
+    const staticExts = ['.css', '.js', '.woff', '.woff2', '.ttf', '.otf',
+                        '.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico',
+                        '.gif', '.avif'];
+    if (staticExts.some(ext => url.pathname.endsWith(ext))) return;
+
+    // Ne PAS intercepter les requêtes /static/ (WhiteNoise les gère avec ses propres headers)
+    if (url.pathname.startsWith('/static/')) return;
 
     // Pages HTML : network-first, fallback offline
     if (event.request.mode === 'navigate') {
@@ -37,5 +49,5 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Tout le reste (static, media, API) : laisser le navigateur gérer normalement
+    // Tout le reste (API, media) : laisser le navigateur gérer normalement
 });
