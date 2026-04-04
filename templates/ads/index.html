@@ -298,6 +298,20 @@ document.querySelectorAll('.info-card__photo').forEach(function(img) {
 (function () {
   var MQ = window.matchMedia('(max-width: 768px)');
 
+  /* Attache click + touchend sur un bouton carousel.
+     onclick s'écrase automatiquement à chaque rebind (pas d'accumulation).
+     touchend est stocké sur l'élément (_tbTouch) pour pouvoir être retiré. */
+  function bindCarouselBtn(btn, handler) {
+    if (!btn) return;
+    if (btn._tbTouch) btn.removeEventListener('touchend', btn._tbTouch);
+    btn._tbTouch = function (e) {
+      e.preventDefault(); // empêche le click synthétique 300ms après le touch
+      handler.call(this, e);
+    };
+    btn.onclick = handler;
+    btn.addEventListener('touchend', btn._tbTouch);
+  }
+
   document.querySelectorAll('.cat-carousel-wrapper').forEach(function (wrapper) {
     var carousel = wrapper.querySelector('.cat-carousel');
     var track    = wrapper.querySelector('.cat-carousel__track');
@@ -318,12 +332,12 @@ document.querySelectorAll('.info-card__photo').forEach(function(img) {
       if (!items.length) return;
       track.style.transform = ''; // annuler tout transform résiduel
       function stepW() { return (items[0] ? items[0].offsetWidth : 0) + 12; }
-      if (btnPrev) btnPrev.onclick = function () {
+      bindCarouselBtn(btnPrev, function () {
         carousel.scrollBy({ left: -stepW(), behavior: 'smooth' });
-      };
-      if (btnNext) btnNext.onclick = function () {
+      });
+      bindCarouselBtn(btnNext, function () {
         carousel.scrollBy({ left: stepW(), behavior: 'smooth' });
-      };
+      });
     }
 
     /* ── MODE DESKTOP : transform translateX ── */
@@ -347,8 +361,8 @@ document.querySelectorAll('.info-card__photo').forEach(function(img) {
         if (btnPrev) btnPrev.style.display = 'none';
         if (btnNext) btnNext.style.display = 'none';
       } else {
-        if (btnPrev) btnPrev.onclick = function () { if (current > 0)          { current--; update(); } };
-        if (btnNext) btnNext.onclick = function () { if (current < maxIndex()) { current++; update(); } };
+        bindCarouselBtn(btnPrev, function () { if (current > 0)          { current--; update(); } });
+        bindCarouselBtn(btnNext, function () { if (current < maxIndex()) { current++; update(); } });
       }
       update();
       window.addEventListener('resize', update);

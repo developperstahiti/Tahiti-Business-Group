@@ -832,6 +832,7 @@ main {
   align-items: center;
   justify-content: center;
   padding: 0;
+  touch-action: manipulation;
 }
 .cat-carousel__btn:hover:not([disabled]) {
   background: #1d4ed8;
@@ -847,7 +848,7 @@ main {
 @media (max-width: 640px) {
   /* Carousel : exactement 2 items visibles + flèches */
   .cat-carousel .cat-carousel__item   { flex: 0 0 calc(50% - 6px); }
-  .cat-carousel .cat-carousel__btn    { display: flex; width: 26px; height: 26px; font-size: 14px; }
+  .cat-carousel .cat-carousel__btn    { display: flex; width: 44px; height: 44px; font-size: 18px; }
   .cat-carousel .cat-carousel__btn--prev { left: 2px; }
   .cat-carousel .cat-carousel__btn--next { right: 2px; }
 }
@@ -2888,11 +2889,13 @@ body .bg-gradient-to-r {
   /* Masquer le bouton Contacter sur mobile pour réduire la taille des fiches */
   .btn-contact-card { display: none; }
 
-  /* Boutons flèches carousel : visibles et dans l'espace */
+  /* Boutons flèches carousel : visibles et dans l'espace (min 44px pour tactile) */
   .cat-carousel__btn {
-    width: 26px;
-    height: 26px;
-    font-size: 14px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 18px;
   }
   .cat-carousel__btn--prev { left: 2px; }
   .cat-carousel__btn--next { right: 2px; }
@@ -3002,14 +3005,17 @@ body .bg-gradient-to-r {
     position: absolute;
     top: 32%;
     transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 20px;
     background: rgba(255,255,255,0.95);
     border: 1.5px solid #d1d5db;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(0,0,0,.25);
     z-index: 30;
+    touch-action: manipulation;
   }
   body .cat-carousel-wrapper .cat-carousel__btn--prev { left: 4px; }
   body .cat-carousel-wrapper .cat-carousel__btn--next { right: 4px; }
