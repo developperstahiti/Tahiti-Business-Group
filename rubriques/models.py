@@ -18,6 +18,8 @@ class ArticlePromo(models.Model):
     lien_promo = models.URLField(blank=True)
     statut     = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
     created_at = models.DateTimeField(auto_now_add=True)
+    nb_vues    = models.PositiveIntegerField(default=0)
+    nb_clics   = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']
@@ -39,6 +41,8 @@ class ArticleInfo(models.Model):
     source_media = models.URLField(blank=True, help_text="Lien vers l'article source")
     statut       = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
     created_at   = models.DateTimeField(auto_now_add=True)
+    nb_vues      = models.PositiveIntegerField(default=0)
+    nb_clics     = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']
@@ -59,6 +63,8 @@ class ArticleNouveaute(models.Model):
     lien_redirection = models.URLField(blank=True)
     statut           = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente')
     created_at       = models.DateTimeField(auto_now_add=True)
+    nb_vues          = models.PositiveIntegerField(default=0)
+    nb_clics         = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-created_at']

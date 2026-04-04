@@ -1,0 +1,37 @@
+{% load static %}
+<div class="annonce-card group" data-article-id="{{ article.pk }}">
+  <!-- Barre vendeur — TBG Bot, sans notation, sans lien -->
+  <div class="annonce-card__seller-bar">
+    <span class="annonce-card__seller-bar-initials">T</span>
+    <span class="annonce-card__seller-bar-name">TBG Bot</span>
+  </div>
+  <!-- Lien principal : photo + body -->
+  <a href="{% url 'promo_detail' article.pk %}" class="block annonce-card__link">
+    <!-- Photo -->
+    <div class="relative overflow-hidden bg-gray-100{% if article.photo %} img-skeleton{% endif %}" style="aspect-ratio:4/3">
+      {% if article.photo %}
+      <img data-src="{{ article.photo }}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3C/svg%3E"
+           alt="{{ article.titre }}"
+           class="annonce-card__img lazy w-full h-full absolute inset-0">
+      {% else %}
+      <div class="w-full h-full absolute inset-0 flex items-center justify-center bg-gray-100">
+        <img src="{% static 'img/cat-promotion-sm.webp' %}" alt="Promotion" style="width:32px;height:32px;object-fit:contain" loading="lazy" decoding="async" width="32" height="32">
+      </div>
+      {% endif %}
+      <!-- Date — haut gauche -->
+      <div class="absolute top-2 left-2 text-white font-medium" style="font-size:10px;padding:3px 6px;border-radius:5px;background:rgba(0,0,0,0.45);line-height:1.3">
+        {{ article.created_at|date:"d/m/y" }}
+      </div>
+    </div>
+    <!-- Body -->
+    <div class="annonce-card__body">
+      <div class="annonce-card__title">{{ article.titre }}</div>
+      <div class="annonce-card__price" style="font-size:11px;color:#6b7280;">Promotion</div>
+      <div class="annonce-card__meta">
+        <span>👁 {{ article.nb_vues }}</span>
+        <span>🖱 {{ article.nb_clics }}</span>
+        <span class="annonce-card__loc ml-auto">📍 Polynésie française</span>
+      </div>
+    </div>
+  </a>
+</div>

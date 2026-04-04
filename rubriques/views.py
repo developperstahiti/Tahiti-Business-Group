@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from ads.decorators import staff_required
 from django.contrib import messages
 from django.http import Http404, JsonResponse
+from django.views.decorators.http import require_POST
 from ads.image_utils import save_webp
 from .models import ArticlePromo, ArticleInfo, ArticleNouveaute
 
@@ -118,7 +119,9 @@ def deposer_nouveaute(request):
 
 
 def promo_detail(request, pk):
+    from django.db.models import F
     article = get_object_or_404(ArticlePromo, pk=pk, statut='valide')
+    ArticlePromo.objects.filter(pk=pk).update(nb_vues=F('nb_vues') + 1, nb_clics=F('nb_clics') + 1)
     return render(request, 'rubriques/detail.html', {
         'article': article, 'emoji': '💰', 'badge': 'Promotion',
         'lien': article.lien_promo, 'lien_label': "Voir l'offre",
@@ -127,7 +130,9 @@ def promo_detail(request, pk):
 
 
 def info_detail(request, pk):
+    from django.db.models import F
     article = get_object_or_404(ArticleInfo, pk=pk, statut='valide')
+    ArticleInfo.objects.filter(pk=pk).update(nb_vues=F('nb_vues') + 1, nb_clics=F('nb_clics') + 1)
     return render(request, 'rubriques/detail.html', {
         'article': article, 'emoji': '📰', 'badge': 'Infos média',
         'lien': article.source_media, 'lien_label': 'Lire la source',
@@ -136,12 +141,26 @@ def info_detail(request, pk):
 
 
 def nouveaute_detail(request, pk):
+    from django.db.models import F
     article = get_object_or_404(ArticleNouveaute, pk=pk, statut='valide')
+    ArticleNouveaute.objects.filter(pk=pk).update(nb_vues=F('nb_vues') + 1, nb_clics=F('nb_clics') + 1)
     return render(request, 'rubriques/detail.html', {
         'article': article, 'emoji': '🚀', 'badge': 'Nouveautés',
         'lien': article.lien_redirection, 'lien_label': 'En savoir plus',
         'auteur': article.pro_user,
     })
+
+
+@require_POST
+def track_rubrique_clic(request, type_article, pk):
+    """Vue AJAX — incrémente nb_clics d'un article rubrique."""
+    from django.db.models import F
+    MODEL_MAP = {'promo': ArticlePromo, 'info': ArticleInfo, 'nouveaute': ArticleNouveaute}
+    Model = MODEL_MAP.get(type_article)
+    if not Model:
+        return JsonResponse({'ok': False}, status=400)
+    Model.objects.filter(pk=pk, statut='valide').update(nb_clics=F('nb_clics') + 1)
+    return JsonResponse({'ok': True})
 
 
 @staff_required
