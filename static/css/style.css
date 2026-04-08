@@ -949,13 +949,7 @@ main {
 }
 
 /* ── Carousel Promo — overflow vertical pour cartes expandables ── */
-.promo-carousel .cat-carousel {
-  overflow-x: clip;
-  overflow-y: visible;
-}
-.promo-carousel .cat-carousel__track {
-  align-items: flex-start;
-}
+
 
 /* ── Promo Card — carte expandable au clic ────────────────────── */
 .promo-card {
