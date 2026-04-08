@@ -32,6 +32,10 @@
       </span>
       <span>·</span>
       <span>{{ article.created_at|date:"d/m/Y" }}</span>
+      <span class="ml-auto flex items-center gap-3">
+        <span title="Vues">👁 {{ article.nb_vues }}</span>
+        <span title="Clics">🖱 {{ article.nb_clics }}</span>
+      </span>
     </div>
 
     <!-- Photo -->
@@ -44,11 +48,10 @@
 
     <!-- Contenu -->
     <div class="px-8 py-8">
-      <div id="rubrique-content" class="rubrique-content-limited">
-        <p class="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">{{ article.contenu }}</p>
-      </div>
+      <p id="rubrique-content"
+         class="text-gray-800 text-base leading-relaxed rubrique-content-clipped">{{ article.contenu }}</p>
       <button id="rubrique-lire-suite"
-              class="mt-3 text-xs font-bold text-gray-700 underline hover:text-gray-900 transition"
+              class="mt-2 text-xs font-bold text-gray-600 underline hover:text-gray-900 transition"
               style="display:none">
         Lire la suite ↓
       </button>
@@ -71,40 +74,35 @@
 
 {% block extra_js %}
 <style>
-  .rubrique-content-limited {
-    max-height: 220px;
+  .rubrique-content-clipped {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    position: relative;
   }
-  .rubrique-content-limited::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 70px;
-    background: linear-gradient(to bottom, transparent, #fff);
-    pointer-events: none;
+  .rubrique-content-full {
+    white-space: pre-wrap;
   }
 </style>
 <script nonce="{{ csp_nonce }}">
 (function() {
-  var content = document.getElementById('rubrique-content');
+  var p   = document.getElementById('rubrique-content');
   var btn = document.getElementById('rubrique-lire-suite');
-  if (!content || !btn) return;
-
-  if (content.scrollHeight > content.clientHeight + 10) {
+  if (!p || !btn) return;
+  /* Afficher le bouton seulement si le texte est vraiment tronqué */
+  if (p.scrollHeight > p.clientHeight + 2) {
     btn.style.display = 'inline-block';
-  } else {
-    content.classList.remove('rubrique-content-limited');
   }
-
   var expanded = false;
   btn.addEventListener('click', function() {
     expanded = !expanded;
     if (expanded) {
-      content.classList.remove('rubrique-content-limited');
+      p.classList.remove('rubrique-content-clipped');
+      p.classList.add('rubrique-content-full');
       btn.textContent = 'Réduire ↑';
     } else {
-      content.classList.add('rubrique-content-limited');
+      p.classList.remove('rubrique-content-full');
+      p.classList.add('rubrique-content-clipped');
       btn.textContent = 'Lire la suite ↓';
     }
   });
