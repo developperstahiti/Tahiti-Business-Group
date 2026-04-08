@@ -967,6 +967,9 @@ main {
   transition: box-shadow 0.2s, border-color 0.2s;
   overflow: hidden;
   height: 100%;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 @media (hover: hover) {
   .promo-card:not(.open):hover {
@@ -1092,6 +1095,16 @@ main {
   transition: box-shadow .2s;
   overflow: hidden;
   height: 100%;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.info-card__meta {
+  padding: 6px 16px 12px;
+  font-size: .68rem;
+  color: #9ca3af;
+  display: flex;
+  gap: 10px;
 }
 .info-card__badge,
 .info-card__title,
@@ -1154,6 +1167,9 @@ main {
   transition: box-shadow .2s;
   overflow: hidden;
   height: 100%;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 @media (hover: hover) {
   .nouv-card:not(.open):hover {

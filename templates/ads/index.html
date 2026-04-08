@@ -98,20 +98,13 @@
               <div class="cat-carousel__track">
                 {% for a in infos_home %}
                 <div class="cat-carousel__item">
-                  <div class="info-card rubrique-card" data-href="{% url 'info_detail' a.pk %}">
+                  <a href="{% url 'info_detail' a.pk %}" class="info-card">
                     {% if a.photo %}<img src="{{ a.photo }}" alt="{{ a.titre }}" class="info-card__photo" loading="lazy" decoding="async" width="400" height="200">{% endif %}
                     <span class="info-card__badge"><img src="{% static 'img/cat-infos-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle" loading="lazy" decoding="async" width="14" height="14"> Infos média</span>
                     <div class="info-card__title">{{ a.titre }}</div>
                     <div class="info-card__preview">{{ a.contenu }}</div>
-                    <div class="info-card__expand">
-                      <p>{{ a.contenu }}</p>
-                      <a href="{% url 'info_detail' a.pk %}" class="info-card__cta rubrique-card__link">
-                        Lire l'article →
-                      </a>
-                      <div class="info-card__source">{% if a.auteur %}{{ a.auteur.nom|default:a.auteur.email }}{% else %}TBG{% endif %}</div>
-                    </div>
-                    <div class="info-card__hint">Cliquer pour lire →</div>
-                  </div>
+                    <div class="info-card__meta"><span>👁 {{ a.nb_vues }}</span><span>🖱 {{ a.nb_clics }}</span></div>
+                  </a>
                 </div>
                 {% endfor %}
                 <div class="cat-carousel__item">
@@ -149,20 +142,13 @@
               <div class="cat-carousel__track">
                 {% for n in nouveautes_home %}
                 <div class="cat-carousel__item">
-                  <div class="nouv-card rubrique-card" data-href="{% url 'nouveaute_detail' n.pk %}">
+                  <a href="{% url 'nouveaute_detail' n.pk %}" class="nouv-card">
                     {% if n.photo %}<img src="{{ n.photo }}" alt="{{ n.titre }}" class="info-card__photo" loading="lazy" decoding="async" width="400" height="200">{% endif %}
                     <span class="nouv-card__badge"><img src="{% static 'img/cat-nouveaute-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle" loading="lazy" decoding="async" width="14" height="14"> Nouveautés</span>
                     <div class="nouv-card__title">{{ n.titre }}</div>
                     <div class="nouv-card__preview">{{ n.contenu }}</div>
-                    <div class="nouv-card__expand">
-                      <p>{{ n.contenu }}</p>
-                      <a href="{% url 'nouveaute_detail' n.pk %}" class="nouv-card__cta rubrique-card__link">
-                        Lire l'article →
-                      </a>
-                      <div class="nouv-card__source">{{ n.pro_user.nom|default:n.pro_user.email }}</div>
-                    </div>
-                    <div class="nouv-card__hint">Cliquer pour lire →</div>
-                  </div>
+                    <div class="info-card__meta"><span>👁 {{ n.nb_vues }}</span><span>🖱 {{ n.nb_clics }}</span></div>
+                  </a>
                 </div>
                 {% endfor %}
                 <div class="cat-carousel__item">
@@ -200,23 +186,13 @@
               <div class="cat-carousel__track">
                 {% for p in promos_home %}
                 <div class="cat-carousel__item">
-                  <div class="promo-card rubrique-card" data-href="{% url 'promo_detail' p.pk %}">
+                  <a href="{% url 'promo_detail' p.pk %}" class="promo-card">
                     {% if p.photo %}<img src="{{ p.photo }}" alt="{{ p.titre }}" class="info-card__photo" loading="lazy" decoding="async" width="400" height="200">{% endif %}
                     <span class="promo-card__badge"><img src="{% static 'img/cat-promotion-sm.webp' %}" alt="" style="width:14px;height:14px;display:inline;vertical-align:middle" loading="lazy" decoding="async" width="14" height="14"> Promotion</span>
                     <div class="promo-card__title">{{ p.titre }}</div>
                     <div class="promo-card__preview">{{ p.contenu }}</div>
-                    <div class="promo-card__expand">
-                      <p>{{ p.contenu }}</p>
-                      {% if p.lien_promo %}
-                      <a href="{{ p.lien_promo }}" target="_blank" rel="noopener sponsored"
-                         class="promo-card__cta rubrique-card__link">
-                        Voir l'offre →
-                      </a>
-                      {% endif %}
-                      <div class="promo-card__source">{{ p.pro_user.nom|default:p.pro_user.email }}</div>
-                    </div>
-                    <div class="promo-card__hint">Cliquer pour lire →</div>
-                  </div>
+                    <div class="info-card__meta"><span>👁 {{ p.nb_vues }}</span><span>🖱 {{ p.nb_clics }}</span></div>
+                  </a>
                 </div>
                 {% endfor %}
                 <div class="cat-carousel__item">
@@ -254,40 +230,6 @@
 </div>
 
 <script nonce="{{ csp_nonce }}">
-/* ─── Rubrique cards: mobile → navigate, desktop → expand ─── */
-/* Track touch movement to distinguish taps from swipes */
-var _touchStartX = 0, _touchStartY = 0, _touchMoved = false;
-document.addEventListener('touchstart', function(e) {
-  _touchStartX = e.touches[0].clientX;
-  _touchStartY = e.touches[0].clientY;
-  _touchMoved = false;
-}, { passive: true });
-document.addEventListener('touchmove', function(e) {
-  var dx = Math.abs(e.touches[0].clientX - _touchStartX);
-  var dy = Math.abs(e.touches[0].clientY - _touchStartY);
-  if (dx > 8 || dy > 8) _touchMoved = true;
-}, { passive: true });
-
-function handleCardClick(card, e) {
-  if (_touchMoved) return; /* ignore swipes */
-  if (window.innerWidth <= 768 && card.dataset.href) {
-    window.location.href = card.dataset.href;
-  } else {
-    card.classList.toggle('open');
-  }
-}
-
-/* Event delegation for rubrique cards (info/promo/nouveautes) */
-document.addEventListener('click', function(e) {
-  /* Let inner links (.rubrique-card__link) navigate normally */
-  if (e.target.closest('.rubrique-card__link')) {
-    e.stopPropagation();
-    return;
-  }
-  var card = e.target.closest('.rubrique-card');
-  if (card) handleCardClick(card, e);
-});
-
 /* Hide broken rubrique images gracefully */
 document.querySelectorAll('.info-card__photo').forEach(function(img) {
   img.addEventListener('error', function() { this.style.display = 'none'; });
