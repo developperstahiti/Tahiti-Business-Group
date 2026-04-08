@@ -134,7 +134,7 @@
     <div class="max-w-7xl mx-auto px-4 flex items-center h-16 gap-3">
 
       <!-- Logo -->
-      <a href="{% url 'index' %}" class="flex-shrink-0 mr-2 ml-4">
+      <a href="{% url 'index' %}" class="flex-shrink-0 mr-2 ml-4" id="tbg-logo-tap">
         <img src="{% static 'img/logo-tbg.svg' %}" alt="Tahiti Business Group" class="logo-header">
       </a>
 
@@ -1232,16 +1232,38 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
 </div>
 <script nonce="{{ csp_nonce }}">
 (function(){
+  function showEasterEgg(){
+    document.getElementById('tbg-easter-egg').style.display = 'flex';
+  }
+
+  /* ── Clavier : Konami code ↑↑↓↓←→←→BA ── */
   var seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
   var pos = 0;
   document.addEventListener('keydown', function(e){
     if(e.key === seq[pos]){ pos++; } else { pos = e.key === seq[0] ? 1 : 0; }
-    if(pos === seq.length){
-      pos = 0;
-      var el = document.getElementById('tbg-easter-egg');
-      el.style.display = 'flex';
-    }
+    if(pos === seq.length){ pos = 0; showEasterEgg(); }
   });
+
+  /* ── Mobile : 7 taps rapides sur le logo ── */
+  var tapCount = 0, tapTimer = null;
+  var logo = document.getElementById('tbg-logo-tap');
+  if(logo){
+    logo.addEventListener('click', function(e){
+      e.preventDefault();
+      tapCount++;
+      clearTimeout(tapTimer);
+      if(tapCount >= 7){ tapCount = 0; showEasterEgg(); return; }
+      tapTimer = setTimeout(function(){
+        if(tapCount > 0 && tapCount < 7){
+          /* redirige normalement si pas assez de taps */
+          window.location.href = logo.href;
+        }
+        tapCount = 0;
+      }, 800);
+    });
+  }
+
+  /* Fermer en cliquant l'overlay */
   document.getElementById('tbg-easter-egg').addEventListener('click', function(e){
     if(e.target === this) this.style.display = 'none';
   });
