@@ -139,3 +139,39 @@
 
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ csp_nonce }}">
+(function() {
+  var STORE_KEY = 'tbg_rubrique_favs';
+  function getFavs() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function setFav(type, pk, saved) {
+    var favs = getFavs();
+    var key = type + '_' + pk;
+    if (saved) favs[key] = 1; else delete favs[key];
+    localStorage.setItem(STORE_KEY, JSON.stringify(favs));
+  }
+  function isFav(type, pk) { return !!getFavs()[type + '_' + pk]; }
+
+  document.querySelectorAll('.js-rubrique-fav').forEach(function(btn) {
+    var type = btn.dataset.type;
+    var pk   = btn.dataset.pk;
+    var svg  = btn.querySelector('svg');
+    if (isFav(type, pk)) {
+      btn.classList.add('annonce-card__fav-btn--saved');
+      if (svg) svg.setAttribute('fill', '#fff');
+    }
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var saved = !isFav(type, pk);
+      setFav(type, pk, saved);
+      btn.classList.toggle('annonce-card__fav-btn--saved', saved);
+      if (svg) svg.setAttribute('fill', saved ? '#fff' : 'none');
+    });
+  });
+})();
+</script>
+{% endblock %}
