@@ -24,9 +24,28 @@ def _attach_photo(request, article, prefix):
 
 
 def rubriques_index(request):
-    promos     = ArticlePromo.objects.filter(statut='valide').select_related('pro_user')[:4]
-    infos      = ArticleInfo.objects.filter(statut='valide').select_related('auteur')[:4]
-    nouveautes = ArticleNouveaute.objects.filter(statut='valide').select_related('pro_user')[:4]
+    from django.db.models import F
+    promos     = list(ArticlePromo.objects.filter(statut='valide').select_related('pro_user')[:4])
+    infos      = list(ArticleInfo.objects.filter(statut='valide').select_related('auteur')[:4])
+    nouveautes = list(ArticleNouveaute.objects.filter(statut='valide').select_related('pro_user')[:4])
+
+    # Impressions : incrémente nb_vues pour chaque article affiché sur l'index
+    if promos:
+        ids = [p.pk for p in promos]
+        ArticlePromo.objects.filter(pk__in=ids).update(nb_vues=F('nb_vues') + 1)
+        for p in promos:
+            p.nb_vues += 1
+    if infos:
+        ids = [a.pk for a in infos]
+        ArticleInfo.objects.filter(pk__in=ids).update(nb_vues=F('nb_vues') + 1)
+        for a in infos:
+            a.nb_vues += 1
+    if nouveautes:
+        ids = [n.pk for n in nouveautes]
+        ArticleNouveaute.objects.filter(pk__in=ids).update(nb_vues=F('nb_vues') + 1)
+        for n in nouveautes:
+            n.nb_vues += 1
+
     return render(request, 'rubriques/index.html', {
         'promos':     promos,
         'infos':      infos,
@@ -121,7 +140,8 @@ def deposer_nouveaute(request):
 def promo_detail(request, pk):
     from django.db.models import F
     article = get_object_or_404(ArticlePromo, pk=pk, statut='valide')
-    ArticlePromo.objects.filter(pk=pk).update(nb_vues=F('nb_vues') + 1, nb_clics=F('nb_clics') + 1)
+    ArticlePromo.objects.filter(pk=pk).update(nb_clics=F('nb_clics') + 1)
+    article.nb_clics += 1
     return render(request, 'rubriques/detail.html', {
         'article': article, 'emoji': '💰', 'badge': 'Promotion',
         'lien': article.lien_promo, 'lien_label': "Voir l'offre",
@@ -132,7 +152,8 @@ def promo_detail(request, pk):
 def info_detail(request, pk):
     from django.db.models import F
     article = get_object_or_404(ArticleInfo, pk=pk, statut='valide')
-    ArticleInfo.objects.filter(pk=pk).update(nb_vues=F('nb_vues') + 1, nb_clics=F('nb_clics') + 1)
+    ArticleInfo.objects.filter(pk=pk).update(nb_clics=F('nb_clics') + 1)
+    article.nb_clics += 1
     return render(request, 'rubriques/detail.html', {
         'article': article, 'emoji': '📰', 'badge': 'Infos média',
         'lien': article.source_media, 'lien_label': 'Lire la source',
@@ -143,7 +164,8 @@ def info_detail(request, pk):
 def nouveaute_detail(request, pk):
     from django.db.models import F
     article = get_object_or_404(ArticleNouveaute, pk=pk, statut='valide')
-    ArticleNouveaute.objects.filter(pk=pk).update(nb_vues=F('nb_vues') + 1, nb_clics=F('nb_clics') + 1)
+    ArticleNouveaute.objects.filter(pk=pk).update(nb_clics=F('nb_clics') + 1)
+    article.nb_clics += 1
     return render(request, 'rubriques/detail.html', {
         'article': article, 'emoji': '🚀', 'badge': 'Nouveautés',
         'lien': article.lien_redirection, 'lien_label': 'En savoir plus',
