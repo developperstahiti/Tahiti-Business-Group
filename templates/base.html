@@ -1227,13 +1227,18 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
       </div>
     </div>
     <!-- Bouton fermer -->
-    <button onclick="document.getElementById('tbg-easter-egg').style.display='none'" style="position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1" aria-label="Fermer">✕</button>
+    <button id="tbg-easter-close" style="position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;line-height:1" aria-label="Fermer">✕</button>
   </div>
 </div>
 <script nonce="{{ csp_nonce }}">
 (function(){
+  var overlay = document.getElementById('tbg-easter-egg');
+
   function showEasterEgg(){
-    document.getElementById('tbg-easter-egg').style.display = 'flex';
+    overlay.style.display = 'flex';
+  }
+  function hideEasterEgg(){
+    overlay.style.display = 'none';
   }
 
   /* ── Clavier : Konami code ↑↑↓↓←→←→BA ── */
@@ -1255,7 +1260,6 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
       if(tapCount >= 7){ tapCount = 0; showEasterEgg(); return; }
       tapTimer = setTimeout(function(){
         if(tapCount > 0 && tapCount < 7){
-          /* redirige normalement si pas assez de taps */
           window.location.href = logo.href;
         }
         tapCount = 0;
@@ -1263,10 +1267,9 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
     });
   }
 
-  /* Fermer en cliquant l'overlay */
-  document.getElementById('tbg-easter-egg').addEventListener('click', function(e){
-    if(e.target === this) this.style.display = 'none';
-  });
+  /* Fermer : bouton ✕ + clic overlay */
+  document.getElementById('tbg-easter-close').addEventListener('click', hideEasterEgg);
+  overlay.addEventListener('click', function(e){ if(e.target === this) hideEasterEgg(); });
 })();
 </script>
 
