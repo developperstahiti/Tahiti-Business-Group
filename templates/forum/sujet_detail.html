@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ sujet.titre }} — Forum TBG{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+
+  <!-- Retour -->
+  <a href="{% url 'forum_categorie' sujet.categorie.slug %}"
+     class="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 mb-6 transition">
+    ← {{ sujet.categorie.icone }} {{ sujet.categorie.nom }}
+  </a>
+
+  <!-- Sujet principal -->
+  <div class="bg-white border border-gray-200 rounded-xl mb-4" style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
+    <div class="flex items-stretch gap-0">
+
+      <!-- Votes sujet -->
+      <div class="flex flex-col items-center justify-start pt-4 px-3 gap-1 border-r border-gray-100 min-w-[52px]">
+        {% if user.is_authenticated %}
+        <button class="vote-btn w-8 h-8 rounded-lg flex items-center justify-center text-lg transition hover:bg-gray-100"
+                data-type="sujet" data-id="{{ sujet.pk }}" data-val="1"
+                style="color:#9ca3af">
+          ▲
+        </button>
+        {% else %}
+        <span class="w-8 h-8 flex items-center justify-center text-lg text-gray-300">▲</span>
+        {% endif %}
+        <span class="vote-score text-sm font-bold {% if sujet.nb_votes > 0 %}text-green-600{% elif sujet.nb_votes < 0 %}text-red-500{% else %}text-gray-500{% endif %}"
+              data-type="sujet" data-id="{{ sujet.pk }}">{{ sujet.nb_votes }}</span>
+        {% if user.is_authenticated %}
+        <button class="vote-btn w-8 h-8 rounded-lg flex items-center justify-center text-lg transition hover:bg-gray-100"
+                data-type="sujet" data-id="{{ sujet.pk }}" data-val="-1"
+                style="color:#9ca3af">
+          ▼
+        </button>
+        {% else %}
+        <span class="w-8 h-8 flex items-center justify-center text-lg text-gray-300">▼</span>
+        {% endif %}
+      </div>
+
+      <!-- Contenu sujet -->
+      <div class="flex-1 min-w-0 p-5">
+        <div class="flex items-center gap-2 flex-wrap mb-3">
+          <a href="{% url 'forum_categorie' sujet.categorie.slug %}"
+             class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#f3f4f6;color:#374151">
+            {{ sujet.categorie.icone }} {{ sujet.categorie.nom }}
+          </a>
+          {% if sujet.est_epingle %}<span class="text-xs">📌 Épinglé</span>{% endif %}
+          {% if sujet.est_ferme %}<span class="text-xs text-red-500">🔒 Fermé</span>{% endif %}
+        </div>
+
+        <h1 class="text-xl font-bold text-gray-900 leading-snug mb-3" style="font-family:Arial,Helvetica,sans-serif">
+          {{ sujet.titre }}
+        </h1>
+
+        <div class="text-xs text-gray-500 mb-4 flex items-center gap-2 flex-wrap">
+          <span>par <strong class="text-gray-700">{{ sujet.auteur.nom|default:sujet.auteur.email }}</strong></span>
+          <span>·</span>
+          <span>{{ sujet.date_creation|timesince }} ago</span>
+          <span>·</span>
+          <span>👁 {{ sujet.nb_vues }} vue{{ sujet.nb_vues|pluralize }}</span>
+        </div>
+
+        <div class="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{{ sujet.contenu }}</div>
+
+        <!-- Photos -->
+        {% if sujet.photo1 or sujet.photo2 or sujet.photo3 %}
+        <div class="flex gap-2 mt-4 flex-wrap" id="photos-sujet">
+          {% if sujet.photo1 %}<img src="{{ sujet.photo1 }}" class="h-40 rounded-lg object-cover cursor-pointer hover:opacity-90" data-fullscreen="true">{% endif %}
+          {% if sujet.photo2 %}<img src="{{ sujet.photo2 }}" class="h-40 rounded-lg object-cover cursor-pointer hover:opacity-90" data-fullscreen="true">{% endif %}
+          {% if sujet.photo3 %}<img src="{{ sujet.photo3 }}" class="h-40 rounded-lg object-cover cursor-pointer hover:opacity-90" data-fullscreen="true">{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex gap-3 mt-4 pt-3 border-t border-gray-100 flex-wrap">
+          <button id="btn-share" class="text-xs text-gray-500 hover:text-gray-900 font-medium transition flex items-center gap-1">
+            🔗 Partager
+          </button>
+          {% if user.is_staff %}
+          <form method="post" action="{% url 'forum_moderer_sujet' sujet.slug %}" class="flex gap-2">
+            {% csrf_token %}
+            <button type="submit" name="action" value="epingle"
+                    class="text-xs font-bold px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition">
+              {% if sujet.est_epingle %}Désépingler{% else %}📌 Épingler{% endif %}
+            </button>
+            <button type="submit" name="action" value="fermer"
+                    class="text-xs font-bold px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition">
+              {% if sujet.est_ferme %}🔓 Ouvrir{% else %}🔒 Fermer{% endif %}
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Réponses -->
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="font-bold text-gray-900 text-sm">{{ reponses|length }} réponse{{ reponses|length|pluralize }}</h2>
+    <div class="flex gap-1">
+      <a href="?tri=meilleures" class="px-3 py-1 text-xs font-semibold rounded-lg transition {% if tri != 'recentes' %}bg-gray-900 text-white{% else %}text-gray-600 hover:text-gray-900 bg-gray-100{% endif %}">Meilleures</a>
+      <a href="?tri=recentes" class="px-3 py-1 text-xs font-semibold rounded-lg transition {% if tri == 'recentes' %}bg-gray-900 text-white{% else %}text-gray-600 hover:text-gray-900 bg-gray-100{% endif %}">Récentes</a>
+    </div>
+  </div>
+
+  {% for rep in reponses %}
+  <div class="bg-white border border-gray-200 rounded-xl mb-2" style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
+    <div class="flex items-stretch gap-0">
+      <div class="flex flex-col items-center justify-start pt-3 px-2 gap-1 border-r border-gray-100 min-w-[44px]">
+        {% if user.is_authenticated %}
+        <button class="vote-btn w-7 h-7 rounded flex items-center justify-center text-base transition hover:bg-gray-100"
+                data-type="reponse" data-id="{{ rep.pk }}" data-val="1" style="color:#9ca3af">▲</button>
+        {% else %}<span class="text-gray-200 text-base">▲</span>{% endif %}
+        <span class="vote-score text-xs font-bold {% if rep.nb_votes > 0 %}text-green-600{% elif rep.nb_votes < 0 %}text-red-500{% else %}text-gray-400{% endif %}"
+              data-type="reponse" data-id="{{ rep.pk }}">{{ rep.nb_votes }}</span>
+        {% if user.is_authenticated %}
+        <button class="vote-btn w-7 h-7 rounded flex items-center justify-center text-base transition hover:bg-gray-100"
+                data-type="reponse" data-id="{{ rep.pk }}" data-val="-1" style="color:#9ca3af">▼</button>
+        {% else %}<span class="text-gray-200 text-base">▼</span>{% endif %}
+      </div>
+      <div class="flex-1 min-w-0 p-4">
+        <div class="text-xs text-gray-500 mb-2">
+          <strong class="text-gray-700">{{ rep.auteur.nom|default:rep.auteur.email }}</strong>
+          · {{ rep.date_creation|timesince }} ago
+        </div>
+        <div class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{{ rep.contenu }}</div>
+
+        {% if not sujet.est_ferme and user.is_authenticated %}
+        <button class="btn-repondre text-xs text-gray-400 hover:text-gray-700 mt-2 transition" data-rep-id="{{ rep.pk }}">
+          ↩ Répondre
+        </button>
+        {% endif %}
+
+        <!-- Sous-réponses -->
+        {% for sous in rep.sous_reponses.all %}
+        <div class="mt-3 ml-4 pl-3 border-l-2 border-gray-100">
+          <div class="text-xs text-gray-500 mb-1">
+            <strong class="text-gray-700">{{ sous.auteur.nom|default:sous.auteur.email }}</strong>
+            · {{ sous.date_creation|timesince }} ago
+          </div>
+          <div class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{{ sous.contenu }}</div>
+        </div>
+        {% endfor %}
+
+        <!-- Formulaire réponse imbriquée -->
+        {% if not sujet.est_ferme and user.is_authenticated %}
+        <form class="form-sous-reponse hidden mt-3" method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="parent_id" value="{{ rep.pk }}">
+          <textarea name="contenu" rows="2" placeholder="Répondre à {{ rep.auteur.nom|default:rep.auteur.email }}…"
+                    class="w-full border border-gray-200 rounded-lg p-2 text-sm resize-none focus:outline-none focus:border-gray-400"></textarea>
+          <div class="flex gap-2 mt-1">
+            <button type="submit" class="text-xs font-bold bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-black transition">Publier</button>
+            <button type="button" class="btn-annuler-reponse text-xs text-gray-500 hover:text-gray-900 transition">Annuler</button>
+          </div>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-center py-8 text-gray-400 text-sm">Aucune réponse. Soyez le premier !</div>
+  {% endfor %}
+
+  <!-- Formulaire réponse principale -->
+  {% if user.is_authenticated %}
+  {% if not sujet.est_ferme %}
+  <div class="bg-white border border-gray-200 rounded-xl mt-4 p-4" style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
+    <h3 class="text-sm font-bold text-gray-900 mb-3">Votre réponse</h3>
+    <form method="post" action="">
+      {% csrf_token %}
+      <textarea name="contenu" rows="4" placeholder="Écrivez votre réponse…"
+                class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-y focus:outline-none focus:border-gray-400 min-h-[100px]"></textarea>
+      <button type="submit"
+              class="mt-2 w-full bg-gray-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-black transition">
+        Publier ma réponse
+      </button>
+    </form>
+  </div>
+  {% else %}
+  <div class="mt-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-500">
+    🔒 Ce sujet est fermé. Aucune nouvelle réponse n'est acceptée.
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="mt-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-200">
+    <p class="text-sm text-gray-600 mb-2">Connectez-vous pour répondre</p>
+    <a href="{% url 'login' %}?next={{ request.path }}"
+       class="inline-block bg-gray-900 text-white text-sm font-bold px-5 py-2 rounded-xl hover:bg-black transition">
+      Se connecter
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% block extra_js %}
+<script nonce="{{ csp_nonce }}">
+(function(){
+  /* ── Fullscreen photos ── */
+  document.querySelectorAll('[data-fullscreen="true"]').forEach(function(img){
+    img.addEventListener('click', function(){ img.requestFullscreen(); });
+  });
+
+  /* ── Votes AJAX ── */
+  var csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+  function updateVoteUI(type, id, score, voteActif) {
+    var scoreEl = document.querySelector('.vote-score[data-type="'+type+'"][data-id="'+id+'"]');
+    if(scoreEl) {
+      scoreEl.textContent = score;
+      scoreEl.className = scoreEl.className.replace(/text-(green|red|gray)-\d+/g, '');
+      if(score > 0) scoreEl.classList.add('text-green-600');
+      else if(score < 0) scoreEl.classList.add('text-red-500');
+      else scoreEl.classList.add('text-gray-400');
+    }
+    document.querySelectorAll('.vote-btn[data-type="'+type+'"][data-id="'+id+'"]').forEach(function(btn){
+      var val = parseInt(btn.dataset.val);
+      if(voteActif === 1 && val === 1) btn.style.color = '#1D9E75';
+      else if(voteActif === -1 && val === -1) btn.style.color = '#ef4444';
+      else btn.style.color = '#9ca3af';
+    });
+  }
+
+  document.querySelectorAll('.vote-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      fetch('{% url "forum_vote" %}', {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':csrfToken},
+        credentials: 'same-origin',
+        body: 'type_objet='+btn.dataset.type+'&objet_id='+btn.dataset.id+'&valeur='+btn.dataset.val,
+      }).then(function(r){return r.json();}).then(function(d){
+        if(d.ok) updateVoteUI(btn.dataset.type, btn.dataset.id, d.score, d.vote);
+      }).catch(function(){});
+    });
+  });
+
+  /* ── Bouton partager ── */
+  var shareBtn = document.getElementById('btn-share');
+  if(shareBtn){
+    shareBtn.addEventListener('click', function(){
+      navigator.clipboard.writeText(window.location.href).then(function(){
+        shareBtn.textContent = '\u2713 Lien copié !';
+        setTimeout(function(){ shareBtn.textContent = '\uD83D\uDD17 Partager'; }, 2000);
+      }).catch(function(){});
+    });
+  }
+
+  /* ── Répondre à un commentaire ── */
+  document.querySelectorAll('.btn-repondre').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var form = btn.closest('.flex-1').querySelector('.form-sous-reponse');
+      if(form) { form.classList.toggle('hidden'); }
+    });
+  });
+  document.querySelectorAll('.btn-annuler-reponse').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btn.closest('.form-sous-reponse').classList.add('hidden');
+    });
+  });
+
+  /* ── Initialiser les couleurs de votes depuis le contexte Django ── */
+  var votesCtx = {{ votes_utilisateur_json }};
+  Object.entries(votesCtx).forEach(function(entry){
+    var parts = entry[0].split('_');
+    var type = parts[0], id = parts[1], val = entry[1];
+    document.querySelectorAll('.vote-btn[data-type="'+type+'"][data-id="'+id+'"]').forEach(function(btn){
+      var bval = parseInt(btn.dataset.val);
+      if(val === 1 && bval === 1) btn.style.color = '#1D9E75';
+      else if(val === -1 && bval === -1) btn.style.color = '#ef4444';
+    });
+  });
+})();
+</script>
+{% endblock %}
+{% endblock %}

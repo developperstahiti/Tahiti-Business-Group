@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'users',
     'pubs',
     'rubriques',
+    'forum',
     'django.contrib.sitemaps',
 ]
 

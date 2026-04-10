@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mes sujets — Forum TBG{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-xl font-bold text-gray-900" style="font-family:Arial,Helvetica,sans-serif">Mes sujets du forum</h1>
+    <a href="{% url 'forum_creer_sujet' %}"
+       class="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-black transition">
+      + Nouveau sujet
+    </a>
+  </div>
+
+  {% if sujets %}
+  <div class="space-y-2">
+    {% for sujet in sujets %}
+    {% include 'forum/_sujet_card.html' %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-16 text-gray-400">
+    <div class="text-4xl mb-3">💬</div>
+    <p class="font-medium">Vous n'avez pas encore créé de sujet.</p>
+    <a href="{% url 'forum_creer_sujet' %}" class="inline-block mt-3 text-sm font-bold underline text-gray-700">
+      Créer mon premier sujet →
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

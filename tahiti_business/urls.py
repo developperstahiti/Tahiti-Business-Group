@@ -75,6 +75,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('pubs/', include('pubs.urls')),
     path('rubriques/', include('rubriques.urls')),
+    path('forum/', include('forum.urls')),
     path('robots.txt', robots_txt, name='robots_txt'),
     path('favicon.ico', lambda r: HttpResponse(status=301, headers={'Location': '/static/img/favicon-tbg-32.png'})),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

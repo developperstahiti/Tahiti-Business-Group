@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Nouveau sujet — Forum TBG{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <a href="{% url 'forum_index' %}" class="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 mb-6 transition">← Forum</a>
+
+  <h1 class="text-xl font-bold text-gray-900 mb-6" style="font-family:Arial,Helvetica,sans-serif">Créer un nouveau sujet</h1>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-sm border border-red-200">{{ msg }}</div>
+  {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Titre <span class="text-red-500">*</span></label>
+      <input type="text" name="titre" maxlength="300" required
+             placeholder="Donnez un titre clair à votre sujet"
+             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400"
+             id="titre-input">
+      <div class="text-right text-xs text-gray-400 mt-1"><span id="titre-count">0</span>/300</div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Catégorie <span class="text-red-500">*</span></label>
+      <select name="categorie" required
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400 bg-white">
+        <option value="">Choisir une catégorie…</option>
+        {% for cat in categories %}
+        <option value="{{ cat.pk }}" {% if request.GET.cat == cat.pk|stringformat:'s' %}selected{% endif %}>
+          {{ cat.icone }} {{ cat.nom }}
+        </option>
+        {% endfor %}
+      </select>
+      <a href="{% url 'forum_creer_categorie' %}" class="text-xs text-gray-500 hover:text-gray-900 mt-1 inline-block">
+        + Créer une nouvelle catégorie
+      </a>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Contenu <span class="text-red-500">*</span></label>
+      <textarea name="contenu" rows="8" required
+                placeholder="Décrivez votre sujet en détail…"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400 resize-y min-h-[160px]"></textarea>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Photos (optionnel, max 3)</label>
+      <div class="flex gap-2">
+        <input type="file" name="photo1" accept="image/*" class="text-xs text-gray-500 flex-1">
+        <input type="file" name="photo2" accept="image/*" class="text-xs text-gray-500 flex-1">
+        <input type="file" name="photo3" accept="image/*" class="text-xs text-gray-500 flex-1">
+      </div>
+    </div>
+
+    <button type="submit"
+            class="w-full bg-gray-900 text-white text-sm font-bold py-3 rounded-xl hover:bg-black transition">
+      Publier le sujet
+    </button>
+  </form>
+</div>
+
+{% block extra_js %}
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var input = document.getElementById('titre-input');
+  var counter = document.getElementById('titre-count');
+  if(input && counter){
+    input.addEventListener('input', function(){ counter.textContent = this.value.length; });
+  }
+})();
+</script>
+{% endblock %}
+{% endblock %}

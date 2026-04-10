@@ -1,0 +1,41 @@
+<div class="bg-white border border-gray-200 rounded-xl hover:border-gray-400 transition group"
+     style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
+  <div class="flex items-stretch gap-0">
+
+    <!-- Score votes (gauche) -->
+    <div class="flex flex-col items-center justify-center px-3 py-3 border-r border-gray-100 min-w-[52px] text-center">
+      <span class="text-sm font-bold {% if sujet.nb_votes > 0 %}text-green-600{% elif sujet.nb_votes < 0 %}text-red-500{% else %}text-gray-400{% endif %}">
+        {{ sujet.nb_votes }}
+      </span>
+      <span class="text-xs text-gray-400">votes</span>
+    </div>
+
+    <!-- Contenu -->
+    <div class="flex-1 min-w-0 px-4 py-3">
+      <a href="{% url 'forum_sujet' sujet.slug %}" class="block">
+        <div class="flex items-start gap-2 flex-wrap">
+          {% if sujet.est_epingle %}<span class="text-xs">📌</span>{% endif %}
+          {% if sujet.est_ferme %}<span class="text-xs">🔒</span>{% endif %}
+          <h3 class="text-sm font-semibold text-gray-900 leading-snug group-hover:text-gray-700 flex-1">
+            {{ sujet.titre }}
+          </h3>
+        </div>
+      </a>
+      <div class="flex items-center gap-3 mt-1.5 flex-wrap">
+        <a href="{% url 'forum_categorie' sujet.categorie.slug %}"
+           class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+           style="background:#f3f4f6;color:#374151">
+          {{ sujet.categorie.icone }} {{ sujet.categorie.nom }}
+        </a>
+        <span class="text-xs text-gray-400">
+          par <strong class="text-gray-600">{{ sujet.auteur.nom|default:sujet.auteur.email }}</strong>
+        </span>
+        <span class="text-xs text-gray-400">·</span>
+        <span class="text-xs text-gray-400">{{ sujet.reponses.count }} réponse{{ sujet.reponses.count|pluralize }}</span>
+        <span class="text-xs text-gray-400">·</span>
+        <span class="text-xs text-gray-400">👁 {{ sujet.nb_vues }}</span>
+        <span class="text-xs text-gray-400 ml-auto">{{ sujet.date_creation|timesince }} ago</span>
+      </div>
+    </div>
+  </div>
+</div>

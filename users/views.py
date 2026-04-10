@@ -16,6 +16,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import LoginForm, RegisterForm, ProfileForm
 from ads.models import Annonce, Message, Notation
 from ads.image_utils import save_webp
+from forum.models import Sujet as ForumSujet
 
 logger = logging.getLogger(__name__)
 
@@ -215,11 +216,14 @@ def mon_compte(request):
         'messages': messages_recus.count(),
     }
 
+    forum_sujets = ForumSujet.objects.filter(auteur=request.user).select_related('categorie').order_by('-date_creation')[:5]
+
     return render(request, 'users/mon_compte.html', {
         'form': form,
         'annonces': annonces[:6],
         'messages_recus': messages_recus,
         'stats': stats,
+        'forum_sujets': forum_sujets,
     })
 
 
