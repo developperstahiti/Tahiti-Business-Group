@@ -216,7 +216,7 @@ def mon_compte(request):
         'messages': messages_recus.count(),
     }
 
-    forum_sujets = ForumSujet.objects.filter(auteur=request.user).select_related('categorie').order_by('-date_creation')[:5]
+    forum_sujets = ForumSujet.objects.filter(auteur=request.user).order_by('-date_creation')[:5]
 
     return render(request, 'users/mon_compte.html', {
         'form': form,

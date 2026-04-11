@@ -331,6 +331,12 @@ def liste_annonces(request):
         qs = qs.order_by(*_search_prefix, '-prix')
     elif tri == 'recent':
         qs = qs.order_by(*_search_prefix, '-created_at')
+    elif tri == 'vues':
+        qs = qs.order_by(*_search_prefix, '-views')
+    elif tri == 'clics':
+        qs = qs.order_by(*_search_prefix, '-clics')
+    elif tri == 'ancien':
+        qs = qs.order_by(*_search_prefix, 'created_at')
     else:
         qs = _apply_boost_sort(qs)
         if q:

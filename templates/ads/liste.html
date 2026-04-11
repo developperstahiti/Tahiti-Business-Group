@@ -111,9 +111,21 @@
 
       <div class="over-img text-sm text-gray-500 mb-4 font-medium flex items-center justify-between flex-wrap gap-2" id="liste-top">
         <span>{{ annonces.paginator.count }} annonce{{ annonces.paginator.count|pluralize }} trouvée{{ annonces.paginator.count|pluralize }}</span>
-        {% if annonces.paginator.num_pages > 1 %}
-        <span class="text-gray-400">Page {{ annonces.number }} sur {{ annonces.paginator.num_pages }}</span>
-        {% endif %}
+        <div class="flex items-center gap-3 flex-wrap">
+          {% if annonces.paginator.num_pages > 1 %}
+          <span class="text-gray-400">Page {{ annonces.number }} sur {{ annonces.paginator.num_pages }}</span>
+          {% endif %}
+          <!-- Bouton Trier -->
+          <div class="relative" id="sort-wrapper">
+            <button id="sort-btn" type="button" aria-haspopup="true" aria-expanded="false"
+              class="flex items-center gap-1 text-sm font-semibold border border-gray-300 px-3 py-1.5 rounded-lg hover:border-gray-500 transition bg-white text-gray-700">
+              Trier&nbsp;<span id="sort-label">{% if tri == 'recent' %}Plus récents{% elif tri == 'prix_asc' %}Prix croissant{% elif tri == 'prix_desc' %}Prix décroissant{% elif tri == 'vues' %}Plus vus{% elif tri == 'clics' %}Plus cliqués{% elif tri == 'ancien' %}Plus anciens{% else %}Pertinence{% endif %}</span>&nbsp;&#9660;
+            </button>
+            <div id="sort-panel" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 min-w-[180px] py-1" role="menu">
+              <!-- options insérées par JS -->
+            </div>
+          </div>
+        </div>
       </div>
 
       {% if annonces.paginator.num_pages > 1 %}
@@ -311,6 +323,84 @@ if (transEl) transEl.addEventListener('change', function() { this.form.submit();
       target.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
   } catch(err) {}
+})();
+
+// ── Bouton Trier — popover ────────────────────────────────────────────────
+(function() {
+  var btn    = document.getElementById('sort-btn');
+  var panel  = document.getElementById('sort-panel');
+  var wrapper = document.getElementById('sort-wrapper');
+  if (!btn || !panel) return;
+
+  var OPTIONS = [
+    { label: 'Pertinence',      value: '' },
+    { label: 'Plus récents',    value: 'recent' },
+    { label: 'Prix croissant',  value: 'prix_asc' },
+    { label: 'Prix décroissant',value: 'prix_desc' },
+    { label: 'Plus vus',        value: 'vues' },
+    { label: 'Plus cliqués',    value: 'clics' },
+    { label: 'Plus anciens',    value: 'ancien' },
+  ];
+
+  var currentTri = '{{ tri|escapejs }}';
+
+  // Build option links based on current URL params
+  function buildLinks() {
+    panel.innerHTML = '';
+    var params = new URLSearchParams(window.location.search);
+    // Reset to page 1 when changing sort
+    params.delete('page');
+    OPTIONS.forEach(function(opt) {
+      if (opt.value) {
+        params.set('tri', opt.value);
+      } else {
+        params.delete('tri');
+      }
+      var href = window.location.pathname + '?' + params.toString();
+      var a = document.createElement('a');
+      a.href = href;
+      a.textContent = opt.label;
+      a.setAttribute('role', 'menuitem');
+      var isActive = (opt.value === currentTri);
+      a.className = 'block px-4 py-2 text-sm transition ' +
+        (isActive
+          ? 'font-bold text-gray-900 bg-gray-50'
+          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900');
+      panel.appendChild(a);
+    });
+  }
+
+  function openPanel() {
+    buildLinks();
+    panel.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closePanel() {
+    panel.classList.add('hidden');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (panel.classList.contains('hidden')) {
+      openPanel();
+    } else {
+      closePanel();
+    }
+  });
+
+  // Close on click outside
+  document.addEventListener('click', function(e) {
+    if (wrapper && !wrapper.contains(e.target)) {
+      closePanel();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePanel();
+  });
 })();
 </script>
 {% endblock %}

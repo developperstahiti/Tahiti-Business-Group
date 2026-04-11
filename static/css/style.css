@@ -3098,6 +3098,14 @@ body .bg-gradient-to-r {
     font-size: 10px; font-weight: 700;
     color: #d97706; margin-top: auto;
   }
+
+  /* ── 6. SCROLL NATUREL — annule le scroll interne desktop ───────── */
+  /* Desktop : body{overflow:hidden} + #main-frame{overflow-y:auto;height:100vh} */
+  /* Sur mobile on veut que la page entière scroll, sans boîte interne.          */
+  body { overflow: auto; }
+  #main-frame { overflow-y: visible; height: auto; }
+  /* Lightbox mobile : la description n'a pas besoin d'un scroll interne         */
+  .lightbox-desc { max-height: none; overflow-y: visible; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
