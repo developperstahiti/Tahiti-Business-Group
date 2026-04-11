@@ -1,17 +1,11 @@
 from django.contrib import admin
-from .models import Categorie, Sujet, Reponse, Vote, AbonnementCategorie
-
-
-@admin.register(Categorie)
-class CategorieAdmin(admin.ModelAdmin):
-    list_display = ['nom', 'nb_abonnes', 'date_creation']
-    prepopulated_fields = {'slug': ('nom',)}
+from .models import Sujet, Reponse, Vote
 
 
 @admin.register(Sujet)
 class SujetAdmin(admin.ModelAdmin):
-    list_display = ['titre', 'auteur', 'categorie', 'nb_votes', 'nb_vues', 'est_epingle', 'est_ferme', 'date_creation']
-    list_filter = ['categorie', 'est_epingle', 'est_ferme']
+    list_display = ['titre', 'auteur', 'nb_votes', 'nb_vues', 'est_epingle', 'est_ferme', 'date_creation']
+    list_filter = ['est_epingle', 'est_ferme']
     list_editable = ['est_epingle', 'est_ferme']
     search_fields = ['titre', 'contenu']
     actions = ['epingler', 'desepingler', 'fermer', 'ouvrir']
@@ -38,6 +32,3 @@ class ReponseAdmin(admin.ModelAdmin):
 @admin.register(Vote)
 class VoteAdmin(admin.ModelAdmin):
     list_display = ['utilisateur', 'type_objet', 'objet_id', 'valeur']
-
-
-admin.site.register(AbonnementCategorie)

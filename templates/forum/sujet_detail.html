@@ -6,9 +6,9 @@
 <div class="max-w-3xl mx-auto px-4 py-8">
 
   <!-- Retour -->
-  <a href="{% url 'forum_categorie' sujet.categorie.slug %}"
+  <a href="{% url 'forum_index' %}"
      class="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-900 mb-6 transition">
-    ← {{ sujet.categorie.icone }} {{ sujet.categorie.nom }}
+    ← Forum
   </a>
 
   <!-- Sujet principal -->
@@ -17,35 +17,17 @@
 
       <!-- Votes sujet -->
       <div class="flex flex-col items-center justify-start pt-4 px-3 gap-1 border-r border-gray-100 min-w-[52px]">
-        {% if user.is_authenticated %}
         <button class="vote-btn w-8 h-8 rounded-lg flex items-center justify-center text-lg transition hover:bg-gray-100"
-                data-type="sujet" data-id="{{ sujet.pk }}" data-val="1"
-                style="color:#9ca3af">
-          ▲
-        </button>
-        {% else %}
-        <span class="w-8 h-8 flex items-center justify-center text-lg text-gray-300">▲</span>
-        {% endif %}
+                data-type="sujet" data-id="{{ sujet.pk }}" data-val="1" style="color:#9ca3af">▲</button>
         <span class="vote-score text-sm font-bold {% if sujet.nb_votes > 0 %}text-green-600{% elif sujet.nb_votes < 0 %}text-red-500{% else %}text-gray-500{% endif %}"
               data-type="sujet" data-id="{{ sujet.pk }}">{{ sujet.nb_votes }}</span>
-        {% if user.is_authenticated %}
         <button class="vote-btn w-8 h-8 rounded-lg flex items-center justify-center text-lg transition hover:bg-gray-100"
-                data-type="sujet" data-id="{{ sujet.pk }}" data-val="-1"
-                style="color:#9ca3af">
-          ▼
-        </button>
-        {% else %}
-        <span class="w-8 h-8 flex items-center justify-center text-lg text-gray-300">▼</span>
-        {% endif %}
+                data-type="sujet" data-id="{{ sujet.pk }}" data-val="-1" style="color:#9ca3af">▼</button>
       </div>
 
       <!-- Contenu sujet -->
       <div class="flex-1 min-w-0 p-5">
         <div class="flex items-center gap-2 flex-wrap mb-3">
-          <a href="{% url 'forum_categorie' sujet.categorie.slug %}"
-             class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:#f3f4f6;color:#374151">
-            {{ sujet.categorie.icone }} {{ sujet.categorie.nom }}
-          </a>
           {% if sujet.est_epingle %}<span class="text-xs">📌 Épinglé</span>{% endif %}
           {% if sujet.est_ferme %}<span class="text-xs text-red-500">🔒 Fermé</span>{% endif %}
         </div>
@@ -66,7 +48,7 @@
 
         <!-- Photos -->
         {% if sujet.photo1 or sujet.photo2 or sujet.photo3 %}
-        <div class="flex gap-2 mt-4 flex-wrap" id="photos-sujet">
+        <div class="flex gap-2 mt-4 flex-wrap">
           {% if sujet.photo1 %}<img src="{{ sujet.photo1 }}" class="h-40 rounded-lg object-cover cursor-pointer hover:opacity-90" data-fullscreen="true">{% endif %}
           {% if sujet.photo2 %}<img src="{{ sujet.photo2 }}" class="h-40 rounded-lg object-cover cursor-pointer hover:opacity-90" data-fullscreen="true">{% endif %}
           {% if sujet.photo3 %}<img src="{{ sujet.photo3 }}" class="h-40 rounded-lg object-cover cursor-pointer hover:opacity-90" data-fullscreen="true">{% endif %}
@@ -109,16 +91,12 @@
   <div class="bg-white border border-gray-200 rounded-xl mb-2" style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
     <div class="flex items-stretch gap-0">
       <div class="flex flex-col items-center justify-start pt-3 px-2 gap-1 border-r border-gray-100 min-w-[44px]">
-        {% if user.is_authenticated %}
         <button class="vote-btn w-7 h-7 rounded flex items-center justify-center text-base transition hover:bg-gray-100"
                 data-type="reponse" data-id="{{ rep.pk }}" data-val="1" style="color:#9ca3af">▲</button>
-        {% else %}<span class="text-gray-200 text-base">▲</span>{% endif %}
         <span class="vote-score text-xs font-bold {% if rep.nb_votes > 0 %}text-green-600{% elif rep.nb_votes < 0 %}text-red-500{% else %}text-gray-400{% endif %}"
               data-type="reponse" data-id="{{ rep.pk }}">{{ rep.nb_votes }}</span>
-        {% if user.is_authenticated %}
         <button class="vote-btn w-7 h-7 rounded flex items-center justify-center text-base transition hover:bg-gray-100"
                 data-type="reponse" data-id="{{ rep.pk }}" data-val="-1" style="color:#9ca3af">▼</button>
-        {% else %}<span class="text-gray-200 text-base">▼</span>{% endif %}
       </div>
       <div class="flex-1 min-w-0 p-4">
         <div class="text-xs text-gray-500 mb-2">
@@ -166,29 +144,29 @@
 
   <!-- Formulaire réponse principale -->
   {% if user.is_authenticated %}
-  {% if not sujet.est_ferme %}
-  <div class="bg-white border border-gray-200 rounded-xl mt-4 p-4" style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
-    <h3 class="text-sm font-bold text-gray-900 mb-3">Votre réponse</h3>
-    <form method="post" action="">
-      {% csrf_token %}
-      <textarea name="contenu" rows="4" placeholder="Écrivez votre réponse…"
-                class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-y focus:outline-none focus:border-gray-400 min-h-[100px]"></textarea>
-      <button type="submit"
-              class="mt-2 w-full bg-gray-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-black transition">
-        Publier ma réponse
-      </button>
-    </form>
-  </div>
+    {% if not sujet.est_ferme %}
+    <div class="bg-white border border-gray-200 rounded-xl mt-4 p-4" style="box-shadow:0 1px 3px rgba(0,0,0,.05)">
+      <h3 class="text-sm font-bold text-gray-900 mb-3">Votre réponse</h3>
+      <form method="post" action="">
+        {% csrf_token %}
+        <textarea name="contenu" rows="4" placeholder="Écrivez votre réponse…"
+                  class="w-full border border-gray-200 rounded-xl p-3 text-sm resize-y focus:outline-none focus:border-gray-400 min-h-[100px]"></textarea>
+        <button type="submit"
+                class="mt-2 w-full bg-gray-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-black transition">
+          Publier ma réponse
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="mt-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-500">
+      🔒 Ce sujet est fermé. Aucune nouvelle réponse n'est acceptée.
+    </div>
+    {% endif %}
   {% else %}
-  <div class="mt-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-500">
-    🔒 Ce sujet est fermé. Aucune nouvelle réponse n'est acceptée.
-  </div>
-  {% endif %}
-  {% else %}
-  <div class="mt-4 text-center py-6 bg-gray-50 rounded-xl border border-gray-200">
-    <p class="text-sm text-gray-600 mb-2">Connectez-vous pour répondre</p>
-    <a href="{% url 'login' %}?next={{ request.path }}"
-       class="inline-block bg-gray-900 text-white text-sm font-bold px-5 py-2 rounded-xl hover:bg-black transition">
+  <div class="mt-4 py-6 bg-gray-50 rounded-xl border border-gray-200 text-center">
+    <p class="text-sm text-gray-600 mb-3">Connectez-vous pour participer à la discussion</p>
+    <a href="/users/login/?next={{ request.path|urlencode }}"
+       class="inline-block bg-gray-900 text-white text-sm font-bold px-6 py-2.5 rounded-xl hover:bg-black transition">
       Se connecter
     </a>
   </div>
@@ -199,9 +177,13 @@
 {% block extra_js %}
 <script nonce="{{ csp_nonce }}">
 (function(){
+  var isAuthenticated = {{ user.is_authenticated|yesno:'true,false' }};
+  var loginBase = '/users/login/?next=';
+  var currentPath = encodeURIComponent(window.location.pathname);
+
   /* ── Fullscreen photos ── */
   document.querySelectorAll('[data-fullscreen="true"]').forEach(function(img){
-    img.addEventListener('click', function(){ img.requestFullscreen(); });
+    img.addEventListener('click', function(){ img.requestFullscreen && img.requestFullscreen(); });
   });
 
   /* ── Votes AJAX ── */
@@ -226,6 +208,7 @@
 
   document.querySelectorAll('.vote-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
+      if(!isAuthenticated) { window.location.href = loginBase + currentPath; return; }
       fetch('{% url "forum_vote" %}', {
         method: 'POST',
         headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':csrfToken},
@@ -261,7 +244,7 @@
     });
   });
 
-  /* ── Initialiser les couleurs de votes depuis le contexte Django ── */
+  /* ── Couleurs des votes depuis le contexte Django ── */
   var votesCtx = {{ votes_utilisateur_json }};
   Object.entries(votesCtx).forEach(function(entry){
     var parts = entry[0].split('_');

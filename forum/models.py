@@ -1,32 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
-import re
 
 User = get_user_model()
-
-
-class Categorie(models.Model):
-    nom = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
-    description = models.TextField(blank=True)
-    createur = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='forum_categories')
-    date_creation = models.DateTimeField(auto_now_add=True)
-    nb_abonnes = models.IntegerField(default=0)
-    icone = models.CharField(max_length=10, blank=True, default='💬')
-
-    class Meta:
-        ordering = ['-nb_abonnes', 'nom']
-        verbose_name = 'Catégorie'
-        verbose_name_plural = 'Catégories'
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.nom)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.nom
 
 
 class Sujet(models.Model):
@@ -34,7 +10,6 @@ class Sujet(models.Model):
     slug = models.SlugField(max_length=350, blank=True)
     contenu = models.TextField()
     auteur = models.ForeignKey(User, on_delete=models.CASCADE, related_name='forum_sujets')
-    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, related_name='sujets')
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
     nb_vues = models.IntegerField(default=0)
@@ -58,9 +33,6 @@ class Sujet(models.Model):
         if not self.slug.endswith(f'-{self.pk}'):
             self.slug = f"{slugify(self.titre)[:300]}-{self.pk}"
             Sujet.objects.filter(pk=self.pk).update(slug=self.slug)
-
-    def nb_reponses(self):
-        return self.reponses.filter(reponse_parente__isnull=True).count()
 
     def __str__(self):
         return self.titre
@@ -97,16 +69,3 @@ class Vote(models.Model):
 
     def __str__(self):
         return f"{self.utilisateur} → {self.type_objet} #{self.objet_id} ({self.valeur:+d})"
-
-
-class AbonnementCategorie(models.Model):
-    utilisateur = models.ForeignKey(User, on_delete=models.CASCADE, related_name='forum_abonnements')
-    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, related_name='abonnes')
-    date_abonnement = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = [('utilisateur', 'categorie')]
-        verbose_name = 'Abonnement catégorie'
-
-    def __str__(self):
-        return f"{self.utilisateur} → {self.categorie}"

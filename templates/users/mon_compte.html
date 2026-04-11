@@ -23,6 +23,19 @@
     </div>
   </div>
 
+  <!-- Accès Forum -->
+  <a href="{% url 'forum_index' %}"
+     class="flex items-center gap-4 bg-gray-900 text-white rounded-2xl px-6 py-4 mb-6 hover:bg-gray-800 transition group">
+    <span class="text-3xl">💬</span>
+    <div class="flex-1 min-w-0">
+      <div class="font-bold text-base">Forum TBG</div>
+      <div class="text-gray-400 text-sm">Participez aux discussions de la communauté Polynésie française</div>
+    </div>
+    <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+  </a>
+
   <!-- Stats -->
   <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
     <a href="{% url 'mes_annonces' %}" class="bg-white border border-gray-200 rounded-xl p-4 text-center shadow-sm hover:border-blue-400 hover:shadow-md transition group">

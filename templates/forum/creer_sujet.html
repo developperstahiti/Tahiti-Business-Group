@@ -14,48 +14,48 @@
   {% endfor %}
   {% endif %}
 
-  <form method="post" enctype="multipart/form-data" class="space-y-4">
+  <form method="post" enctype="multipart/form-data" class="space-y-5" id="forum-form">
     {% csrf_token %}
 
+    <!-- Titre -->
     <div>
       <label class="block text-sm font-semibold text-gray-700 mb-1">Titre <span class="text-red-500">*</span></label>
       <input type="text" name="titre" maxlength="300" required
-             placeholder="Donnez un titre clair à votre sujet"
+             placeholder="Posez votre question ou partagez quelque chose..."
              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400"
              id="titre-input">
       <div class="text-right text-xs text-gray-400 mt-1"><span id="titre-count">0</span>/300</div>
     </div>
 
-    <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1">Catégorie <span class="text-red-500">*</span></label>
-      <select name="categorie" required
-              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400 bg-white">
-        <option value="">Choisir une catégorie…</option>
-        {% for cat in categories %}
-        <option value="{{ cat.pk }}" {% if request.GET.cat == cat.pk|stringformat:'s' %}selected{% endif %}>
-          {{ cat.icone }} {{ cat.nom }}
-        </option>
-        {% endfor %}
-      </select>
-      <a href="{% url 'forum_creer_categorie' %}" class="text-xs text-gray-500 hover:text-gray-900 mt-1 inline-block">
-        + Créer une nouvelle catégorie
-      </a>
-    </div>
-
+    <!-- Contenu -->
     <div>
       <label class="block text-sm font-semibold text-gray-700 mb-1">Contenu <span class="text-red-500">*</span></label>
-      <textarea name="contenu" rows="8" required
-                placeholder="Décrivez votre sujet en détail…"
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400 resize-y min-h-[160px]"></textarea>
+      <textarea name="contenu" rows="7" required
+                placeholder="Décrivez votre sujet en détail..."
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gray-400 resize-y min-h-[150px]"></textarea>
     </div>
 
+    <!-- Photos — drag & drop -->
     <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1">Photos (optionnel, max 3)</label>
-      <div class="flex gap-2">
-        <input type="file" name="photo1" accept="image/*" class="text-xs text-gray-500 flex-1">
-        <input type="file" name="photo2" accept="image/*" class="text-xs text-gray-500 flex-1">
-        <input type="file" name="photo3" accept="image/*" class="text-xs text-gray-500 flex-1">
+      <label class="block text-sm font-semibold text-gray-700 mb-2">Photos <span class="text-gray-400 font-normal">(optionnel, max 3)</span></label>
+
+      <!-- Zone drag & drop -->
+      <div id="drop-zone"
+           class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-gray-500 transition"
+           style="min-height:120px">
+        <div id="drop-placeholder">
+          <div class="text-3xl mb-2">📷</div>
+          <p class="text-sm text-gray-500">Glissez vos photos ici ou <span class="font-semibold text-gray-700 underline">cliquez pour en ajouter</span></p>
+          <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP — max 3 photos</p>
+        </div>
+        <div id="drop-previews" class="flex gap-3 flex-wrap justify-center hidden"></div>
       </div>
+
+      <!-- Inputs fichiers cachés -->
+      <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" multiple capture="environment" class="hidden">
+      <input type="file" name="photo1" id="photo1" accept="image/*" class="hidden">
+      <input type="file" name="photo2" id="photo2" accept="image/*" class="hidden">
+      <input type="file" name="photo3" id="photo3" accept="image/*" class="hidden">
     </div>
 
     <button type="submit"
@@ -68,10 +68,123 @@
 {% block extra_js %}
 <script nonce="{{ csp_nonce }}">
 (function(){
+  /* ── Compteur titre ── */
   var input = document.getElementById('titre-input');
   var counter = document.getElementById('titre-count');
   if(input && counter){
     input.addEventListener('input', function(){ counter.textContent = this.value.length; });
+  }
+
+  /* ── Drag & drop photos ── */
+  var dropZone    = document.getElementById('drop-zone');
+  var fileInput   = document.getElementById('file-input');
+  var placeholder = document.getElementById('drop-placeholder');
+  var previews    = document.getElementById('drop-previews');
+  var slots       = [
+    document.getElementById('photo1'),
+    document.getElementById('photo2'),
+    document.getElementById('photo3'),
+  ];
+  var selectedFiles = [];
+
+  function isMobile() {
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  function refreshPreviews() {
+    previews.innerHTML = '';
+    selectedFiles.forEach(function(file, idx){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;display:inline-block';
+        var img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.cssText = 'height:96px;width:96px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = '×';
+        btn.style.cssText = 'position:absolute;top:-6px;right:-6px;background:#111;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:13px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center';
+        btn.addEventListener('click', function(){
+          selectedFiles.splice(idx, 1);
+          refreshPreviews();
+          syncToInputs();
+        });
+        wrap.appendChild(img);
+        wrap.appendChild(btn);
+        previews.appendChild(wrap);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if(selectedFiles.length > 0){
+      placeholder.classList.add('hidden');
+      previews.classList.remove('hidden');
+      if(selectedFiles.length < 3){
+        var addBtn = document.createElement('div');
+        addBtn.style.cssText = 'height:96px;width:96px;border:2px dashed #d1d5db;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#9ca3af';
+        addBtn.textContent = '+';
+        addBtn.addEventListener('click', function(){ fileInput.click(); });
+        previews.appendChild(addBtn);
+      }
+    } else {
+      placeholder.classList.remove('hidden');
+      previews.classList.add('hidden');
+    }
+  }
+
+  function syncToInputs() {
+    /* Recrée des DataTransfer pour chaque slot */
+    slots.forEach(function(slot, i){
+      if(selectedFiles[i]){
+        var dt = new DataTransfer();
+        dt.items.add(selectedFiles[i]);
+        slot.files = dt.files;
+      } else {
+        slot.value = '';
+      }
+    });
+  }
+
+  function addFiles(files) {
+    Array.from(files).forEach(function(f){
+      if(selectedFiles.length < 3 && f.type.startsWith('image/')){
+        selectedFiles.push(f);
+      }
+    });
+    refreshPreviews();
+    syncToInputs();
+  }
+
+  /* Clic sur la zone */
+  dropZone.addEventListener('click', function(e){
+    if(e.target.tagName === 'BUTTON') return;
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', function(){
+    addFiles(this.files);
+    this.value = '';
+  });
+
+  /* Drag & drop desktop */
+  dropZone.addEventListener('dragover', function(e){
+    e.preventDefault();
+    dropZone.style.borderColor = '#374151';
+  });
+  dropZone.addEventListener('dragleave', function(){
+    dropZone.style.borderColor = '#d1d5db';
+  });
+  dropZone.addEventListener('drop', function(e){
+    e.preventDefault();
+    dropZone.style.borderColor = '#d1d5db';
+    addFiles(e.dataTransfer.files);
+  });
+
+  /* Mobile : accept="environment" pour ouvrir caméra/galerie */
+  if(isMobile()){
+    fileInput.removeAttribute('capture');
+    fileInput.setAttribute('accept', 'image/*');
   }
 })();
 </script>
