@@ -242,7 +242,7 @@ _PRETRIAGE_MAP = {
 }
 
 
-def _build_pretriage_groups(cat, base_qs, limit=4):
+def _build_pretriage_groups(cat, base_qs, limit=10):
     """Construit les groupes de pré-triage pour une catégorie."""
     groups_def = _PRETRIAGE_MAP.get(cat) if cat in _PRETRIAGE_MAP else _pretriage_from_sous_cats(cat)
     groups = []
@@ -407,6 +407,12 @@ def liste_annonces(request):
         'strip_prefix':   strip_prefix,
         'strip_cat_label': strip_cat_label,
         'pretriage_groups': pretriage_groups,
+        'active_filters_count': sum(1 for v in [
+            request.GET.get('sous_cat'), request.GET.get('ville'),
+            request.GET.get('prix_min'), request.GET.get('prix_max'),
+            request.GET.get('photos'), request.GET.get('transaction'),
+            request.GET.get('q'),
+        ] if v),
     })
 
 

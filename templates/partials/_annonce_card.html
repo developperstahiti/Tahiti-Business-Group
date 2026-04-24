@@ -34,9 +34,9 @@
       </div>
       {% endif %}
       {% if annonce.type_transaction == 'vente' %}
-      <div class="absolute top-2 right-2 bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Vente</div>
+      <div class="annonce-card__tx annonce-card__tx--vente">À VENDRE</div>
       {% elif annonce.type_transaction == 'location' %}
-      <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Location</div>
+      <div class="annonce-card__tx annonce-card__tx--location">À LOUER</div>
       {% endif %}
       <!-- Date — haut gauche -->
       <div class="absolute top-2 left-2 text-white font-medium" style="font-size:10px;padding:3px 6px;border-radius:5px;background:rgba(0,0,0,0.45);line-height:1.3">
