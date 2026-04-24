@@ -35,110 +35,17 @@
   <div class="layout-with-sidebar">
 
     <div class="layout-main">
-      <!-- Header -->
-      <h1 class="text-xl font-bold text-gray-900 mb-4">
-        {% if cat_active %}
-          {% for code, label in categories %}{% if code == cat_active %}{{ label }}{% endif %}{% endfor %}
-        {% elif q %}Résultats pour "{{ q }}"{% else %}Toutes les annonces{% endif %}
-      </h1>
-
-      <!-- Filtres (repliable) -->
-      <div class="bg-white border border-gray-200 rounded-2xl mb-6 shadow-sm overflow-hidden" id="filtres-wrapper">
-        <button type="button" id="filtres-toggle-btn" aria-expanded="false" aria-controls="filtres-form-wrapper"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-gray-800 hover:bg-gray-50 transition">
-          <span class="flex items-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-            </svg>
-            <span>Filtrer vos résultats</span>
-            {% if active_filters_count %}<span class="bg-gray-900 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">{{ active_filters_count }}</span>{% endif %}
-          </span>
-          <span id="filtres-chevron" class="text-gray-500 transition-transform inline-block" aria-hidden="true">&#9662;</span>
-        </button>
-        <div id="filtres-form-wrapper" class="hidden border-t border-gray-100 p-4">
-        <form method="get" id="filtres-form">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-3">
-            <!-- Catégorie -->
-            <div>
-              <label for="filter-cat" class="block text-xs font-semibold text-gray-500 mb-1">Catégorie</label>
-              <select name="categorie" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-cat">
-                <option value="">Toutes</option>
-                {% for code, label in categories %}
-                <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <!-- Sous-catégorie -->
-            <div>
-              <label for="filter-sous-cat" class="block text-xs font-semibold text-gray-500 mb-1">Sous-catégorie</label>
-              <select name="sous_cat" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-sous-cat">
-                <option value="">Toutes</option>
-                {% for val, lbl in sous_cats_dispo %}
-                <option value="{{ val }}" {% if val == sous_cat %}selected{% endif %}>{{ lbl }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <!-- Localisation (sélecteur interactif) -->
-            <div>
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Localisation</label>
-              <div id="loc-selector-filter"></div>
-            </div>
-            <!-- Prix -->
-            <div>
-              <label class="block text-xs font-semibold text-gray-500 mb-1">Prix (XPF)</label>
-              <div class="flex items-center gap-1.5">
-                <label for="filter-prix-min" class="sr-only">Prix minimum</label>
-                <input type="number" name="prix_min" id="filter-prix-min" value="{{ prix_min }}" placeholder="Min" min="0"
-                  class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
-                <span class="text-gray-400 text-xs">—</span>
-                <label for="filter-prix-max" class="sr-only">Prix maximum</label>
-                <input type="number" name="prix_max" id="filter-prix-max" value="{{ prix_max }}" placeholder="Max" min="0"
-                  class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
-              </div>
-            </div>
-          </div>
-          <!-- Options + actions -->
-          <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
-            <div class="flex items-center gap-4 flex-wrap">
-              <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
-                <input type="checkbox" name="photos" value="1" {% if request.GET.photos %}checked{% endif %}
-                       class="rounded border-gray-300" id="filter-photos">
-                Avec photos
-              </label>
-              <label for="filter-transaction" class="sr-only">Type de transaction</label>
-              <select name="transaction" class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}">
-                <option value="">Vente & Location</option>
-                <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente</option>
-                <option value="location" {% if transaction == 'location' %}selected{% endif %}>Location</option>
-              </select>
-            </div>
-            <div class="flex items-center gap-3">
-              <a href="{% url 'liste_annonces' %}{% if cat_active %}?categorie={{ cat_active }}{% endif %}" class="text-sm text-gray-500 hover:text-gray-800 font-medium transition">Réinitialiser</a>
-              <button type="submit" class="text-sm font-bold text-white px-5 py-2 rounded-lg transition btn-rechercher">Rechercher</button>
-            </div>
-          </div>
-          <input type="hidden" name="tri" value="{{ tri }}">
-        </form>
-        </div>
-      </div>
-
-      <div class="over-img text-sm text-gray-500 mb-4 font-medium flex items-center justify-between flex-wrap gap-2" id="liste-top">
-        <span>{{ annonces.paginator.count }} annonce{{ annonces.paginator.count|pluralize }} trouvée{{ annonces.paginator.count|pluralize }}</span>
-        <div class="flex items-center gap-3 flex-wrap">
-          {% if annonces.paginator.num_pages > 1 %}
-          <span class="text-gray-400">Page {{ annonces.number }} sur {{ annonces.paginator.num_pages }}</span>
-          {% endif %}
-          <!-- Bouton Trier -->
-          <div class="relative" id="sort-wrapper">
-            <button id="sort-btn" type="button" aria-haspopup="true" aria-expanded="false"
-              class="flex items-center gap-1 text-sm font-semibold border border-gray-300 px-3 py-1.5 rounded-lg hover:border-gray-500 transition bg-white text-gray-700">
-              Trier&nbsp;<span id="sort-label">{% if tri == 'recent' %}Plus récents{% elif tri == 'prix_asc' %}Prix croissant{% elif tri == 'prix_desc' %}Prix décroissant{% elif tri == 'vues' %}Plus vus{% elif tri == 'clics' %}Plus cliqués{% elif tri == 'ancien' %}Plus anciens{% else %}Pertinence{% endif %}</span>&nbsp;&#9660;
-            </button>
-            <div id="sort-panel" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 min-w-[180px] py-1" role="menu">
-              <!-- options insérées par JS -->
-            </div>
-          </div>
-        </div>
+      <!-- Header compact -->
+      <div class="flex items-baseline justify-between mb-2 flex-wrap gap-x-4">
+        <h1 class="text-lg font-bold text-gray-900">
+          {% if cat_active %}
+            {% for code, label in categories %}{% if code == cat_active %}{{ label }}{% endif %}{% endfor %}
+          {% elif q %}Résultats pour "{{ q }}"{% else %}Toutes les annonces{% endif %}
+        </h1>
+        <span class="text-xs text-gray-500 font-medium">
+          {{ annonces.paginator.count }} annonce{{ annonces.paginator.count|pluralize }}
+          · Tri : <span class="text-gray-700 font-semibold">{% if tri == 'recent' %}Plus récents{% elif tri == 'prix_asc' %}Prix croissant{% elif tri == 'prix_desc' %}Prix décroissant{% elif tri == 'vues' %}Plus vus{% elif tri == 'clics' %}Plus cliqués{% elif tri == 'ancien' %}Plus anciens{% else %}Pertinence{% endif %}</span>
+        </span>
       </div>
 
       {% if annonces.paginator.num_pages > 1 %}
@@ -251,25 +158,195 @@
 
   </div>
 </div>
+
+<!-- ═════════ DRAWER FILTRES & TRI — onglet vertical fixe gauche ═════════ -->
+<button id="liste-drawer-tab" class="liste-drawer-tab" type="button" aria-label="Ouvrir filtres et tri" aria-controls="liste-drawer">
+  <span class="liste-drawer-tab__icon" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+    </svg>
+  </span>
+  <span class="liste-drawer-tab__label">Filtres&nbsp;&amp;&nbsp;tri</span>
+  {% if active_filters_count %}<span class="liste-drawer-tab__count" aria-label="{{ active_filters_count }} filtre(s) actif(s)">{{ active_filters_count }}</span>{% endif %}
+</button>
+
+<div id="liste-drawer-overlay" class="liste-drawer-overlay" aria-hidden="true"></div>
+
+<aside id="liste-drawer" class="liste-drawer" aria-hidden="true" role="dialog" aria-labelledby="liste-drawer-title">
+  <div class="liste-drawer__header">
+    <h2 id="liste-drawer-title" class="liste-drawer__title">Filtres &amp; tri</h2>
+    <button id="liste-drawer-close" type="button" class="liste-drawer__close" aria-label="Fermer">&times;</button>
+  </div>
+  <div class="liste-drawer__body">
+
+    <!-- TRI -->
+    <section class="mb-5">
+      <h3 class="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider mb-2">Trier par</h3>
+      <div id="sort-options" class="flex flex-col gap-1"></div>
+    </section>
+
+    <!-- FILTRES -->
+    <section>
+      <h3 class="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider mb-3">Filtrer</h3>
+      <form method="get" id="filtres-form" class="space-y-3">
+        <div>
+          <label for="filter-cat" class="block text-xs font-semibold text-gray-500 mb-1">Catégorie</label>
+          <select name="categorie" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-cat">
+            <option value="">Toutes</option>
+            {% for code, label in categories %}
+            <option value="{{ code }}" {% if code == cat_active %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="filter-sous-cat" class="block text-xs font-semibold text-gray-500 mb-1">Sous-catégorie</label>
+          <select name="sous_cat" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none" id="filter-sous-cat">
+            <option value="">Toutes</option>
+            {% for val, lbl in sous_cats_dispo %}
+            <option value="{{ val }}" {% if val == sous_cat %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">Localisation</label>
+          <div id="loc-selector-filter"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">Prix (XPF)</label>
+          <div class="flex items-center gap-1.5">
+            <label for="filter-prix-min" class="sr-only">Prix minimum</label>
+            <input type="number" name="prix_min" id="filter-prix-min" value="{{ prix_min }}" placeholder="Min" min="0"
+              class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
+            <span class="text-gray-400 text-xs">—</span>
+            <label for="filter-prix-max" class="sr-only">Prix maximum</label>
+            <input type="number" name="prix_max" id="filter-prix-max" value="{{ prix_max }}" placeholder="Max" min="0"
+              class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none">
+          </div>
+        </div>
+        <div class="flex items-center gap-4 flex-wrap pt-1">
+          <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" name="photos" value="1" {% if request.GET.photos %}checked{% endif %}
+                   class="rounded border-gray-300" id="filter-photos">
+            Avec photos
+          </label>
+          <label for="filter-transaction" class="sr-only">Type de transaction</label>
+          <select name="transaction" class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none" id="filter-transaction" style="{% if cat_active != 'immobilier' %}display:none{% endif %}">
+            <option value="">Vente &amp; Location</option>
+            <option value="vente" {% if transaction == 'vente' %}selected{% endif %}>Vente</option>
+            <option value="location" {% if transaction == 'location' %}selected{% endif %}>Location</option>
+          </select>
+        </div>
+        <div class="flex items-center justify-between gap-3 pt-3 border-t border-gray-100 mt-3">
+          <a href="{% url 'liste_annonces' %}{% if cat_active %}?categorie={{ cat_active }}{% endif %}" class="text-sm text-gray-500 hover:text-gray-800 font-medium transition">Réinitialiser</a>
+          <button type="submit" class="text-sm font-bold text-white px-6 py-2.5 rounded-lg transition btn-rechercher">Appliquer</button>
+        </div>
+        <input type="hidden" name="tri" value="{{ tri }}">
+      </form>
+    </section>
+  </div>
+</aside>
 {% endblock %}
 
 {% block extra_js %}
 {% load static %}
-<style>.btn-rechercher{background:#111}.btn-rechercher:hover{background:#333}</style>
+<style>
+.btn-rechercher{background:#111}.btn-rechercher:hover{background:#333}
+
+/* ── Onglet vertical fixe — déclenche le drawer ── */
+.liste-drawer-tab{
+  position:fixed;left:0;top:35%;
+  z-index:100;background:#111;color:#fff;
+  padding:14px 9px 14px 7px;border:none;cursor:pointer;
+  border-radius:0 12px 12px 0;box-shadow:2px 3px 14px rgba(0,0,0,.28);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;letter-spacing:.4px;
+  transition:background .2s, transform .2s;
+}
+.liste-drawer-tab:hover{background:#000;transform:translateX(2px)}
+.liste-drawer-tab__label{
+  writing-mode:vertical-rl;text-orientation:mixed;
+  font-size:11px;line-height:1;letter-spacing:.6px;text-transform:uppercase
+}
+.liste-drawer-tab__count{
+  background:#ef4444;color:#fff;padding:1px 6px;border-radius:10px;
+  font-size:10px;font-weight:800;line-height:1.4;min-width:18px;text-align:center
+}
+
+/* ── Overlay + panneau ── */
+.liste-drawer-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;
+  opacity:0;pointer-events:none;transition:opacity .3s
+}
+.liste-drawer-overlay.is-open{opacity:1;pointer-events:auto}
+.liste-drawer{
+  position:fixed;top:0;left:0;bottom:0;
+  width:min(380px,92vw);background:#fff;z-index:9999;
+  transform:translateX(-100%);transition:transform .3s ease;
+  box-shadow:2px 0 20px rgba(0,0,0,.15);
+  display:flex;flex-direction:column;overscroll-behavior:contain
+}
+.liste-drawer.is-open{transform:translateX(0)}
+.liste-drawer__header{
+  padding:14px 16px;border-bottom:1px solid #e5e7eb;
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0
+}
+.liste-drawer__title{font-size:16px;font-weight:800;color:#111;margin:0}
+.liste-drawer__close{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  background:#f3f4f6;border:none;border-radius:50%;font-size:20px;cursor:pointer;
+  line-height:1;color:#374151
+}
+.liste-drawer__close:hover{background:#e5e7eb}
+.liste-drawer__body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+
+/* ── Options de tri dans le drawer ── */
+.sort-option{
+  display:block;padding:10px 14px;border-radius:10px;font-size:14px;
+  color:#374151;background:#f9fafb;border:1px solid transparent;
+  transition:all .15s;text-decoration:none
+}
+.sort-option:hover{background:#f3f4f6;color:#111}
+.sort-option--active{background:#111;color:#fff;font-weight:700}
+.sort-option--active:hover{background:#000;color:#fff}
+
+/* Mobile : onglet plus compact */
+@media (max-width:768px){
+  .liste-drawer-tab{padding:12px 7px;top:30%}
+  .liste-drawer-tab__label{font-size:10px}
+}
+</style>
 {{ sous_cats_data|json_script:"sous-cats-liste" }}
 
 <script nonce="{{ csp_nonce }}" src="{% static 'js/location-selector.js' %}"></script>
 <script nonce="{{ csp_nonce }}">
-/* ── Toggle panneau filtres ── */
+/* ── Drawer Filtres & Tri ── */
 (function(){
-  var btn = document.getElementById('filtres-toggle-btn');
-  var panel = document.getElementById('filtres-form-wrapper');
-  var chev = document.getElementById('filtres-chevron');
-  if(!btn || !panel) return;
-  btn.addEventListener('click', function(){
-    var open = panel.classList.toggle('hidden') === false;
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if(chev) chev.style.transform = open ? 'rotate(180deg)' : 'rotate(0)';
+  var tab      = document.getElementById('liste-drawer-tab');
+  var drawer   = document.getElementById('liste-drawer');
+  var overlay  = document.getElementById('liste-drawer-overlay');
+  var closeBtn = document.getElementById('liste-drawer-close');
+  if(!tab || !drawer || !overlay) return;
+
+  function open(){
+    drawer.classList.add('is-open');
+    overlay.classList.add('is-open');
+    drawer.setAttribute('aria-hidden', 'false');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function close(){
+    drawer.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  tab.addEventListener('click', open);
+  overlay.addEventListener('click', close);
+  if(closeBtn) closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && drawer.classList.contains('is-open')) close();
   });
 })();
 
@@ -351,81 +428,34 @@ if (transEl) transEl.addEventListener('change', function() { this.form.submit();
   } catch(err) {}
 })();
 
-// ── Bouton Trier — popover ────────────────────────────────────────────────
+// ── Options de tri (liste dans le drawer) ────────────────────────────────
 (function() {
-  var btn    = document.getElementById('sort-btn');
-  var panel  = document.getElementById('sort-panel');
-  var wrapper = document.getElementById('sort-wrapper');
-  if (!btn || !panel) return;
+  var container = document.getElementById('sort-options');
+  if (!container) return;
 
   var OPTIONS = [
-    { label: 'Pertinence',      value: '' },
-    { label: 'Plus récents',    value: 'recent' },
-    { label: 'Prix croissant',  value: 'prix_asc' },
-    { label: 'Prix décroissant',value: 'prix_desc' },
-    { label: 'Plus vus',        value: 'vues' },
-    { label: 'Plus cliqués',    value: 'clics' },
-    { label: 'Plus anciens',    value: 'ancien' },
+    { label: 'Pertinence',       value: '' },
+    { label: 'Plus récents',     value: 'recent' },
+    { label: 'Prix croissant',   value: 'prix_asc' },
+    { label: 'Prix décroissant', value: 'prix_desc' },
+    { label: 'Plus vus',         value: 'vues' },
+    { label: 'Plus cliqués',     value: 'clics' },
+    { label: 'Plus anciens',     value: 'ancien' },
   ];
 
   var currentTri = '{{ tri|escapejs }}';
+  var params = new URLSearchParams(window.location.search);
+  params.delete('page');
 
-  // Build option links based on current URL params
-  function buildLinks() {
-    panel.innerHTML = '';
-    var params = new URLSearchParams(window.location.search);
-    // Reset to page 1 when changing sort
-    params.delete('page');
-    OPTIONS.forEach(function(opt) {
-      if (opt.value) {
-        params.set('tri', opt.value);
-      } else {
-        params.delete('tri');
-      }
-      var href = window.location.pathname + '?' + params.toString();
-      var a = document.createElement('a');
-      a.href = href;
-      a.textContent = opt.label;
-      a.setAttribute('role', 'menuitem');
-      var isActive = (opt.value === currentTri);
-      a.className = 'block px-4 py-2 text-sm transition ' +
-        (isActive
-          ? 'font-bold text-gray-900 bg-gray-50'
-          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900');
-      panel.appendChild(a);
-    });
-  }
-
-  function openPanel() {
-    buildLinks();
-    panel.classList.remove('hidden');
-    btn.setAttribute('aria-expanded', 'true');
-  }
-
-  function closePanel() {
-    panel.classList.add('hidden');
-    btn.setAttribute('aria-expanded', 'false');
-  }
-
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    if (panel.classList.contains('hidden')) {
-      openPanel();
-    } else {
-      closePanel();
-    }
-  });
-
-  // Close on click outside
-  document.addEventListener('click', function(e) {
-    if (wrapper && !wrapper.contains(e.target)) {
-      closePanel();
-    }
-  });
-
-  // Close on Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closePanel();
+  OPTIONS.forEach(function(opt) {
+    if (opt.value) params.set('tri', opt.value); else params.delete('tri');
+    var href = window.location.pathname + '?' + params.toString();
+    var a = document.createElement('a');
+    a.href = href;
+    a.textContent = opt.label;
+    var isActive = (opt.value === currentTri);
+    a.className = 'sort-option' + (isActive ? ' sort-option--active' : '');
+    container.appendChild(a);
   });
 })();
 </script>
