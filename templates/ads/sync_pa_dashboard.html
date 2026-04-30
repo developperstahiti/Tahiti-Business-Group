@@ -1,8 +1,19 @@
 {% extends 'base.html' %}
 {% block title %}Sync petites-annonces.pf — TBG Admin{% endblock %}
 
+{% block extra_head %}
+{% if has_running %}<meta http-equiv="refresh" content="4">{% endif %}
+{% endblock %}
+
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 py-8">
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+  {% if has_running %}
+  <div class="mb-4 p-3 rounded-xl bg-amber-50 text-amber-800 text-sm border border-amber-200 flex items-center gap-2">
+    <span class="inline-block w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+    Sync en cours — la page se rafraîchit automatiquement toutes les 4 secondes…
+  </div>
+  {% endif %}
 
   <h1 class="text-2xl font-bold text-gray-900 mb-2">Sync petites-annonces.pf → TBG</h1>
   <p class="text-sm text-gray-500 mb-6">Importe les annonces immobilier depuis petites-annonces.pf vers TBG. Le système crée des annonces avec le nom et le téléphone du vendeur d'origine.</p>
@@ -14,14 +25,18 @@
   {% endif %}
 
   <!-- Stats globales -->
-  <div class="grid grid-cols-3 gap-4 mb-6">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
     <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-      <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Total importées</div>
+      <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Total annonces</div>
       <div class="text-3xl font-extrabold text-gray-900">{{ nb_imported }}</div>
     </div>
     <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
       <div class="text-xs font-bold text-emerald-500 uppercase tracking-wide mb-1">Actives</div>
       <div class="text-3xl font-extrabold text-emerald-600">{{ nb_imported_actives }}</div>
+    </div>
+    <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+      <div class="text-xs font-bold text-blue-500 uppercase tracking-wide mb-1">Comptes vendeurs</div>
+      <div class="text-3xl font-extrabold text-blue-600">{{ nb_users_imported }}</div>
     </div>
     <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
       <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Archivées</div>

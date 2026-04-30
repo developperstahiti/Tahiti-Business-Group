@@ -1879,16 +1879,21 @@ def sync_pa_dashboard(request):
         messages.success(request, 'Sync lancée en arrière-plan. Recharge la page dans 1-3 minutes pour voir le résultat.')
         return redirect('sync_pa_dashboard')
 
+    from users.models import User as UserModel
     runs = PASyncRun.objects.all()[:50]
     nb_imported = Annonce.objects.filter(is_imported=True).count()
     nb_imported_actives = Annonce.objects.filter(is_imported=True, statut='actif').count()
     nb_imported_archived = Annonce.objects.filter(is_imported=True, statut='expire').count()
+    nb_users_imported = UserModel.objects.filter(is_imported=True).count()
+    has_running = PASyncRun.objects.filter(status='running').exists()
 
     return render(request, 'ads/sync_pa_dashboard.html', {
         'runs': runs,
         'nb_imported': nb_imported,
         'nb_imported_actives': nb_imported_actives,
         'nb_imported_archived': nb_imported_archived,
+        'nb_users_imported': nb_users_imported,
+        'has_running': has_running,
         'CATEGORIES_PA': [
             (1, 'Vends appartement (immo-appartements / vente)'),
             (2, 'Vends maison (immo-maisons / vente)'),

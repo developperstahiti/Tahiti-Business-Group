@@ -173,33 +173,6 @@
       </div>
 
       <!-- Vendeur -->
-      {% if annonce.is_imported %}
-      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-        <h2 class="font-bold text-lg mb-4 text-gray-900">Vendeur</h2>
-        <div class="flex items-start gap-4">
-          <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
-            {{ annonce.imported_seller_name|first|upper|default:"?" }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-bold text-gray-900 text-lg">{{ annonce.imported_seller_name|default:"Vendeur particulier" }}</span>
-            </div>
-            <div class="flex flex-wrap gap-2 mt-3">
-              {% if annonce.imported_seller_phone %}
-              <a href="tel:{{ annonce.imported_seller_phone }}" class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-black transition">
-                📞 {{ annonce.imported_seller_phone }}
-              </a>
-              {% endif %}
-              {% if annonce.imported_seller_email %}
-              <a href="mailto:{{ annonce.imported_seller_email }}" class="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-bold px-4 py-2 rounded-lg transition">
-                ✉ Envoyer un email
-              </a>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-      {% else %}
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
         <h2 class="font-bold text-lg mb-4 text-gray-900">Vendeur</h2>
         <div class="flex items-start gap-4">
@@ -272,8 +245,19 @@
             {% endif %}
           </div>
         </div>
+        {% if annonce.is_imported and annonce.imported_seller_phone %}
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <a href="tel:{{ annonce.imported_seller_phone }}" class="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-bold px-5 py-2.5 rounded-lg hover:bg-black transition">
+            📞 Appeler {{ annonce.imported_seller_phone }}
+          </a>
+          {% if annonce.imported_seller_email %}
+          <a href="mailto:{{ annonce.imported_seller_email }}" class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-bold px-5 py-2.5 rounded-lg transition ml-2">
+            ✉ Email
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
-      {% endif %}{# fin is_imported else #}
 
       <!-- Contacter -->
       {% if annonce.user != user and not annonce.is_imported %}
@@ -368,21 +352,6 @@
       <!-- Vendeur -->
       <div class="mt-4 pt-4 border-t border-gray-100">
         <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Vendeur</p>
-        {% if annonce.is_imported %}
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-lg font-black text-white flex-shrink-0">
-            {{ annonce.imported_seller_name|first|upper|default:"?" }}
-          </div>
-          <div>
-            <span class="font-bold text-gray-900">{{ annonce.imported_seller_name|default:"Vendeur particulier" }}</span>
-          </div>
-        </div>
-        {% if annonce.imported_seller_phone %}
-        <a href="tel:{{ annonce.imported_seller_phone }}" class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-3 py-1.5 mt-2 hover:bg-black transition rounded">
-          📞 {{ annonce.imported_seller_phone }}
-        </a>
-        {% endif %}
-        {% else %}
         <div class="flex items-center gap-3">
           {% if annonce.user.profil.photo_profil %}
           <img src="{{ annonce.user.profil.photo_profil.url }}" alt="Photo de profil de {{ annonce.user.nom|default:annonce.user.email }}" class="w-10 h-10 rounded-full object-cover flex-shrink-0" loading="lazy" decoding="async" width="40" height="40">
@@ -401,11 +370,14 @@
             </div>
           </div>
         </div>
-        {% if annonce.user.tel %}
+        {% if annonce.is_imported and annonce.imported_seller_phone %}
+        <a href="tel:{{ annonce.imported_seller_phone }}" class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-3 py-1.5 mt-2 hover:bg-black transition rounded">
+          📞 {{ annonce.imported_seller_phone }}
+        </a>
+        {% elif annonce.user.tel %}
         <a href="tel:{{ annonce.user.tel }}" class="inline-flex items-center gap-1.5 bg-gray-900 text-white text-xs font-bold px-3 py-1.5 mt-2 hover:bg-black transition rounded">
           📞 {{ annonce.user.tel }}
         </a>
-        {% endif %}
         {% endif %}
       </div>
 

@@ -1,32 +1,25 @@
 <div class="annonce-card group" data-annonce-id="{{ annonce.pk }}">
   <!-- Barre vendeur — HORS du lien principal pour éviter <a> dans <a> -->
-  {% if annonce.is_imported %}
-    <div class="annonce-card__seller-bar annonce-card__seller-bar--imported">
-      <span class="annonce-card__seller-bar-initials">{{ annonce.imported_seller_name|first|upper|default:"?" }}</span>
-      <span class="annonce-card__seller-bar-name">{{ annonce.imported_seller_name|default:"Vendeur particulier" }}</span>
-    </div>
-  {% else %}
-    {% load notation_tags %}{% vendeur_note annonce.user as vn %}
-    <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__seller-bar js-stop-propagation">
-      {% if annonce.user.profil.photo_profil_url %}
-        <img src="{{ annonce.user.profil.photo_profil_url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
-      {% elif annonce.user.profil.photo_profil %}
-        <img src="{{ annonce.user.profil.photo_profil.url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
-      {% elif annonce.user.avatar_url %}
-        <img src="{{ annonce.user.avatar_url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
-      {% else %}
-        <span class="annonce-card__seller-bar-initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>
-      {% endif %}
-      <span class="annonce-card__seller-bar-name">{{ annonce.user.nom|default:annonce.user.email }}</span>
-      {% if vn.moyenne %}{% load ads_extras %}
-      <span class="annonce-card__stars ml-auto flex-shrink-0" title="{{ vn.moyenne }}/5">
-        <span class="annonce-card__stars-empty">★★★★★</span>
-        <span class="annonce-card__stars-filled" style="width:{{ vn.moyenne|note_pct }}">★★★★★</span>
-      </span>
-      <span class="annonce-card__seller-bar-note">{{ vn.moyenne }}</span>
-      {% endif %}
-    </a>
-  {% endif %}
+  {% load notation_tags %}{% vendeur_note annonce.user as vn %}
+  <a href="{% url 'profil_vendeur' annonce.user.pk %}" class="annonce-card__seller-bar js-stop-propagation">
+    {% if annonce.user.profil.photo_profil_url %}
+      <img src="{{ annonce.user.profil.photo_profil_url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
+    {% elif annonce.user.profil.photo_profil %}
+      <img src="{{ annonce.user.profil.photo_profil.url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
+    {% elif annonce.user.avatar_url %}
+      <img src="{{ annonce.user.avatar_url }}" alt="" class="annonce-card__seller-bar-avatar" loading="lazy" decoding="async" width="20" height="20">
+    {% else %}
+      <span class="annonce-card__seller-bar-initials">{{ annonce.user.nom|first|upper|default:annonce.user.email|first|upper }}</span>
+    {% endif %}
+    <span class="annonce-card__seller-bar-name">{{ annonce.user.nom|default:annonce.user.email }}</span>
+    {% if vn.moyenne %}{% load ads_extras %}
+    <span class="annonce-card__stars ml-auto flex-shrink-0" title="{{ vn.moyenne }}/5">
+      <span class="annonce-card__stars-empty">★★★★★</span>
+      <span class="annonce-card__stars-filled" style="width:{{ vn.moyenne|note_pct }}">★★★★★</span>
+    </span>
+    <span class="annonce-card__seller-bar-note">{{ vn.moyenne }}</span>
+    {% endif %}
+  </a>
   <!-- Lien principal : photo + body -->
   <a href="{% url 'annonce_detail' annonce.pk annonce.slug %}" class="block annonce-card__link">
     <!-- Photo -->

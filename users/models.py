@@ -43,6 +43,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
+    is_imported = models.BooleanField(default=False, db_index=True,
+                                      help_text="Compte créé automatiquement depuis l'import petites-annonces.pf")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
