@@ -1836,3 +1836,65 @@ def import_url(request):
         'source': source,
         **detected,
     })
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Sync petites-annonces.pf — page admin
+# ─────────────────────────────────────────────────────────────────────
+@staff_required
+def sync_pa_dashboard(request):
+    """Tableau de bord de la sync petites-annonces.pf → TBG.
+
+    GET  : affiche les options + 50 derniers runs
+    POST : lance une sync avec les options choisies (synchrone, peut prendre 1-3 min)
+    """
+    from .models import PASyncRun
+    from .scrapers.sync import sync_immobilier
+    import threading
+
+    if request.method == 'POST':
+        cat   = request.POST.get('cat') or None
+        limit = request.POST.get('limit') or None
+        skip_photos = bool(request.POST.get('skip_photos'))
+
+        try:
+            cat_int   = int(cat)   if cat   else None
+            limit_int = int(limit) if limit else None
+        except ValueError:
+            cat_int = None; limit_int = None
+
+        # Lance en thread background pour ne pas bloquer le HTTP
+        def _bg_sync():
+            try:
+                sync_immobilier(
+                    limit=limit_int,
+                    only_cat=cat_int,
+                    skip_photos=skip_photos,
+                    triggered_by=request.user,
+                )
+            except Exception as e:
+                logger.exception(f'sync_pa_dashboard background error: {e}')
+
+        threading.Thread(target=_bg_sync, daemon=True).start()
+        messages.success(request, 'Sync lancée en arrière-plan. Recharge la page dans 1-3 minutes pour voir le résultat.')
+        return redirect('sync_pa_dashboard')
+
+    runs = PASyncRun.objects.all()[:50]
+    nb_imported = Annonce.objects.filter(is_imported=True).count()
+    nb_imported_actives = Annonce.objects.filter(is_imported=True, statut='actif').count()
+    nb_imported_archived = Annonce.objects.filter(is_imported=True, statut='expire').count()
+
+    return render(request, 'ads/sync_pa_dashboard.html', {
+        'runs': runs,
+        'nb_imported': nb_imported,
+        'nb_imported_actives': nb_imported_actives,
+        'nb_imported_archived': nb_imported_archived,
+        'CATEGORIES_PA': [
+            (1, 'Vends appartement (immo-appartements / vente)'),
+            (2, 'Vends maison (immo-maisons / vente)'),
+            (3, 'Vends terrain (immo-terrains / vente)'),
+            (4, 'Loue appartement (immo-appartements / location)'),
+            (5, 'Loue maison (immo-maisons / location)'),
+            (6, 'Saisonnière (immo-saisonnieres / location)'),
+        ],
+    })

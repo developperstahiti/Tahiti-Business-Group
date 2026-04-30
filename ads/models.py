@@ -125,6 +125,15 @@ class Annonce(models.Model):
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
 
+    # ── Annonces importées depuis petites-annonces.pf ──
+    is_imported            = models.BooleanField(default=False, db_index=True)
+    external_pa_id         = models.CharField(max_length=20, blank=True, default='', db_index=True)
+    external_pa_url        = models.URLField(blank=True, default='')
+    imported_at            = models.DateTimeField(null=True, blank=True)
+    imported_seller_name   = models.CharField(max_length=120, blank=True, default='')
+    imported_seller_phone  = models.CharField(max_length=40,  blank=True, default='')
+    imported_seller_email  = models.EmailField(blank=True, default='')
+
     class Meta:
         verbose_name = 'Annonce'
         verbose_name_plural = 'Annonces'
@@ -134,6 +143,7 @@ class Annonce(models.Model):
             models.Index(fields=['categorie'], name='idx_annonce_categorie'),
             models.Index(fields=['statut', 'categorie'], name='idx_annonce_stat_cat'),
             models.Index(fields=['-created_at'], name='idx_annonce_created'),
+            models.Index(fields=['external_pa_id'], name='idx_annonce_pa_id'),
         ]
 
     def __str__(self):
@@ -315,3 +325,42 @@ class AlerteAnnonce(models.Model):
 
     def __str__(self):
         return f"Alerte {self.user} — {self.categorie}"
+
+
+class PASyncRun(models.Model):
+    """Trace une exécution de la sync petites-annonces.pf → TBG.
+
+    Sert au monitoring (page admin) et au debug.
+    """
+    STATUS_CHOICES = [
+        ('running', 'En cours'),
+        ('success', 'Succès'),
+        ('error',   'Erreur'),
+    ]
+    started_at  = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='running')
+    triggered_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        help_text='User qui a lancé manuellement (vide = cron)',
+    )
+    nb_created  = models.IntegerField(default=0)
+    nb_updated  = models.IntegerField(default=0)
+    nb_archived = models.IntegerField(default=0)
+    nb_skipped  = models.IntegerField(default=0)
+    nb_errors   = models.IntegerField(default=0)
+    nb_photos   = models.IntegerField(default=0)
+    error_msg   = models.TextField(blank=True, default='')
+
+    class Meta:
+        verbose_name = 'Sync PA'
+        verbose_name_plural = 'Syncs PA'
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f"Sync PA {self.started_at:%Y-%m-%d %H:%M} ({self.status})"
+
+    def duration_seconds(self):
+        if not self.finished_at:
+            return None
+        return (self.finished_at - self.started_at).total_seconds()
