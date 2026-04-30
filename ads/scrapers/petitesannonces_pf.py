@@ -58,18 +58,15 @@ def fetch_rss(c_id):
     # Retire la déclaration XML pour éviter les conflits d'encoding
     text = re.sub(r'<\?xml[^>]*\?>', '', text, count=1)
 
-    soup = BeautifulSoup(text, 'xml')
+    # Parsing manuel par regex pour éviter la dépendance lxml.
+    # Le RSS de PA est suffisamment plat pour être parsé sans tree-builder XML.
     items = []
-    for item in soup.find_all('item'):
-        title_el = item.find('title')
-        link_el  = item.find('link')
-        desc_el  = item.find('description')
-        cat_el   = item.find('category')
-
-        title = (title_el.get_text(strip=True) if title_el else '').strip()
-        link  = (link_el.get_text(strip=True) if link_el else '').strip()
-        desc  = desc_el.get_text() if desc_el else ''
-        cat_text = (cat_el.get_text(strip=True) if cat_el else '').strip()
+    item_re = re.compile(r'<item>(.*?)</item>', re.IGNORECASE | re.DOTALL)
+    for item_xml in item_re.findall(text):
+        title    = _extract_xml_tag(item_xml, 'title')
+        link     = _extract_xml_tag(item_xml, 'link')
+        desc     = _extract_xml_tag(item_xml, 'description', strip_cdata=False)
+        cat_text = _extract_xml_tag(item_xml, 'category')
 
         ad_id = _extract_ad_id(link)
         if not ad_id:
@@ -94,6 +91,24 @@ def _extract_ad_id(url):
     qs = parse_qs(urlparse(url).query)
     val = qs.get('tahiti', [None])[0]
     return val
+
+
+def _extract_xml_tag(xml_text, tag, strip_cdata=True):
+    """Extrait le contenu d'une balise XML (regex simple, suffisant pour le RSS plat de PA).
+
+    - Gère les CDATA si présent
+    - Retourne le texte stripé
+    """
+    pattern = rf'<{tag}[^>]*>(.*?)</{tag}>'
+    m = re.search(pattern, xml_text, re.IGNORECASE | re.DOTALL)
+    if not m:
+        return ''
+    content = m.group(1)
+    if strip_cdata:
+        cdata_m = re.search(r'<!\[CDATA\[(.*?)\]\]>', content, re.DOTALL)
+        if cdata_m:
+            content = cdata_m.group(1)
+    return content.strip()
 
 
 _PRICE_RE = re.compile(r'(?:Prix\s*:\s*)?([\d\s \.\,]{2,})\s*XPF', re.IGNORECASE)
