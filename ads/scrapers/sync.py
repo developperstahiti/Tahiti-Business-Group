@@ -18,7 +18,9 @@ from django.utils import timezone
 from ads.models import Annonce, PASyncRun
 from ads.image_utils import save_webp
 from ads.scrapers import petitesannonces_pf as pa
-from ads.scrapers.category_mapper import IMMOBILIER_CATEGORIES, map_pa_category
+from ads.scrapers.category_mapper import (
+    IMMOBILIER_CATEGORIES, map_pa_category, cats_for_rubrique,
+)
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -108,18 +110,20 @@ def get_or_create_seller_user(name, phone, email):
 # ──────────────────────────────────────────────────────────────────
 #  Sync principal
 # ──────────────────────────────────────────────────────────────────
-def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
-                    triggered_by=None):
-    """Synchronise toutes les sous-catégories immobilier de PA.
+def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
+            rubrique=None, triggered_by=None):
+    """Synchronise les annonces de petites-annonces.pf vers TBG.
 
     Args:
         limit        : max d'annonces à traiter par catégorie (None = toutes)
         dry_run      : si True, ne crée/modifie rien en DB
         skip_photos  : si True, ne télécharge pas les photos
-        only_cat     : si fourni (int), traite uniquement cette catégorie PA
+        only_cat     : si fourni (int), une seule catégorie PA (override rubrique)
+        rubrique     : nom TBG de la rubrique ('immobilier'/'vehicules'/'occasion'/
+                       'emploi'/'services'/'all'). Défaut: toutes.
         triggered_by : User qui a lancé (None = cron)
 
-    Retourne un dict de stats : created, updated, archived, errors, skipped, photos_downloaded
+    Retourne un dict de stats.
     """
     stats = {
         'created':  0,
@@ -133,7 +137,10 @@ def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
     error_messages = []
     seen_ad_ids = set()
 
-    cats_to_process = [only_cat] if only_cat else IMMOBILIER_CATEGORIES
+    if only_cat:
+        cats_to_process = [only_cat]
+    else:
+        cats_to_process = cats_for_rubrique(rubrique)
 
     run = None
     if not dry_run:
@@ -183,7 +190,7 @@ def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
         )
 
     if not dry_run:
-        archived = _archive_missing(seen_ad_ids, only_cat)
+        archived = _archive_missing(seen_ad_ids, cats_to_process)
         stats['archived'] = archived
 
     if run:
@@ -325,19 +332,38 @@ def _download_and_save_photo(url, ad_id):
         return None
 
 
-def _archive_missing(seen_ad_ids, only_cat):
-    """Archive (statut='expire') les annonces is_imported absentes du RSS."""
-    if not seen_ad_ids:
+def _archive_missing(seen_ad_ids, cats_processed):
+    """Archive (statut='expire') les annonces is_imported absentes du RSS.
+
+    cats_processed : liste de c_id PA qui ont été syncs cette fois — l'archivage
+    se limite aux annonces TBG dont la (categorie, sous_cat, transaction) correspond
+    à au moins une de ces catégories. Évite d'archiver les rubriques non syncs.
+    """
+    if not seen_ad_ids or not cats_processed:
         return 0
     qs = Annonce.objects.filter(is_imported=True, statut='actif')
-    if only_cat:
-        mapping = map_pa_category(only_cat)
-        if mapping:
-            categorie, sous_cat, transaction = mapping
-            qs = qs.filter(categorie=categorie, sous_categorie=sous_cat, type_transaction=transaction)
-    qs = qs.exclude(external_pa_id__in=seen_ad_ids)
+
+    # Construit un Q() englobant tous les (cat, sous_cat, transaction) traités
+    from django.db.models import Q
+    q = Q()
+    for c_id in cats_processed:
+        mapping = map_pa_category(c_id)
+        if not mapping:
+            continue
+        categorie, sous_cat, transaction = mapping
+        q |= Q(categorie=categorie, sous_categorie=sous_cat, type_transaction=transaction)
+    if not q:
+        return 0
+    qs = qs.filter(q).exclude(external_pa_id__in=seen_ad_ids)
     count = qs.count()
     if count:
         qs.update(statut='expire')
         logger.info(f'[SYNC] {count} annonces archivées')
     return count
+
+
+def sync_immobilier(*args, **kwargs):
+    """Alias pour compatibilité — sync uniquement la rubrique immobilier."""
+    kwargs.setdefault('rubrique', 'immobilier')
+    return sync_pa(*args, **kwargs)
+

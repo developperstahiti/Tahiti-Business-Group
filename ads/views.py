@@ -1846,16 +1846,19 @@ def sync_pa_dashboard(request):
     """Tableau de bord de la sync petites-annonces.pf → TBG.
 
     GET  : affiche les options + 50 derniers runs
-    POST : lance une sync avec les options choisies (synchrone, peut prendre 1-3 min)
+    POST : lance une sync avec les options choisies (en background thread)
     """
     from .models import PASyncRun
-    from .scrapers.sync import sync_immobilier
     import threading
 
     if request.method == 'POST':
-        cat   = request.POST.get('cat') or None
-        limit = request.POST.get('limit') or None
+        rubrique = request.POST.get('rubrique') or None
+        cat      = request.POST.get('cat') or None
+        limit    = request.POST.get('limit') or None
         skip_photos = bool(request.POST.get('skip_photos'))
+
+        if rubrique == 'all':
+            rubrique = None
 
         try:
             cat_int   = int(cat)   if cat   else None
@@ -1866,9 +1869,11 @@ def sync_pa_dashboard(request):
         # Lance en thread background pour ne pas bloquer le HTTP
         def _bg_sync():
             try:
-                sync_immobilier(
+                from .scrapers.sync import sync_pa
+                sync_pa(
                     limit=limit_int,
                     only_cat=cat_int,
+                    rubrique=rubrique,
                     skip_photos=skip_photos,
                     triggered_by=request.user,
                 )
@@ -1894,12 +1899,12 @@ def sync_pa_dashboard(request):
         'nb_imported_archived': nb_imported_archived,
         'nb_users_imported': nb_users_imported,
         'has_running': has_running,
-        'CATEGORIES_PA': [
-            (1, 'Vends appartement (immo-appartements / vente)'),
-            (2, 'Vends maison (immo-maisons / vente)'),
-            (3, 'Vends terrain (immo-terrains / vente)'),
-            (4, 'Loue appartement (immo-appartements / location)'),
-            (5, 'Loue maison (immo-maisons / location)'),
-            (6, 'Saisonnière (immo-saisonnieres / location)'),
+        'RUBRIQUES_PA': [
+            ('all',        'Toutes les rubriques'),
+            ('immobilier', 'Immobilier (apparts, maisons, terrains, saisonnières)'),
+            ('vehicules',  'Véhicules (voitures, 2 roues, bateaux, pièces)'),
+            ('occasion',   'Occasion / Bonnes affaires (meubles, info, sport, vêtements…)'),
+            ('emploi',     'Emploi (offres, demandes, formation)'),
+            ('services',   'Services (cours, prestataires, domicile)'),
         ],
     })
