@@ -71,6 +71,7 @@ def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
         'skipped':  0,
         'photos_downloaded': 0,
     }
+    error_messages = []  # capture les détails d'erreurs pour debug
     seen_ad_ids = set()
 
     cats_to_process = [only_cat] if only_cat else IMMOBILIER_CATEGORIES
@@ -92,7 +93,9 @@ def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
         try:
             items = pa.fetch_rss(c_id)
         except Exception as e:
-            logger.error(f'[SYNC] Échec fetch RSS c={c_id} : {e}')
+            err = f'fetch_rss c={c_id} : {type(e).__name__}: {e}'
+            logger.error(f'[SYNC] {err}')
+            error_messages.append(err)
             stats['errors'] += 1
             continue
 
@@ -112,7 +115,9 @@ def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
                 if result == 'created' and not skip_photos:
                     stats['photos_downloaded'] += _last_photo_count
             except Exception as e:
-                logger.exception(f'[SYNC] Erreur sur ad_id={ad_id} : {e}')
+                err = f'process ad_id={ad_id} : {type(e).__name__}: {e}'
+                logger.exception(f'[SYNC] {err}')
+                error_messages.append(err)
                 stats['errors'] += 1
             finally:
                 pa.polite_sleep()
@@ -137,6 +142,7 @@ def sync_immobilier(limit=None, dry_run=False, skip_photos=False, only_cat=None,
         run.nb_skipped  = stats['skipped']
         run.nb_errors   = stats['errors']
         run.nb_photos   = stats['photos_downloaded']
+        run.error_msg   = '\n'.join(error_messages[:20])  # max 20 erreurs détaillées
         run.save()
 
     return stats

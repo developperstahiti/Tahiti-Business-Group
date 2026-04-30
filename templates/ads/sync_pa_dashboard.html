@@ -98,6 +98,11 @@
             <td class="px-4 py-2 text-right {% if run.nb_errors %}text-red-600 font-bold{% else %}text-gray-400{% endif %}">{{ run.nb_errors }}</td>
             <td class="px-4 py-2 text-right text-gray-600">{% if run.duration_seconds %}{{ run.duration_seconds|floatformat:0 }}s{% else %}—{% endif %}</td>
           </tr>
+          {% if run.error_msg %}
+          <tr class="bg-red-50">
+            <td colspan="10" class="px-4 py-2 text-xs text-red-800 font-mono whitespace-pre-wrap">{{ run.error_msg }}</td>
+          </tr>
+          {% endif %}
           {% endfor %}
         </tbody>
       </table>
