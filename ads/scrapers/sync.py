@@ -9,6 +9,7 @@ Approche choisie :
 """
 import io
 import logging
+import random
 import re
 from urllib.parse import urlparse
 
@@ -29,6 +30,20 @@ User = get_user_model()
 # ──────────────────────────────────────────────────────────────────
 #  Helpers vendeurs : 1 compte TBG par téléphone unique
 # ──────────────────────────────────────────────────────────────────
+def _generate_fake_engagement():
+    """Génère des stats d'engagement réalistes pour une annonce importée.
+
+    Retourne (views, clics, fake_saves_count) avec :
+    - views   : 22 000 à 200 000 (random)
+    - clics   : 50% à 85% des views
+    - saves   : 0,5% à 2% des views (proportions classifieds réelles)
+    """
+    views = random.randint(22000, 200000)
+    clics = random.randint(views // 2, int(views * 0.85))
+    saves = random.randint(int(views * 0.005), int(views * 0.02))
+    return views, clics, saves
+
+
 def _normalize_phone(phone):
     """Garde uniquement les chiffres et conserve les 8 derniers (Tahiti = 8 chiffres)."""
     if not phone:
@@ -294,6 +309,8 @@ def _process_item(item, categorie, sous_cat, transaction, *,
                 photo_urls.append(url_local)
                 stats['photos_downloaded'] += 1
 
+    fake_views, fake_clics, fake_saves = _generate_fake_engagement()
+
     Annonce.objects.create(
         user=seller_user,
         titre=title,
@@ -306,6 +323,9 @@ def _process_item(item, categorie, sous_cat, transaction, *,
         localisation=location,
         photos=photo_urls,
         statut='actif',
+        views=fake_views,
+        clics=fake_clics,
+        fake_saves_count=fake_saves,
         is_imported=True,
         external_pa_id=ad_id,
         external_pa_url=item['url'],

@@ -133,6 +133,8 @@ class Annonce(models.Model):
     imported_seller_name   = models.CharField(max_length=120, blank=True, default='')
     imported_seller_phone  = models.CharField(max_length=40,  blank=True, default='')
     imported_seller_email  = models.EmailField(blank=True, default='')
+    # Compteur d'enregistrements supplémentaire (s'additionne au count réel)
+    fake_saves_count       = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = 'Annonce'

@@ -158,8 +158,13 @@ def _apply_boost_sort(qs):
 
 def _annotate_enregistrements(qs, user):
     """Annote un queryset d'annonces avec le compteur d'enregistrements
-    et un booleen is_enregistre pour l'utilisateur courant."""
-    qs = qs.annotate(enregistrement_count=Count('enregistrements'))
+    (réels + fake_saves_count des annonces importées) et un booleen
+    is_enregistre pour l'utilisateur courant."""
+    qs = qs.annotate(
+        _real_enregistrements=Count('enregistrements'),
+    ).annotate(
+        enregistrement_count=db_models.F('_real_enregistrements') + db_models.F('fake_saves_count'),
+    )
     if user.is_authenticated:
         qs = qs.annotate(
             is_enregistre=Exists(
@@ -451,8 +456,11 @@ def annonce_detail(request, pk, slug=''):
             messages.success(request, "Votre message a bien été envoyé !")
             return redirect(annonce.get_absolute_url())
 
-    # Compteur d'enregistrements
-    enregistrement_count = Enregistrement.objects.filter(annonce=annonce).count()
+    # Compteur d'enregistrements (réels + fake_saves pour annonces importées)
+    enregistrement_count = (
+        Enregistrement.objects.filter(annonce=annonce).count()
+        + (annonce.fake_saves_count or 0)
+    )
     is_enregistre = False
     if request.user.is_authenticated:
         is_enregistre = Enregistrement.objects.filter(user=request.user, annonce=annonce).exists()
@@ -1008,7 +1016,8 @@ def mes_favoris(request):
                 enregistrements__user=request.user,
                 statut='actif',
             ).select_related('user', 'user__profil')
-            .annotate(enregistrement_count=Count('enregistrements'))
+            .annotate(_real_enregistrements=Count('enregistrements'))
+            .annotate(enregistrement_count=db_models.F('_real_enregistrements') + db_models.F('fake_saves_count'))
             .order_by('-enregistrements__date_creation')
         )
     # Fallback localStorage (ids en parametre GET)
@@ -1018,7 +1027,8 @@ def mes_favoris(request):
             try:
                 pk_list = [int(x.strip()) for x in ids_raw.split(',') if x.strip().isdigit()][:50]
                 annonces = list(Annonce.objects.filter(pk__in=pk_list, statut='actif').select_related('user', 'user__profil')
-                                .annotate(enregistrement_count=Count('enregistrements')))
+                                .annotate(_real_enregistrements=Count('enregistrements'))
+                                .annotate(enregistrement_count=db_models.F('_real_enregistrements') + db_models.F('fake_saves_count')))
             except (ValueError, TypeError):
                 pass
     return render(request, 'ads/mes_favoris.html', {'annonces': annonces})
