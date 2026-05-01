@@ -47,40 +47,114 @@
   <!-- Stats d'engagement -->
   <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
     <h3 class="font-bold text-gray-900 mb-1">⚡ Stats d'engagement</h3>
-    <p class="text-sm text-gray-700 mb-1">
+    <p class="text-sm text-gray-700 mb-3">
       Génère des stats aléatoires réalistes : <strong>22 000-200 000 vues</strong>,
-      <strong>50-85% de clics</strong>, <strong>0,5-2% de saves</strong> par annonce importée.
+      <strong>50-85% de clics</strong>, <strong>0,5-2% de saves</strong>.
     </p>
-    <p class="text-xs text-gray-500 mb-3">
-      {% if nb_without_stats %}<strong>{{ nb_without_stats }}</strong> annonce{{ nb_without_stats|pluralize }} sans stats actuellement.{% else %}Toutes les annonces ont déjà des stats.{% endif %}
-    </p>
-    <div class="flex flex-wrap gap-2">
-      {% if nb_without_stats %}
-      <form method="post" action="{% url 'apply_engagement_stats' %}">
-        {% csrf_token %}
-        <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition">
-          Appliquer aux {{ nb_without_stats }} sans stats
-        </button>
-      </form>
-      {% endif %}
-      <form method="post" action="{% url 'apply_engagement_stats' %}" id="force-form">
-        {% csrf_token %}
-        <input type="hidden" name="force" value="1">
-        <button type="submit" id="force-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition">
-          Régénérer TOUTES les stats ({{ nb_imported }})
-        </button>
-      </form>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+
+      <!-- Annonces importées -->
+      <div class="bg-white border border-gray-200 rounded-xl p-3">
+        <div class="text-xs font-bold text-gray-500 uppercase mb-1">Annonces importées</div>
+        <div class="text-sm text-gray-700 mb-2">
+          <strong>{{ nb_imported }}</strong> au total ·
+          <span class="text-amber-600 font-semibold">{{ nb_without_stats }} sans stats</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          {% if nb_without_stats %}
+          <form method="post" action="{% url 'apply_engagement_stats' %}">
+            {% csrf_token %}
+            <input type="hidden" name="target" value="imported">
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+              Appliquer aux {{ nb_without_stats }}
+            </button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'apply_engagement_stats' %}" class="force-form" data-target="imported" data-count="{{ nb_imported }}" data-label="annonces importées">
+            {% csrf_token %}
+            <input type="hidden" name="target" value="imported">
+            <input type="hidden" name="force" value="1">
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+              Régénérer toutes ({{ nb_imported }})
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Annonces boostées -->
+      <div class="bg-white border border-gray-200 rounded-xl p-3">
+        <div class="text-xs font-bold text-gray-500 uppercase mb-1">Annonces boostées</div>
+        <div class="text-sm text-gray-700 mb-2">
+          <strong>{{ nb_boosted_total }}</strong> au total ·
+          <span class="text-amber-600 font-semibold">{{ nb_boosted_no_stats }} sans stats</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          {% if nb_boosted_no_stats %}
+          <form method="post" action="{% url 'apply_engagement_stats' %}">
+            {% csrf_token %}
+            <input type="hidden" name="target" value="boosted">
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+              Appliquer aux {{ nb_boosted_no_stats }}
+            </button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'apply_engagement_stats' %}" class="force-form" data-target="boosted" data-count="{{ nb_boosted_total }}" data-label="annonces boostées">
+            {% csrf_token %}
+            <input type="hidden" name="target" value="boosted">
+            <input type="hidden" name="force" value="1">
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+              Régénérer toutes ({{ nb_boosted_total }})
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Rubriques home page -->
+      <div class="bg-white border border-gray-200 rounded-xl p-3">
+        <div class="text-xs font-bold text-gray-500 uppercase mb-1">Rubriques home (Infos / Nouveautés / Promos)</div>
+        <div class="text-sm text-gray-700 mb-2">
+          <strong>{{ nb_rubriques_total }}</strong> au total ·
+          <span class="text-amber-600 font-semibold">{{ nb_rubriques_no_stats }} sans stats</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          {% if nb_rubriques_no_stats %}
+          <form method="post" action="{% url 'apply_engagement_stats' %}">
+            {% csrf_token %}
+            <input type="hidden" name="target" value="rubriques">
+            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+              Appliquer aux {{ nb_rubriques_no_stats }}
+            </button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'apply_engagement_stats' %}" class="force-form" data-target="rubriques" data-count="{{ nb_rubriques_total }}" data-label="articles rubriques">
+            {% csrf_token %}
+            <input type="hidden" name="target" value="rubriques">
+            <input type="hidden" name="force" value="1">
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-2 rounded-lg transition">
+              Régénérer toutes ({{ nb_rubriques_total }})
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
+
+    <p class="text-xs text-gray-500">
+      Bouton orange = applique seulement aux éléments à <code>0 vue</code>.
+      Bouton rouge = écrase et régénère pour TOUS les éléments de la cible (avec confirmation).
+    </p>
   </div>
 
   <script nonce="{{ csp_nonce }}">
   (function(){
-    var form = document.getElementById('force-form');
-    if(!form) return;
-    form.addEventListener('submit', function(e){
-      if(!confirm('Régénérer les stats d\'engagement pour TOUTES les {{ nb_imported }} annonces importées ? Les valeurs actuelles seront écrasées.')){
-        e.preventDefault();
-      }
+    document.querySelectorAll('.force-form').forEach(function(form){
+      form.addEventListener('submit', function(e){
+        var label = form.dataset.label || 'éléments';
+        var count = form.dataset.count || '?';
+        if(!confirm('Régénérer les stats pour les ' + count + ' ' + label + ' ?\nLes valeurs actuelles seront écrasées.')){
+          e.preventDefault();
+        }
+      });
     });
   })();
   </script>

@@ -1902,7 +1902,18 @@ def sync_pa_dashboard(request):
     nb_users_imported = UserModel.objects.filter(is_imported=True).count()
     has_running = PASyncRun.objects.filter(status='running').exists()
 
+    from rubriques.models import ArticleInfo, ArticleNouveaute, ArticlePromo
     nb_without_stats = Annonce.objects.filter(is_imported=True, views=0).count()
+    nb_boosted_total = Annonce.objects.filter(boost=True).count()
+    nb_boosted_no_stats = Annonce.objects.filter(boost=True, views=0).count()
+    nb_rubriques_total = (
+        ArticleInfo.objects.count() + ArticleNouveaute.objects.count() + ArticlePromo.objects.count()
+    )
+    nb_rubriques_no_stats = (
+        ArticleInfo.objects.filter(nb_vues=0).count()
+        + ArticleNouveaute.objects.filter(nb_vues=0).count()
+        + ArticlePromo.objects.filter(nb_vues=0).count()
+    )
 
     return render(request, 'ads/sync_pa_dashboard.html', {
         'runs': runs,
@@ -1911,6 +1922,10 @@ def sync_pa_dashboard(request):
         'nb_imported_archived': nb_imported_archived,
         'nb_users_imported': nb_users_imported,
         'nb_without_stats': nb_without_stats,
+        'nb_boosted_total': nb_boosted_total,
+        'nb_boosted_no_stats': nb_boosted_no_stats,
+        'nb_rubriques_total': nb_rubriques_total,
+        'nb_rubriques_no_stats': nb_rubriques_no_stats,
         'has_running': has_running,
         'RUBRIQUES_PA': [
             ('all',        'Toutes les rubriques'),
@@ -1925,33 +1940,69 @@ def sync_pa_dashboard(request):
 
 @staff_required
 def apply_engagement_stats(request):
-    """Applique des stats d'engagement aléatoires aux annonces importées.
+    """Applique des stats d'engagement aléatoires.
 
-    POST sans 'force' : applique uniquement aux annonces avec views=0
-    POST avec 'force' : régénère pour TOUTES les annonces importées (override existant)
+    Cible (POST):
+    - target='imported'  → annonces importées de PA (défaut)
+    - target='boosted'   → annonces TBG boostées (toutes catégories)
+    - target='rubriques' → ArticleInfo + ArticleNouveaute + ArticlePromo
+    - target='all'       → tout ce qui précède (annonces importées + boostées + rubriques)
+
+    Modificateur (POST):
+    - force=1 → régénère même si views/nb_vues > 0
     """
     from .scrapers.sync import _generate_fake_engagement
+    from rubriques.models import ArticleInfo, ArticleNouveaute, ArticlePromo
 
     if request.method != 'POST':
         return redirect('sync_pa_dashboard')
 
-    force = bool(request.POST.get('force'))
-    qs = Annonce.objects.filter(is_imported=True)
-    if not force:
-        qs = qs.filter(views=0)
+    target = request.POST.get('target', 'imported')
+    force  = bool(request.POST.get('force'))
 
-    total = 0
-    for ann in qs:
-        views, clics, saves = _generate_fake_engagement()
-        ann.views = views
-        ann.clics = clics
-        ann.fake_saves_count = saves
-        ann.save(update_fields=['views', 'clics', 'fake_saves_count'])
-        total += 1
+    counters = {'annonces': 0, 'rubriques': 0}
 
-    if total:
+    # ── Annonces ─────────────────────────────────────────────
+    if target in ('imported', 'all'):
+        qs = Annonce.objects.filter(is_imported=True)
+        if not force:
+            qs = qs.filter(views=0)
+        for ann in qs:
+            v, c, s = _generate_fake_engagement()
+            ann.views = v; ann.clics = c; ann.fake_saves_count = s
+            ann.save(update_fields=['views', 'clics', 'fake_saves_count'])
+            counters['annonces'] += 1
+
+    if target in ('boosted', 'all'):
+        qs = Annonce.objects.filter(boost=True)
+        if not force:
+            qs = qs.filter(views=0)
+        for ann in qs:
+            v, c, s = _generate_fake_engagement()
+            ann.views = v; ann.clics = c; ann.fake_saves_count = s
+            ann.save(update_fields=['views', 'clics', 'fake_saves_count'])
+            counters['annonces'] += 1
+
+    # ── Rubriques home page (Info / Nouveauté / Promo) ──────
+    if target in ('rubriques', 'all'):
+        for Model in [ArticleInfo, ArticleNouveaute, ArticlePromo]:
+            qs = Model.objects.all()
+            if not force:
+                qs = qs.filter(nb_vues=0)
+            for art in qs:
+                v, c, _saves = _generate_fake_engagement()
+                art.nb_vues = v
+                art.nb_clics = c
+                art.save(update_fields=['nb_vues', 'nb_clics'])
+                counters['rubriques'] += 1
+
+    parts = []
+    if counters['annonces']: parts.append(f"{counters['annonces']} annonce(s)")
+    if counters['rubriques']: parts.append(f"{counters['rubriques']} article(s) rubrique")
+
+    if parts:
         verb = 'régénérées' if force else 'appliquées'
-        messages.success(request, f'Stats d\'engagement {verb} pour {total} annonces.')
+        messages.success(request, f"Stats {verb} pour : {', '.join(parts)}.")
     else:
-        messages.info(request, 'Aucune annonce à traiter.')
+        messages.info(request, 'Aucun élément à traiter.')
     return redirect('sync_pa_dashboard')
