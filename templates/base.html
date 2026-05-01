@@ -69,6 +69,13 @@
 }
 </script>
 {% endblock structured_data %}
+
+{# ── Google AdSense ─────────────────────────────────────────── #}
+{% if ADSENSE_PUBLISHER_ID %}
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ ADSENSE_PUBLISHER_ID }}"
+        crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="{{ ADSENSE_PUBLISHER_ID }}">
+{% endif %}
 </head>
 <body class="bg-gray-50 text-gray-900">
 {% csrf_token %}

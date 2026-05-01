@@ -22,6 +22,19 @@ admin.site.index_title = 'Tableau de bord'
 handler404 = 'ads.views.custom_404'
 
 
+def ads_txt(request):
+    """ads.txt — fichier obligatoire pour Google AdSense.
+    Format : domain, publisher_id (sans préfixe ca-), DIRECT, certification ID Google.
+    """
+    pub_id = getattr(settings, 'ADSENSE_PUBLISHER_ID', '')
+    if not pub_id:
+        return HttpResponse('', content_type='text/plain', status=404)
+    # ca-pub-XXXX → pub-XXXX (AdSense exige le format sans 'ca-')
+    pub_clean = pub_id.replace('ca-', '', 1) if pub_id.startswith('ca-') else pub_id
+    content = f"google.com, {pub_clean}, DIRECT, f08c47fec0942fa0\n"
+    return HttpResponse(content, content_type='text/plain')
+
+
 def robots_txt(request):
     lines = [
         "User-agent: *",
@@ -77,6 +90,7 @@ urlpatterns = [
     path('rubriques/', include('rubriques.urls')),
     path('forum/', include('forum.urls')),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('ads.txt', ads_txt, name='ads_txt'),
     path('favicon.ico', lambda r: HttpResponse(status=301, headers={'Location': '/static/img/favicon-tbg-32.png'})),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('sw.js', lambda r: FileResponse(

@@ -80,6 +80,7 @@ TEMPLATES = [
                 'pubs.context_processors.admin_stats',
                 'tahiti_business.context_processors.static_version',
                 'tahiti_business.context_processors.csp_nonce',
+                'tahiti_business.context_processors.adsense',
             ],
         },
     },
@@ -180,6 +181,12 @@ AWS_ACCESS_KEY_ID      = os.environ.get('AWS_ACCESS_KEY_ID', '')
 AWS_SECRET_ACCESS_KEY  = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 AWS_S3_REGION_NAME     = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
+
+# ── Google AdSense ─────────────────────────────────────────────────────────────
+# Publisher ID au format ca-pub-XXXXXXXXXXXXXXXX (16 chiffres).
+# Vide → AdSense désactivé sur le site (utile en local pour ne pas charger le script).
+ADSENSE_PUBLISHER_ID = os.environ.get('ADSENSE_PUBLISHER_ID', 'ca-pub-7188943868004284')
+
 
 # ── PayZen by OSB (paiement en ligne) ─────────────────────────────────────────
 # ⚠ NE PAS mettre les clés en dur ici — les définir dans Railway > Variables
