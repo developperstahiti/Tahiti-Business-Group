@@ -24,6 +24,7 @@
       <li>Photos d'annonces</li>
       <li>Adresse (commune)</li>
       <li>Adresse IP (journaux de securite)</li>
+      <li>Donnees de navigation et identifiants techniques (cookies, user-agent, pages consultees) — uniquement si vous y avez consenti</li>
     </ul>
   </section>
 
@@ -35,6 +36,8 @@
       <li>Publication et gestion de vos annonces</li>
       <li>Messagerie entre utilisateurs</li>
       <li>Securite et prevention des fraudes (protection des comptes, detection des abus)</li>
+      <li>Mesure d'audience anonyme (uniquement avec votre consentement)</li>
+      <li>Affichage de publicites, y compris personnalisees, par notre partenaire Google AdSense (uniquement avec votre consentement)</li>
     </ul>
   </section>
 
@@ -81,22 +84,53 @@
   </section>
 
   <section class="mb-8">
-    <h2 class="text-xl font-semibold text-gray-800 mb-3">6. Cookies</h2>
-    <p class="text-gray-600">
-      Le site utilise uniquement des <strong>cookies fonctionnels</strong> necessaires a son bon fonctionnement :
+    <h2 class="text-xl font-semibold text-gray-800 mb-3">6. Cookies et traceurs</h2>
+    <p class="text-gray-600 mb-2">
+      Lors de votre premiere visite, une banniere vous demande votre consentement pour les categories
+      de cookies non essentiels. Vous pouvez modifier votre choix a tout moment via le lien
+      <strong>« Gerer mes cookies »</strong> en bas de page.
     </p>
-    <ul class="list-disc list-inside text-gray-600 mt-2 space-y-1">
-      <li>Cookie de session</li>
-      <li>Cookie CSRF (protection contre les attaques)</li>
-      <li>Cookie de preferences (consentement cookies) — duree : <strong>13 mois</strong></li>
+
+    <h3 class="text-base font-semibold text-gray-800 mt-4 mb-2">6.1 Cookies essentiels (toujours actifs)</h3>
+    <ul class="list-disc list-inside text-gray-600 space-y-1">
+      <li>Cookie de session — authentification et panier</li>
+      <li>Cookie CSRF — protection contre les attaques</li>
+      <li>Cookie de preferences — durée : <strong>6 mois</strong> — stocke vos choix de consentement</li>
+    </ul>
+
+    <h3 class="text-base font-semibold text-gray-800 mt-4 mb-2">6.2 Mesure d'audience (optionnel)</h3>
+    <p class="text-gray-600">
+      Si vous y consentez, nous pouvons collecter des statistiques anonymes de visite
+      (pages consultees, duree de visite) afin d'ameliorer le site.
+    </p>
+
+    <h3 class="text-base font-semibold text-gray-800 mt-4 mb-2">6.3 Publicite — Google AdSense (optionnel)</h3>
+    <p class="text-gray-600 mb-2">
+      Si vous y consentez, le site affiche des publicites fournies par
+      <strong>Google AdSense</strong>. Google et ses partenaires peuvent utiliser des cookies
+      pour vous proposer des publicites adaptees a vos centres d'interet et mesurer leur efficacite.
+    </p>
+    <p class="text-gray-600 mb-2">
+      Ces cookies tiers permettent notamment :
+    </p>
+    <ul class="list-disc list-inside text-gray-600 space-y-1">
+      <li>D'identifier votre navigateur de maniere anonyme</li>
+      <li>De mesurer le nombre d'affichages, de clics et la performance des annonces</li>
+      <li>De vous proposer des publicites en fonction de votre historique de navigation</li>
     </ul>
     <p class="text-gray-600 mt-2">
-      <strong>Aucun cookie publicitaire ou de tracking</strong> n'est utilise sur ce site.
+      Pour plus d'informations sur les cookies utilises par Google, consultez la
+      <a href="https://policies.google.com/technologies/cookies" target="_blank" rel="noopener" class="text-blue-600 hover:underline">politique cookies de Google</a>
+      et la <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-blue-600 hover:underline">politique de confidentialite Google</a>.
+    </p>
+    <p class="text-gray-600 mt-2">
+      Vous pouvez egalement gerer vos preferences publicitaires Google sur la page
+      <a href="https://adssettings.google.com/" target="_blank" rel="noopener" class="text-blue-600 hover:underline">adssettings.google.com</a>.
     </p>
   </section>
 
   <section class="mb-8">
-    <h2 class="text-xl font-semibold text-gray-800 mb-3">7. Transfert de donnees</h2>
+    <h2 class="text-xl font-semibold text-gray-800 mb-3">7. Transfert de donnees et destinataires</h2>
     <p class="text-gray-600">
       Vos donnees peuvent etre hebergees sur des serveurs situes :
     </p>
@@ -104,8 +138,19 @@
       <li>Aux Etats-Unis (Railway — hebergement principal)</li>
       <li>En Europe (AWS S3 — stockage des fichiers)</li>
     </ul>
+    <p class="text-gray-600 mt-3 mb-2">
+      <strong>Partenaires tiers susceptibles de recevoir des donnees</strong>
+      (uniquement si vous y avez consenti) :
+    </p>
+    <ul class="list-disc list-inside text-gray-600 mt-1 space-y-1">
+      <li><strong>Google LLC</strong> (Google AdSense, Google Analytics) —
+        cookies publicitaires et de mesure d'audience.
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Politique de confidentialite</a>.
+      </li>
+    </ul>
     <p class="text-gray-600 mt-2">
-      <strong>Aucune donnee n'est transmise a des tiers</strong> sans votre consentement prealable.
+      Les transferts hors UE sont encadres par les clauses contractuelles types de la
+      Commission europeenne.
     </p>
   </section>
 
@@ -121,6 +166,6 @@
     </div>
   </section>
 
-  <p class="text-gray-400 text-sm italic">Derniere mise a jour : mars 2026</p>
+  <p class="text-gray-400 text-sm italic">Derniere mise a jour : avril 2026 (ajout AdSense et banniere de consentement cookies).</p>
 </div>
 {% endblock %}

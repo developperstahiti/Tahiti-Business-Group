@@ -70,10 +70,11 @@
 </script>
 {% endblock structured_data %}
 
-{# ── Google AdSense ─────────────────────────────────────────── #}
+{# ── Google AdSense ────────────────────────────────────────────────────── #}
+{# Le script adsbygoogle.js est chargé dynamiquement via _cookie_banner.html  #}
+{# selon le consentement de l'utilisateur (RGPD). On garde uniquement le meta #}
+{# de validation de propriété, qui ne dépose pas de cookie.                   #}
 {% if ADSENSE_PUBLISHER_ID %}
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ ADSENSE_PUBLISHER_ID }}"
-        crossorigin="anonymous"></script>
 <meta name="google-adsense-account" content="{{ ADSENSE_PUBLISHER_ID }}">
 {% endif %}
 </head>
@@ -524,6 +525,7 @@
       <a href="{% url 'mentions_legales' %}" class="hover:text-gray-600 transition">Mentions légales</a>
       <a href="{% url 'cgu' %}" class="hover:text-gray-600 transition">CGU</a>
       <a href="{% url 'politique_confidentialite' %}" class="hover:text-gray-600 transition">Politique de confidentialité</a>
+      <button type="button" data-cookie-manage class="hover:text-gray-600 transition bg-transparent border-0 p-0 cursor-pointer text-xs text-gray-400 font-normal">Gérer mes cookies</button>
     </div>
     <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-2">
       <p class="text-gray-400 text-xs">© 2026 Tahiti Business Group • 89 61 06 13 • cocogamestahiti@gmail.com</p>
@@ -1573,6 +1575,9 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
   overlay.addEventListener('click', function(e){ if(e.target === this) hideEasterEgg(); });
 })();
 </script>
+
+{# Bannière de consentement cookies (RGPD) — gère aussi le chargement conditionnel d'AdSense #}
+{% include 'partials/_cookie_banner.html' %}
 
 </body>
 </html>

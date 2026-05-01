@@ -1,0 +1,242 @@
+{# Bannière de consentement cookies — RGPD compliant #}
+<style>
+.tbg-cookie-banner{
+  position:fixed;left:16px;right:16px;bottom:16px;z-index:9990;
+  background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18);
+  padding:18px 20px;max-width:520px;border:1px solid #e5e7eb;
+  display:none;line-height:1.45
+}
+.tbg-cookie-banner.is-visible{display:block}
+.tbg-cookie-banner__title{font-size:15px;font-weight:800;color:#111;margin:0 0 6px 0}
+.tbg-cookie-banner__text{font-size:13px;color:#4b5563;margin:0 0 12px 0}
+.tbg-cookie-banner__actions{display:flex;gap:8px;flex-wrap:wrap}
+.tbg-cookie-banner__btn{
+  border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;
+  cursor:pointer;transition:background .15s,color .15s
+}
+.tbg-cookie-banner__btn--primary{background:#111;color:#fff}
+.tbg-cookie-banner__btn--primary:hover{background:#000}
+.tbg-cookie-banner__btn--secondary{background:#f3f4f6;color:#374151}
+.tbg-cookie-banner__btn--secondary:hover{background:#e5e7eb}
+.tbg-cookie-banner__link{
+  color:#3b82f6;text-decoration:none;font-size:12px;font-weight:600;
+  background:none;border:none;cursor:pointer;padding:0
+}
+.tbg-cookie-banner__link:hover{text-decoration:underline}
+
+/* Modal détaillée */
+.tbg-cookie-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;
+  display:none;align-items:center;justify-content:center;padding:16px
+}
+.tbg-cookie-modal-overlay.is-visible{display:flex}
+.tbg-cookie-modal{
+  background:#fff;border-radius:14px;max-width:520px;width:100%;
+  max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3)
+}
+.tbg-cookie-modal__title{font-size:18px;font-weight:800;color:#111;margin:0 0 6px 0}
+.tbg-cookie-modal__intro{font-size:13px;color:#4b5563;margin:0 0 18px 0}
+.tbg-cookie-cat{
+  border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px
+}
+.tbg-cookie-cat__head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tbg-cookie-cat__name{font-size:14px;font-weight:700;color:#111}
+.tbg-cookie-cat__desc{font-size:12px;color:#6b7280;margin:6px 0 0 0;line-height:1.5}
+.tbg-cookie-cat__locked{font-size:11px;color:#9ca3af;font-weight:600}
+.tbg-cookie-modal__actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+
+/* Toggle switch */
+.tbg-toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.tbg-toggle input{opacity:0;width:0;height:0}
+.tbg-toggle__slider{
+  position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;
+  transition:.2s
+}
+.tbg-toggle__slider:before{
+  content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:.2s
+}
+.tbg-toggle input:checked + .tbg-toggle__slider{background:#1D9E75}
+.tbg-toggle input:checked + .tbg-toggle__slider:before{transform:translateX(18px)}
+.tbg-toggle input:disabled + .tbg-toggle__slider{background:#9ca3af;cursor:not-allowed}
+
+@media (max-width:640px){
+  .tbg-cookie-banner{left:8px;right:8px;bottom:8px;padding:14px 16px}
+  .tbg-cookie-banner__btn{flex:1;text-align:center}
+}
+</style>
+
+<!-- Bannière principale -->
+<div id="tbg-cookie-banner" class="tbg-cookie-banner" role="dialog" aria-labelledby="tbg-cookie-title" aria-hidden="true">
+  <h3 id="tbg-cookie-title" class="tbg-cookie-banner__title">🍪 Cookies & vie privée</h3>
+  <p class="tbg-cookie-banner__text">
+    Nous utilisons des cookies pour mesurer l'audience et afficher des publicités ciblées.
+    Tu peux accepter ou refuser à tout moment.
+    <a href="{% url 'politique_confidentialite' %}" class="tbg-cookie-banner__link" target="_blank" rel="noopener">En savoir plus</a>
+  </p>
+  <div class="tbg-cookie-banner__actions">
+    <button type="button" id="tbg-cookie-accept" class="tbg-cookie-banner__btn tbg-cookie-banner__btn--primary">Tout accepter</button>
+    <button type="button" id="tbg-cookie-reject" class="tbg-cookie-banner__btn tbg-cookie-banner__btn--secondary">Tout refuser</button>
+    <button type="button" id="tbg-cookie-customize" class="tbg-cookie-banner__btn tbg-cookie-banner__btn--secondary">Personnaliser</button>
+  </div>
+</div>
+
+<!-- Modal personnalisation -->
+<div id="tbg-cookie-modal-overlay" class="tbg-cookie-modal-overlay" role="dialog" aria-labelledby="tbg-cookie-modal-title" aria-hidden="true">
+  <div class="tbg-cookie-modal">
+    <h3 id="tbg-cookie-modal-title" class="tbg-cookie-modal__title">Préférences cookies</h3>
+    <p class="tbg-cookie-modal__intro">
+      Choisis les catégories de cookies que tu autorises. Les cookies essentiels sont nécessaires
+      au fonctionnement du site et ne peuvent pas être désactivés.
+    </p>
+
+    <div class="tbg-cookie-cat">
+      <div class="tbg-cookie-cat__head">
+        <span class="tbg-cookie-cat__name">Essentiels</span>
+        <label class="tbg-toggle">
+          <input type="checkbox" checked disabled>
+          <span class="tbg-toggle__slider"></span>
+        </label>
+      </div>
+      <p class="tbg-cookie-cat__desc">
+        Authentification, panier, sécurité (CSRF), préférences. <span class="tbg-cookie-cat__locked">Toujours actifs.</span>
+      </p>
+    </div>
+
+    <div class="tbg-cookie-cat">
+      <div class="tbg-cookie-cat__head">
+        <span class="tbg-cookie-cat__name">Mesure d'audience</span>
+        <label class="tbg-toggle">
+          <input type="checkbox" id="tbg-cookie-analytics">
+          <span class="tbg-toggle__slider"></span>
+        </label>
+      </div>
+      <p class="tbg-cookie-cat__desc">
+        Statistiques anonymes de visite (pages consultées, durée) pour améliorer le site.
+      </p>
+    </div>
+
+    <div class="tbg-cookie-cat">
+      <div class="tbg-cookie-cat__head">
+        <span class="tbg-cookie-cat__name">Publicité</span>
+        <label class="tbg-toggle">
+          <input type="checkbox" id="tbg-cookie-ads">
+          <span class="tbg-toggle__slider"></span>
+        </label>
+      </div>
+      <p class="tbg-cookie-cat__desc">
+        Affichage de publicités personnalisées via Google AdSense. Sans ce consentement,
+        des pubs non personnalisées pourront tout de même être affichées si tu as accepté
+        la mesure d'audience.
+      </p>
+    </div>
+
+    <div class="tbg-cookie-modal__actions">
+      <button type="button" id="tbg-cookie-modal-cancel" class="tbg-cookie-banner__btn tbg-cookie-banner__btn--secondary">Annuler</button>
+      <button type="button" id="tbg-cookie-modal-save" class="tbg-cookie-banner__btn tbg-cookie-banner__btn--primary">Enregistrer mes choix</button>
+    </div>
+  </div>
+</div>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var COOKIE_NAME = 'tbg_consent';
+  var COOKIE_MAX_AGE = 60 * 60 * 24 * 180; // 6 mois (recommandation CNIL)
+  var ADSENSE_PUB_ID = '{{ ADSENSE_PUBLISHER_ID|default:""|escapejs }}';
+
+  function getConsent(){
+    var match = document.cookie.match(new RegExp('(?:^|; )' + COOKIE_NAME + '=([^;]*)'));
+    if(!match) return null;
+    try { return JSON.parse(decodeURIComponent(match[1])); } catch(e){ return null; }
+  }
+
+  function saveConsent(c){
+    c.date = new Date().toISOString();
+    var val = encodeURIComponent(JSON.stringify(c));
+    document.cookie = COOKIE_NAME + '=' + val + '; max-age=' + COOKIE_MAX_AGE + '; path=/; SameSite=Lax';
+  }
+
+  function loadAdSense(){
+    if(!ADSENSE_PUB_ID) return;
+    if(document.querySelector('script[data-adsense]')) return;
+    var s = document.createElement('script');
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUB_ID;
+    s.setAttribute('data-adsense', '1');
+    document.head.appendChild(s);
+  }
+
+  function applyConsent(c){
+    if(c && c.ads === true) loadAdSense();
+    // (mesure d'audience ferait pareil ici, branche un GA4 si tu en ajoutes plus tard)
+  }
+
+  function showBanner(){
+    var b = document.getElementById('tbg-cookie-banner');
+    if(b){ b.classList.add('is-visible'); b.setAttribute('aria-hidden', 'false'); }
+  }
+  function hideBanner(){
+    var b = document.getElementById('tbg-cookie-banner');
+    if(b){ b.classList.remove('is-visible'); b.setAttribute('aria-hidden', 'true'); }
+  }
+  function showModal(){
+    var c = getConsent() || {analytics:false, ads:false};
+    document.getElementById('tbg-cookie-analytics').checked = !!c.analytics;
+    document.getElementById('tbg-cookie-ads').checked = !!c.ads;
+    var m = document.getElementById('tbg-cookie-modal-overlay');
+    if(m){ m.classList.add('is-visible'); m.setAttribute('aria-hidden', 'false'); }
+  }
+  function hideModal(){
+    var m = document.getElementById('tbg-cookie-modal-overlay');
+    if(m){ m.classList.remove('is-visible'); m.setAttribute('aria-hidden', 'true'); }
+  }
+
+  // ── Init ──────────────────────────────────────────────
+  var existing = getConsent();
+  if(existing){
+    applyConsent(existing);
+  } else {
+    showBanner();
+  }
+
+  // ── Wire up banner buttons ────────────────────────────
+  var btnAccept = document.getElementById('tbg-cookie-accept');
+  var btnReject = document.getElementById('tbg-cookie-reject');
+  var btnCustom = document.getElementById('tbg-cookie-customize');
+  var btnSave   = document.getElementById('tbg-cookie-modal-save');
+  var btnCancel = document.getElementById('tbg-cookie-modal-cancel');
+  var overlay   = document.getElementById('tbg-cookie-modal-overlay');
+
+  if(btnAccept) btnAccept.addEventListener('click', function(){
+    var c = {essential:true, analytics:true, ads:true};
+    saveConsent(c); hideBanner(); applyConsent(c);
+  });
+  if(btnReject) btnReject.addEventListener('click', function(){
+    var c = {essential:true, analytics:false, ads:false};
+    saveConsent(c); hideBanner();
+    // Pas de loadAdSense, pas de tracking. Page courante reste affichée.
+  });
+  if(btnCustom) btnCustom.addEventListener('click', showModal);
+  if(btnCancel) btnCancel.addEventListener('click', hideModal);
+  if(btnSave) btnSave.addEventListener('click', function(){
+    var c = {
+      essential: true,
+      analytics: document.getElementById('tbg-cookie-analytics').checked,
+      ads: document.getElementById('tbg-cookie-ads').checked,
+    };
+    saveConsent(c); hideModal(); hideBanner(); applyConsent(c);
+  });
+  if(overlay) overlay.addEventListener('click', function(e){
+    if(e.target === overlay) hideModal();
+  });
+
+  // ── Bouton "Gérer mes cookies" du footer ────────────
+  document.querySelectorAll('[data-cookie-manage]').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      showModal();
+    });
+  });
+})();
+</script>
