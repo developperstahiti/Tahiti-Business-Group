@@ -2146,6 +2146,24 @@ def sync_pa_dashboard(request):
 
 
 @staff_required
+def populate_user_engagement_view(request):
+    """Lance le management command populate_user_engagement (génère referral_code +
+    fake_rating + fake_review_count sur tous les users qui en ont pas).
+    """
+    if request.method != 'POST':
+        return redirect('sync_pa_dashboard')
+    from django.core.management import call_command
+    from io import StringIO
+    out = StringIO()
+    try:
+        call_command('populate_user_engagement', stdout=out)
+        messages.success(request, 'Codes de parrainage et étoiles fake générés. ' + out.getvalue()[:200])
+    except Exception as e:
+        messages.error(request, f'Erreur : {type(e).__name__}: {e}')
+    return redirect('sync_pa_dashboard')
+
+
+@staff_required
 def apply_engagement_stats(request):
     """Applique des stats d'engagement aléatoires.
 

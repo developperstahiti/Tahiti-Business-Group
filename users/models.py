@@ -55,7 +55,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                                       help_text="Compte créé automatiquement depuis l'import petites-annonces.pf")
 
     # Parrainage
-    referral_code = models.CharField(max_length=20, blank=True, default='', unique=True, db_index=True,
+    # Note : pas de unique=True ici pour permettre une migration idempotente (les codes
+    # sont générés via management command populate_user_engagement, et on pourra ajouter
+    # le unique=True dans une migration ultérieure une fois tous les codes remplis).
+    referral_code = models.CharField(max_length=20, blank=True, default='', db_index=True,
                                      help_text="Code unique de parrainage (auto-généré)")
     referred_by = models.ForeignKey('self', null=True, blank=True,
                                     on_delete=models.SET_NULL, related_name='referrals',

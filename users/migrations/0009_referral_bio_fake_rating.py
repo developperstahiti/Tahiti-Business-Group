@@ -1,44 +1,106 @@
 """Add referral system + enriched profile + fake rating fields on User.
 
-Single migration that:
-1. Adds all new fields (referral_code without unique=True initially).
-2. Runs a data migration to populate referral_code, fake_rating, fake_review_count
-   on every existing user.
-3. Alters referral_code to add unique=True.
+Idempotent migration : utilise RunSQL avec ADD COLUMN IF NOT EXISTS pour éviter
+les échecs si la migration est ré-appliquée ou si une partie a déjà été appliquée
+manuellement. Les valeurs par défaut sont OK pour démarrer (fake_rating=0,
+referral_code='') — un management command séparé `populate_user_engagement`
+génère ensuite des valeurs réalistes.
+
+Le unique=True sur referral_code est ajouté plus tard, après que la commande
+de population ait peuplé tous les codes.
 """
-
-import random
-import string
-
 from django.db import migrations, models
 
 
-def populate_fake_ratings(apps, schema_editor):
-    User = apps.get_model('users', 'User')
-    used_codes = set(
-        User.objects.exclude(referral_code='').values_list('referral_code', flat=True)
-    )
-    chars = string.ascii_uppercase + string.digits
+_ADD_COLUMNS_SQL = [
+    # referral_code (sans unique pour l'instant, ajouté après populate)
+    "ALTER TABLE users_user ADD COLUMN IF NOT EXISTS referral_code varchar(20) DEFAULT '' NOT NULL",
+    # referred_by FK self
+    "ALTER TABLE users_user ADD COLUMN IF NOT EXISTS referred_by_id bigint NULL "
+    "REFERENCES users_user(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED",
+    # referral_rewards_earned
+    "ALTER TABLE users_user ADD COLUMN IF NOT EXISTS referral_rewards_earned integer DEFAULT 0 NOT NULL "
+    "CHECK (referral_rewards_earned >= 0)",
+    # bio
+    "ALTER TABLE users_user ADD COLUMN IF NOT EXISTS bio text DEFAULT '' NOT NULL",
+    # fake_rating
+    "ALTER TABLE users_user ADD COLUMN IF NOT EXISTS fake_rating double precision DEFAULT 0 NOT NULL",
+    # fake_review_count
+    "ALTER TABLE users_user ADD COLUMN IF NOT EXISTS fake_review_count integer DEFAULT 0 NOT NULL "
+    "CHECK (fake_review_count >= 0)",
+    # Index sur referral_code
+    "CREATE INDEX IF NOT EXISTS users_user_referral_code_idx ON users_user(referral_code)",
+    # Index sur referred_by_id
+    "CREATE INDEX IF NOT EXISTS users_user_referred_by_id_idx ON users_user(referred_by_id)",
+]
 
-    for user in User.objects.all():
-        # Note d'affichage entre 3.9 et 5.0 (triangulaire centre 4.5 pour realisme)
-        user.fake_rating = round(random.triangular(3.9, 5.0, 4.5), 2)
-        # Nombre d'avis entre 5 et 80
-        user.fake_review_count = random.randint(5, 80)
-
-        if not user.referral_code:
-            for _ in range(50):
-                code = ''.join(random.choices(chars, k=8))
-                if code not in used_codes:
-                    used_codes.add(code)
-                    user.referral_code = code
-                    break
-
-        user.save(update_fields=['fake_rating', 'fake_review_count', 'referral_code'])
+_DROP_COLUMNS_SQL = [
+    "DROP INDEX IF EXISTS users_user_referred_by_id_idx",
+    "DROP INDEX IF EXISTS users_user_referral_code_idx",
+    "ALTER TABLE users_user DROP COLUMN IF EXISTS fake_review_count",
+    "ALTER TABLE users_user DROP COLUMN IF EXISTS fake_rating",
+    "ALTER TABLE users_user DROP COLUMN IF EXISTS bio",
+    "ALTER TABLE users_user DROP COLUMN IF EXISTS referral_rewards_earned",
+    "ALTER TABLE users_user DROP COLUMN IF EXISTS referred_by_id",
+    "ALTER TABLE users_user DROP COLUMN IF EXISTS referral_code",
+]
 
 
-def reverse_noop(apps, schema_editor):
-    pass
+_STATE_OPERATIONS = [
+    migrations.AddField(
+        model_name='user',
+        name='referral_code',
+        field=models.CharField(
+            blank=True, db_index=True, default='',
+            help_text='Code unique de parrainage (auto-généré)',
+            max_length=20,
+        ),
+    ),
+    migrations.AddField(
+        model_name='user',
+        name='referred_by',
+        field=models.ForeignKey(
+            blank=True, null=True,
+            help_text='Qui a parrainé ce user',
+            on_delete=models.SET_NULL,
+            related_name='referrals',
+            to='users.user',
+        ),
+    ),
+    migrations.AddField(
+        model_name='user',
+        name='referral_rewards_earned',
+        field=models.PositiveIntegerField(
+            default=0,
+            help_text='Nb de récompenses (boosts gratuits) gagnées',
+        ),
+    ),
+    migrations.AddField(
+        model_name='user',
+        name='bio',
+        field=models.TextField(
+            blank=True, default='',
+            help_text='Présentation libre du vendeur',
+            max_length=500,
+        ),
+    ),
+    migrations.AddField(
+        model_name='user',
+        name='fake_rating',
+        field=models.FloatField(
+            default=0,
+            help_text="Note d'affichage 3.9-5.0 utilisée si pas de vraies notes",
+        ),
+    ),
+    migrations.AddField(
+        model_name='user',
+        name='fake_review_count',
+        field=models.PositiveIntegerField(
+            default=0,
+            help_text="Nombre d'avis fictifs (cohérent avec fake_rating)",
+        ),
+    ),
+]
 
 
 class Migration(migrations.Migration):
@@ -48,79 +110,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # 1. Add fields (referral_code without unique pour eviter conflits avec default '')
-        migrations.AddField(
-            model_name='user',
-            name='referral_code',
-            field=models.CharField(
-                blank=True,
-                db_index=True,
-                default='',
-                help_text='Code unique de parrainage (auto-généré)',
-                max_length=20,
-            ),
-        ),
-        migrations.AddField(
-            model_name='user',
-            name='referred_by',
-            field=models.ForeignKey(
-                blank=True,
-                help_text='Qui a parrainé ce user',
-                null=True,
-                on_delete=models.SET_NULL,
-                related_name='referrals',
-                to='users.user',
-            ),
-        ),
-        migrations.AddField(
-            model_name='user',
-            name='referral_rewards_earned',
-            field=models.PositiveIntegerField(
-                default=0,
-                help_text='Nb de récompenses (boosts gratuits) gagnées',
-            ),
-        ),
-        migrations.AddField(
-            model_name='user',
-            name='bio',
-            field=models.TextField(
-                blank=True,
-                default='',
-                help_text='Présentation libre du vendeur',
-                max_length=500,
-            ),
-        ),
-        migrations.AddField(
-            model_name='user',
-            name='fake_rating',
-            field=models.FloatField(
-                default=0,
-                help_text="Note d'affichage 3.9-5.0 utilisée si pas de vraies notes",
-            ),
-        ),
-        migrations.AddField(
-            model_name='user',
-            name='fake_review_count',
-            field=models.PositiveIntegerField(
-                default=0,
-                help_text='Nombre d\'avis fictifs (cohérent avec fake_rating)',
-            ),
-        ),
-
-        # 2. Populate fake ratings + referral codes on existing users
-        migrations.RunPython(populate_fake_ratings, reverse_code=reverse_noop),
-
-        # 3. Now ajouter le unique=True sur referral_code (tous les codes sont uniques)
-        migrations.AlterField(
-            model_name='user',
-            name='referral_code',
-            field=models.CharField(
-                blank=True,
-                db_index=True,
-                default='',
-                help_text='Code unique de parrainage (auto-généré)',
-                max_length=20,
-                unique=True,
-            ),
+        migrations.RunSQL(
+            sql='; '.join(_ADD_COLUMNS_SQL) + ';',
+            reverse_sql='; '.join(_DROP_COLUMNS_SQL) + ';',
+            state_operations=_STATE_OPERATIONS,
         ),
     ]
