@@ -1,0 +1,32 @@
+{# Bloc publicitaire Google AdSense réutilisable.
+
+   Usage :
+     {% include 'partials/_adsense_block.html' with slot_id=ADSENSE_SLOT_SIDEBAR ad_format='auto' min_height='180px' %}
+
+   Variables :
+     slot_id      : ID Ad Unit AdSense (ex: '1234567890'). Vide → placeholder gris.
+     ad_format    : 'auto' (responsive, défaut) | 'horizontal' | 'vertical' | 'rectangle' | 'fluid'
+     ad_layout    : pour les ad units 'in-feed' uniquement (ex: '-fb+5w+4e-db+86')
+     ad_layout_key: pour les ad units 'in-feed' uniquement (ex: '-gw+1k-1q-2j')
+     min_height   : hauteur min du bloc (CSS, défaut 120px)
+     extra_class  : classes CSS additionnelles
+     full_width   : 'true' (défaut) | 'false' — full-width-responsive
+#}
+{% if ADSENSE_PUBLISHER_ID %}
+  {% if slot_id %}
+    <ins class="adsbygoogle {{ extra_class|default:'' }}"
+         style="display:block;min-height:{{ min_height|default:'120px' }};{{ extra_style|default:'' }}"
+         data-ad-client="{{ ADSENSE_PUBLISHER_ID }}"
+         data-ad-slot="{{ slot_id }}"
+         data-ad-format="{{ ad_format|default:'auto' }}"
+         {% if ad_layout %}data-ad-layout="{{ ad_layout }}"{% endif %}
+         {% if ad_layout_key %}data-ad-layout-key="{{ ad_layout_key }}"{% endif %}
+         data-full-width-responsive="{{ full_width|default:'true' }}"></ins>
+    <script nonce="{{ csp_nonce }}">(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  {% else %}
+    <div class="adsense-placeholder {{ extra_class|default:'' }}"
+         style="min-height:{{ min_height|default:'120px' }};background:#f9fafb;border:1px dashed #e5e7eb;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:11px;font-weight:600;text-align:center;padding:8px;{{ extra_style|default:'' }}">
+      Espace publicitaire
+    </div>
+  {% endif %}
+{% endif %}

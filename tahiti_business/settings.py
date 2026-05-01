@@ -187,6 +187,14 @@ AWS_S3_REGION_NAME     = os.environ.get('AWS_S3_REGION_NAME', 'eu-north-1')
 # Vide → AdSense désactivé sur le site (utile en local pour ne pas charger le script).
 ADSENSE_PUBLISHER_ID = os.environ.get('ADSENSE_PUBLISHER_ID', 'ca-pub-7188943868004284')
 
+# Slot IDs des Ad Units (à créer dans la console AdSense > Annonces > Par unité).
+# Format : 10 chiffres (ex: '1234567890'). Vide → placeholder gris affiché.
+# Tu peux mettre le même slot ID partout pour démarrer (1 seul Ad Unit responsive).
+ADSENSE_SLOT_SIDEBAR = os.environ.get('ADSENSE_SLOT_SIDEBAR', '')
+ADSENSE_SLOT_STRIP   = os.environ.get('ADSENSE_SLOT_STRIP', '')
+ADSENSE_SLOT_INFEED  = os.environ.get('ADSENSE_SLOT_INFEED', '')
+ADSENSE_SLOT_DETAIL  = os.environ.get('ADSENSE_SLOT_DETAIL', '')
+
 
 # ── PayZen by OSB (paiement en ligne) ─────────────────────────────────────────
 # ⚠ NE PAS mettre les clés en dur ici — les définir dans Railway > Variables

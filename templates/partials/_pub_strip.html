@@ -1,23 +1,4 @@
-<!-- PUB STRIP : {{ strip_label|default:"Strip" }} -->
+<!-- PUB STRIP : {{ strip_label|default:"Strip" }} — Google AdSense -->
 <div class="mb-8">
-  {% if current_strip %}
-  <div class="pub-strip-label">{{ strip_label|default:"Strip" }}</div>
-  <a href="{{ current_strip.lien }}" target="_blank" rel="noopener sponsored"
-     class="pub-strip-img-wrap">
-    {% if current_strip.is_video %}
-    <video src="{{ current_strip.get_video }}" class="pub-strip-img" autoplay muted loop playsinline></video>
-    {% else %}
-    <img src="{{ current_strip.get_image }}"
-         alt="{{ current_strip.titre }}"
-         class="pub-strip-img" loading="lazy">
-    {% endif %}
-  </a>
-  {% else %}
-  <a href="{% url 'deposer_pub' %}?emplacement={{ strip_emp|default:'strip_accueil_haut' }}" class="pub-strip-empty">
-    <div class="pub-strip-empty__zone">{{ strip_label|default:"Strip Accueil" }}</div>
-    <div class="pub-strip-empty__title">Votre publicité ici</div>
-    <div class="pub-strip-empty__price">À partir de 8 000 XPF/mois</div>
-    <span class="pub-strip-empty__cta">Réserver →</span>
-  </a>
-  {% endif %}
+  {% include 'partials/_adsense_block.html' with slot_id=ADSENSE_SLOT_STRIP ad_format='horizontal' min_height='100px' extra_class='pub-strip-adsense' %}
 </div>

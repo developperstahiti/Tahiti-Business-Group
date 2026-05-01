@@ -10,5 +10,11 @@ def csp_nonce(request):
 
 
 def adsense(request):
-    """Expose le Publisher ID AdSense dans tous les templates."""
-    return {'ADSENSE_PUBLISHER_ID': getattr(settings, 'ADSENSE_PUBLISHER_ID', '')}
+    """Expose le Publisher ID AdSense + slot IDs dans tous les templates."""
+    return {
+        'ADSENSE_PUBLISHER_ID': getattr(settings, 'ADSENSE_PUBLISHER_ID', ''),
+        'ADSENSE_SLOT_SIDEBAR': getattr(settings, 'ADSENSE_SLOT_SIDEBAR', ''),
+        'ADSENSE_SLOT_STRIP':   getattr(settings, 'ADSENSE_SLOT_STRIP', ''),
+        'ADSENSE_SLOT_INFEED':  getattr(settings, 'ADSENSE_SLOT_INFEED', ''),
+        'ADSENSE_SLOT_DETAIL':  getattr(settings, 'ADSENSE_SLOT_DETAIL', ''),
+    }
