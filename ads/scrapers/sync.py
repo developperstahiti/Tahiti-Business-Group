@@ -151,6 +151,7 @@ def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
     }
     error_messages = []
     seen_ad_ids = set()
+    cats_succeeded = []   # cats dont le fetch_rss a réussi (utilisé pour l'archivage sûr)
 
     if only_cat:
         cats_to_process = [only_cat]
@@ -176,6 +177,9 @@ def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
             stats['errors'] += 1
             _save_run_progress(run, stats, error_messages)
             continue
+
+        # Le fetch a réussi : cat éligible à l'archivage
+        cats_succeeded.append(c_id)
 
         if limit:
             items = items[:limit]
@@ -205,7 +209,10 @@ def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
         )
 
     if not dry_run:
-        archived = _archive_missing(seen_ad_ids, cats_to_process)
+        # On archive uniquement les annonces des catégories dont le RSS a été
+        # récupéré avec succès — sinon une erreur réseau passagère archiverait
+        # toute la rubrique.
+        archived = _archive_missing(seen_ad_ids, cats_succeeded)
         stats['archived'] = archived
 
     if run:

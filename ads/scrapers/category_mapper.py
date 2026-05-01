@@ -50,6 +50,7 @@ PA_TO_TBG = {
     28: ('emploi',     'emploi-offre',     'non_applicable'),  # Offres
     29: ('emploi',     'emploi-recherche', 'non_applicable'),  # Demandes
     30: ('emploi',     'emploi-offre',     'non_applicable'),  # Formation
+    31: ('emploi',     'emploi-offre',     'non_applicable'),  # Autres
 
     # ─── SERVICES (r=5) ──────────────────────────────────────────
     32: ('services',   'services-cours',     'non_applicable'),  # Cours & leçons
@@ -57,6 +58,7 @@ PA_TO_TBG = {
     36: ('services',   'services-autres',    'non_applicable'),  # Prestataires divers
     37: ('services',   'services-autres',    'non_applicable'),  # Services à domicile
     38: ('services',   'services-autres',    'non_applicable'),  # Lavage et repassage
+    39: ('services',   'services-autres',    'non_applicable'),  # Autres
 }
 
 
@@ -65,8 +67,8 @@ RUBRIQUE_TO_CATS = {
     'immobilier': [1, 2, 3, 4, 5, 6],
     'vehicules':  [9, 10, 11, 12, 13, 58, 59, 60],
     'occasion':   [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 33, 51, 52, 53, 54],
-    'emploi':     [28, 29, 30],
-    'services':   [32, 34, 36, 37, 38],
+    'emploi':     [28, 29, 30, 31],
+    'services':   [32, 34, 36, 37, 38, 39],
 }
 
 # Toutes les c_id confondues

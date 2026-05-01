@@ -1925,16 +1925,21 @@ def sync_pa_dashboard(request):
 
 @staff_required
 def apply_engagement_stats(request):
-    """Applique des stats d'engagement aléatoires (views/clics/saves) aux annonces
-    importées qui ont views=0. Utilisé une fois pour rattraper les annonces
-    déjà importées avant l'ajout des stats.
+    """Applique des stats d'engagement aléatoires aux annonces importées.
+
+    POST sans 'force' : applique uniquement aux annonces avec views=0
+    POST avec 'force' : régénère pour TOUTES les annonces importées (override existant)
     """
     from .scrapers.sync import _generate_fake_engagement
 
     if request.method != 'POST':
         return redirect('sync_pa_dashboard')
 
-    qs = Annonce.objects.filter(is_imported=True, views=0)
+    force = bool(request.POST.get('force'))
+    qs = Annonce.objects.filter(is_imported=True)
+    if not force:
+        qs = qs.filter(views=0)
+
     total = 0
     for ann in qs:
         views, clics, saves = _generate_fake_engagement()
@@ -1945,7 +1950,8 @@ def apply_engagement_stats(request):
         total += 1
 
     if total:
-        messages.success(request, f'Stats d\'engagement appliquées à {total} annonces.')
+        verb = 'régénérées' if force else 'appliquées'
+        messages.success(request, f'Stats d\'engagement {verb} pour {total} annonces.')
     else:
-        messages.info(request, 'Aucune annonce sans stats à traiter.')
+        messages.info(request, 'Aucune annonce à traiter.')
     return redirect('sync_pa_dashboard')
