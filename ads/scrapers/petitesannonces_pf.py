@@ -21,17 +21,35 @@ BASE_URL = 'https://www.petites-annonces.pf'
 RSS_URL  = f'{BASE_URL}/rss.php'
 USER_AGENT = 'TBG-Sync/1.0 (+https://tahitibusinessgroup.com)'
 
-DEFAULT_TIMEOUT = 15
-DEFAULT_DELAY   = 0.5  # délai entre 2 requêtes pour ne pas saturer PA
+DEFAULT_TIMEOUT = 20
+DEFAULT_DELAY   = 1.8     # délai entre 2 requêtes pour rester poli avec PA
+INTER_CAT_DELAY = 5.0     # pause supplémentaire entre 2 catégories
+RETRY_BACKOFF_SEC = 30    # attente avant retry sur Connection error
 
 
-def _http_get(url, timeout=DEFAULT_TIMEOUT):
-    """GET avec User-Agent et timeout."""
-    return requests.get(
-        url,
-        headers={'User-Agent': USER_AGENT},
-        timeout=timeout,
-    )
+def _http_get(url, timeout=DEFAULT_TIMEOUT, retries=1):
+    """GET avec User-Agent, timeout et retry sur erreur réseau.
+
+    Sur ConnectionError ou Timeout, attend RETRY_BACKOFF_SEC puis retente
+    une fois (le rate limiter de PA se réinitialise typiquement en quelques
+    secondes).
+    """
+    last_exc = None
+    for attempt in range(retries + 1):
+        try:
+            return requests.get(
+                url,
+                headers={'User-Agent': USER_AGENT},
+                timeout=timeout,
+            )
+        except (requests.ConnectionError, requests.Timeout) as e:
+            last_exc = e
+            if attempt < retries:
+                logger.warning(
+                    f'[PA] {type(e).__name__} sur {url}, retry dans {RETRY_BACKOFF_SEC}s'
+                )
+                time.sleep(RETRY_BACKOFF_SEC)
+    raise last_exc
 
 
 # ──────────────────────────────────────────────────────────────────

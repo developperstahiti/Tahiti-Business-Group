@@ -152,6 +152,7 @@ def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
     error_messages = []
     seen_ad_ids = set()
     cats_succeeded = []   # cats dont le fetch_rss a réussi (utilisé pour l'archivage sûr)
+    consecutive_failures = 0   # arrête tout si PA rate-limite
 
     if only_cat:
         cats_to_process = [only_cat]
@@ -175,10 +176,21 @@ def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
             logger.error(f'[SYNC] {err}')
             error_messages.append(err)
             stats['errors'] += 1
+            consecutive_failures += 1
             _save_run_progress(run, stats, error_messages)
+            # Si PA rate-limite (3 erreurs réseau d'affilée), on stoppe pour
+            # ne pas hammer le serveur. L'utilisateur pourra relancer plus tard.
+            if consecutive_failures >= 3:
+                err = (f'STOP : {consecutive_failures} erreurs réseau consécutives. '
+                       f'PA rate-limite probablement Railway. Réessaie plus tard.')
+                logger.error(f'[SYNC] {err}')
+                error_messages.append(err)
+                _save_run_progress(run, stats, error_messages)
+                break
             continue
 
-        # Le fetch a réussi : cat éligible à l'archivage
+        # Le fetch a réussi : reset du compteur d'erreurs et cat éligible à l'archivage
+        consecutive_failures = 0
         cats_succeeded.append(c_id)
 
         if limit:
@@ -207,6 +219,8 @@ def sync_pa(limit=None, dry_run=False, skip_photos=False, only_cat=None,
             f'[SYNC] c={c_id} terminé. Créés={stats["created"]} '
             f'Maj={stats["updated"]} Skip={stats["skipped"]}'
         )
+        # Pause additionnelle entre catégories pour ne pas saturer PA
+        pa.polite_sleep(pa.INTER_CAT_DELAY)
 
     if not dry_run:
         # On archive uniquement les annonces des catégories dont le RSS a été
