@@ -84,10 +84,20 @@
 {% csrf_token %}
 <div id="layout-outer">
 
-<!-- Billboard supprimé — le format plein écran custom n'a pas d'équivalent
-     AdSense. Les emplacements pubs sont désormais sidebar gauche/droite,
-     strips entre annonces, fiches détail. -->
+<!-- ═══ BILLBOARD — version compacte (~200px) avec AdSense ═══ -->
+{% with url=request.resolver_match.url_name %}
+{% if url != 'deposer_annonce' and url != 'edit_annonce' and url != 'demande_pub' %}
+<div id="layout-billboard" style="height:200px;max-height:200px">
+<div class="pub-bg-fixed" style="display:flex;align-items:center;justify-content:center;background:#0b0b0c;height:200px;max-height:200px;overflow:hidden">
+  <div style="width:100%;max-width:970px;padding:0 16px">
+    {% include 'partials/_adsense_block.html' with slot_id=ADSENSE_SLOT_STRIP ad_format='horizontal' min_height='180px' extra_style='background:transparent;border:none' %}
+  </div>
+</div>
+</div><!-- /#layout-billboard -->
+{% else %}
 <div id="layout-billboard-absent"></div>
+{% endif %}
+{% endwith %}
 
 <!-- ═══ ROW : cadre central + sidebar droite ═══ -->
 <div id="layout-row">
