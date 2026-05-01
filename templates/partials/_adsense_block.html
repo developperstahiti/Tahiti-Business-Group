@@ -1,17 +1,15 @@
-{# Bloc publicitaire Google AdSense réutilisable.
+{% comment %}
+Bloc publicitaire Google AdSense réutilisable.
 
-   Usage :
-     {% include 'partials/_adsense_block.html' with slot_id=ADSENSE_SLOT_SIDEBAR ad_format='auto' min_height='180px' %}
-
-   Variables :
-     slot_id      : ID Ad Unit AdSense (ex: '1234567890'). Vide → placeholder gris.
-     ad_format    : 'auto' (responsive, défaut) | 'horizontal' | 'vertical' | 'rectangle' | 'fluid'
-     ad_layout    : pour les ad units 'in-feed' uniquement (ex: '-fb+5w+4e-db+86')
-     ad_layout_key: pour les ad units 'in-feed' uniquement (ex: '-gw+1k-1q-2j')
-     min_height   : hauteur min du bloc (CSS, défaut 120px)
-     extra_class  : classes CSS additionnelles
-     full_width   : 'true' (défaut) | 'false' — full-width-responsive
-#}
+Variables :
+  slot_id      : ID Ad Unit AdSense (ex: '1234567890'). Vide → placeholder gris.
+  ad_format    : 'auto' (responsive, défaut) / 'horizontal' / 'vertical' / 'rectangle' / 'fluid'
+  ad_layout    : pour les ad units 'in-feed' uniquement
+  ad_layout_key: pour les ad units 'in-feed' uniquement
+  min_height   : hauteur min du bloc (CSS, défaut 120px)
+  extra_class  : classes CSS additionnelles
+  full_width   : 'true' (défaut) / 'false'
+{% endcomment %}
 {% if ADSENSE_PUBLISHER_ID %}
   {% if slot_id %}
     <ins class="adsbygoogle {{ extra_class|default:'' }}"
