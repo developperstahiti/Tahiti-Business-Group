@@ -121,7 +121,11 @@ def register_view(request):
     if request.user.is_authenticated:
         return redirect('index')
 
-    form = RegisterForm(request.POST or None)
+    # Recupere ?ref=CODE pour pre-remplir le hidden field du formulaire
+    ref_code = (request.GET.get('ref') or '').strip().upper()
+    initial = {'ref': ref_code} if ref_code else {}
+
+    form = RegisterForm(request.POST or None, initial=initial)
     if request.method == 'POST' and form.is_valid():
         user = form.save(commit=False)
         smtp_ok = _smtp_configured()
@@ -351,6 +355,69 @@ def test_email(request):
     except Exception as e:
         info['erreur'] = f'{type(e).__name__}: {e}'
     return JsonResponse(info)
+
+
+@login_required
+def parrainage(request):
+    """Page parrainage : code, lien partage, invitations validees, recompenses."""
+    user = request.user
+    # Lien complet d'invitation
+    base = 'https://www.tahitibusinessgroup.com'
+    referral_link = f"{base}/users/register/?ref={user.referral_code}"
+
+    # Tous les filleuls parraines par cet utilisateur
+    filleuls_qs = user.referrals.all().order_by('-date_joined')
+    total_filleuls = filleuls_qs.count()
+
+    # Filleuls "valides" : ceux qui ont publie au moins 1 annonce
+    filleuls_valides_ids = list(
+        Annonce.objects.filter(user__in=filleuls_qs)
+        .values_list('user_id', flat=True)
+        .distinct()
+    )
+    nb_invitations_validees = len(filleuls_valides_ids)
+
+    # Recompenses : 1 boost gratuit pour chaque tranche de 3 invitations validees
+    nb_recompenses_meritees = nb_invitations_validees // 3
+    nb_recompenses_actuelles = user.referral_rewards_earned
+    nouvelles_recompenses = max(0, nb_recompenses_meritees - nb_recompenses_actuelles)
+    if nouvelles_recompenses > 0:
+        user.referral_rewards_earned = nb_recompenses_meritees
+        user.save(update_fields=['referral_rewards_earned'])
+
+    # Progression vers la prochaine recompense (sur 3)
+    progression = nb_invitations_validees % 3
+    restants = 3 - progression if progression < 3 else 0
+
+    # Liste des derniers filleuls (sans email visible)
+    derniers_filleuls = []
+    valides_set = set(filleuls_valides_ids)
+    for f in filleuls_qs[:10]:
+        prenom = (f.nom or 'Membre').split()[0] if f.nom else 'Membre'
+        derniers_filleuls.append({
+            'prenom': prenom,
+            'date_joined': f.date_joined,
+            'valide': f.pk in valides_set,
+        })
+
+    # Texte WhatsApp pre-rempli
+    msg_partage = (
+        f"Salut ! Inscris-toi sur Tahiti Business Group avec mon code de parrainage : "
+        f"{referral_link}"
+    )
+
+    return render(request, 'users/parrainage.html', {
+        'referral_code': user.referral_code,
+        'referral_link': referral_link,
+        'total_filleuls': total_filleuls,
+        'nb_invitations_validees': nb_invitations_validees,
+        'nb_recompenses_meritees': nb_recompenses_meritees,
+        'recompenses_range': range(1, nb_recompenses_meritees + 1),
+        'progression': progression,
+        'restants': restants,
+        'derniers_filleuls': derniers_filleuls,
+        'msg_partage': msg_partage,
+    })
 
 
 @login_required

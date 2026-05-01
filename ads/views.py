@@ -421,6 +421,188 @@ def liste_annonces(request):
     })
 
 
+# ───────────────────────────────────────────────────────────────────────────────
+# SEO LOCAL — Pages /annonces/<categorie>/<commune>/
+# ───────────────────────────────────────────────────────────────────────────────
+
+# Catégories valides pour les pages SEO locales (sous-ensemble de CATEGORIES)
+_VALID_CATEGORIES_SEO = {slug for slug, _label in CATEGORIES}
+
+
+# Textes d'intro par catégorie (utilisés pour générer 200 mots SEO contextuels)
+_INTRO_CATEGORIE_SEO = {
+    'vehicules': (
+        "Vous cherchez une voiture, un scooter, un bateau ou un utilitaire d'occasion à {commune} ? "
+        "Tahiti Business Group rassemble les meilleures annonces de véhicules disponibles dans la commune et ses environs. "
+        "Particuliers et professionnels publient ici leurs offres : citadines, 4x4, motos, jet-skis, pièces détachées et accessoires. "
+        "Acheter localement à {commune}, c'est éviter les frais de transport entre îles, voir le véhicule en personne, "
+        "rencontrer le vendeur et négocier directement. Contactez gratuitement les vendeurs via la messagerie sécurisée de TBG."
+    ),
+    'immobilier': (
+        "Découvrez toutes les annonces immobilières à {commune} sur Tahiti Business Group : "
+        "maisons, appartements, studios, terrains, locaux commerciaux et locations saisonnières. "
+        "{commune} attire chaque année de nombreux acheteurs et locataires qui cherchent un cadre de vie agréable en Polynésie française. "
+        "Que vous soyez à la recherche d'un bien à acheter ou à louer, vous trouverez ici des offres mises à jour quotidiennement par "
+        "des particuliers et des agences locales. Comparez les prix, contactez directement les propriétaires et concrétisez votre "
+        "projet immobilier dans le fenua."
+    ),
+    'occasion': (
+        "Trouvez les meilleures occasions et bons plans à {commune} sur Tahiti Business Group. "
+        "Téléphones, informatique, télévisions, électroménager, meubles, vêtements, jouets, articles de sport et loisirs : "
+        "des centaines d'annonces de seconde main publiées par des habitants de {commune} et des communes voisines. "
+        "Acheter d'occasion à {commune}, c'est faire de vraies économies, donner une seconde vie aux objets et limiter le transport entre îles. "
+        "Affinez votre recherche par sous-catégorie et contactez les vendeurs en quelques clics."
+    ),
+    'emploi': (
+        "Consultez les offres et demandes d'emploi à {commune} en Polynésie française sur Tahiti Business Group. "
+        "Recrutements en CDI, CDD, missions ponctuelles, stages et candidatures spontanées : la commune de {commune} concentre "
+        "des opportunités dans la restauration, l'hôtellerie, le BTP, les services à la personne, la vente, l'administration et bien d'autres secteurs. "
+        "Que vous soyez recruteur ou candidat, déposez gratuitement votre annonce et entrez en contact directement via la messagerie TBG. "
+        "Trouvez le job qui vous correspond sans quitter votre commune."
+    ),
+    'services': (
+        "Faites appel à des prestataires de services à {commune} sur Tahiti Business Group. "
+        "Artisans, entreprises de nettoyage, déménageurs, jardiniers, professeurs particuliers, photographes, événementiel : "
+        "tous les métiers utiles au quotidien sont représentés dans la commune de {commune} et alentours. "
+        "Comparez les annonces, lisez les avis des vendeurs et contactez directement les prestataires pour obtenir un devis. "
+        "Soutenir les artisans et entreprises locales de {commune}, c'est aussi soutenir l'économie polynésienne."
+    ),
+}
+
+
+def _commune_label_from_slug(slug: str) -> str:
+    """Convertit un slug commune en label affichable.
+
+    Exemples :
+      - "punaauia"      → "Punaauia"
+      - "bora-bora"     → "Bora Bora"
+      - "moorea-maiao"  → "Moorea Maiao"
+    """
+    raw = (slug or '').replace('-', ' ').strip()
+    if not raw:
+        return ''
+    # Title-case sur chaque mot (gère bien "bora bora" → "Bora Bora")
+    return ' '.join(part.capitalize() for part in raw.split())
+
+
+def liste_par_ville(request, categorie, commune):
+    """Page SEO locale : annonces filtrées par catégorie + commune.
+
+    URL : /annonces/<categorie>/<commune>/
+    Exemples : /annonces/vehicules/punaauia/, /annonces/immobilier/bora-bora/
+    """
+    # 1) Validation de la catégorie
+    if categorie not in _VALID_CATEGORIES_SEO:
+        raise Http404("Catégorie invalide")
+
+    # 2) Normalisation simple du slug commune (tirets → espaces)
+    commune_search = (commune or '').replace('-', ' ').strip()
+    if not commune_search:
+        raise Http404("Commune invalide")
+
+    # 3) Filtrage des annonces actives sur cette combo
+    qs = _annotate_enregistrements(
+        Annonce.objects.filter(
+            statut='actif',
+            categorie=categorie,
+            commune__iexact=commune_search,
+        ).select_related('user', 'user__profil'),
+        request.user,
+    )
+
+    total_count = qs.count()
+    if total_count == 0:
+        # Aucune annonce → on ne garde que les pages avec contenu (pas d'index thin)
+        raise Http404("Aucune annonce pour cette combinaison")
+
+    # Tri par défaut : boost puis récent (mêmes règles que liste_annonces)
+    qs = _apply_boost_sort(qs)
+
+    paginator = Paginator(qs, 20)
+    page = paginator.get_page(request.GET.get('page'))
+
+    # Réponse partielle pour le « charger plus » AJAX (cohérence avec liste_annonces)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = ''.join(
+            render_to_string('partials/_annonce_card.html', {'annonce': a}, request=request)
+            for a in page
+        )
+        return JsonResponse({
+            'html': html,
+            'has_next': page.has_next(),
+            'next_page': page.next_page_number() if page.has_next() else None,
+        })
+
+    # Métadonnées d'affichage
+    cat_label_map = dict(CATEGORIES)
+    cat_label = cat_label_map.get(categorie, categorie)
+    commune_label = _commune_label_from_slug(commune)
+
+    # Texte d'intro SEO (≈200 mots)
+    intro_text = _INTRO_CATEGORIE_SEO.get(categorie, '').format(commune=commune_label)
+
+    # Meta SEO dynamiques
+    seo_title = f"Annonces {cat_label} à {commune_label} en Polynésie — TBG"
+    seo_description = (
+        f"{total_count} annonce{'s' if total_count > 1 else ''} {cat_label} "
+        f"disponible{'s' if total_count > 1 else ''} à {commune_label}. "
+        f"Trouvez ce que vous cherchez dans le fenua sur TBG."
+    )
+    seo_h1 = f"Annonces {cat_label} à {commune_label}"
+
+    # Sous-catégories disponibles pour cohérence avec liste.html
+    sous_cats_dispo = SOUS_CATEGORIES.get(categorie, []) if categorie not in _HIDDEN_SOUS_CATS else []
+
+    # Pubs catégorie (mêmes strips que liste_annonces)
+    from pubs.models import Publicite
+    _CAT_STRIP_PREFIX = {
+        'immobilier': 'strip_immo',
+        'vehicules':  'strip_vehicules',
+        'occasion':   'strip_occasion',
+        'emploi':     'strip_emploi',
+        'services':   'strip_services',
+    }
+    pub_cat_haut = pub_cat_milieu = pub_cat_bas = None
+    strip_prefix = _CAT_STRIP_PREFIX.get(categorie, '')
+    if strip_prefix:
+        pub_cat_haut   = Publicite.objects.filter(emplacement=f'{strip_prefix}_haut',   actif=True).first()
+        pub_cat_milieu = Publicite.objects.filter(emplacement=f'{strip_prefix}_milieu', actif=True).first()
+        pub_cat_bas    = Publicite.objects.filter(emplacement=f'{strip_prefix}_bas',    actif=True).first()
+
+    return render(request, 'ads/liste_par_ville.html', {
+        'annonces':        page,
+        'categories':      CATEGORIES,
+        'q':               '',
+        'cat_active':      categorie,
+        'sous_cat':        '',
+        'sous_cats_dispo': sous_cats_dispo,
+        'sous_cats_data':  _sous_cats_data(),
+        'ville':           commune_label,
+        'prix_min':        '',
+        'prix_max':        '',
+        'tri':             '',
+        'photos_only':     '',
+        'transaction':     '',
+        'communes_par_archipel': _get_communes_data(),
+        'pub_cat_haut':    pub_cat_haut,
+        'pub_cat_milieu':  pub_cat_milieu,
+        'pub_cat_bas':     pub_cat_bas,
+        'strip_prefix':    strip_prefix,
+        'strip_cat_label': cat_label,
+        'pretriage_groups': [],
+        'active_filters_count': 0,
+        # SEO-spécifique
+        'commune_active':  commune_label,
+        'commune_slug':    commune,
+        'cat_label':       cat_label,
+        'seo_title':       seo_title,
+        'seo_description': seo_description,
+        'seo_h1':          seo_h1,
+        'intro_text':      intro_text,
+        'total_count':     total_count,
+    })
+
+
 def annonce_detail_redirect(request, pk):
     """Redirection 301 depuis l'ancienne URL /annonces/<pk>/ vers /annonces/<pk>/<slug>/."""
     annonce = get_object_or_404(Annonce, pk=pk)
@@ -1415,14 +1597,39 @@ def profil_vendeur(request, user_id):
     annonces = Annonce.objects.filter(user=vendeur, statut='actif').order_by('-created_at')
     notations = Notation.objects.filter(vendeur=vendeur).order_by('-date_creation').select_related('acheteur')[:20]
 
+    # Fallback : si pas de vraies notes, on utilise fake_rating/fake_review_count
+    using_fake_rating = False
+    if stats.get('note_moyenne') is None:
+        fake = getattr(vendeur, 'fake_rating', 0) or 0
+        if fake and fake > 0:
+            stats['note_moyenne'] = round(fake, 1)
+            stats['total_avis'] = getattr(vendeur, 'fake_review_count', 0) or 0
+            using_fake_rating = True
+
     distribution = distribution_notes(vendeur)
     # Prepare distribution list for template (5 to 1, with percentage)
     total_notes = stats['total_avis']
     distribution_list = []
-    for i in range(5, 0, -1):
-        count = distribution[i]
-        pct = round(count * 100 / total_notes) if total_notes > 0 else 0
-        distribution_list.append({'etoiles': i, 'count': count, 'pct': pct})
+    if using_fake_rating and total_notes > 0:
+        # Distribution synthetique coherente avec la note moyenne (gaussienne centree)
+        import math
+        moy = stats['note_moyenne']
+        weights = {i: math.exp(-((i - moy) ** 2) / (2 * 0.7 ** 2)) for i in range(1, 6)}
+        total_w = sum(weights.values())
+        running = 0
+        for i in range(5, 0, -1):
+            if i == 1:
+                count = max(0, total_notes - running)
+            else:
+                count = int(round(weights[i] / total_w * total_notes))
+                running += count
+            pct = round(count * 100 / total_notes) if total_notes > 0 else 0
+            distribution_list.append({'etoiles': i, 'count': count, 'pct': pct})
+    else:
+        for i in range(5, 0, -1):
+            count = distribution[i]
+            pct = round(count * 100 / total_notes) if total_notes > 0 else 0
+            distribution_list.append({'etoiles': i, 'count': count, 'pct': pct})
 
     peut_noter_vendeur = False
     if request.user.is_authenticated and request.user != vendeur:
@@ -2006,3 +2213,76 @@ def apply_engagement_stats(request):
     else:
         messages.info(request, 'Aucun élément à traiter.')
     return redirect('sync_pa_dashboard')
+
+
+def tendances(request):
+    """Page « Tendances de la semaine » — top annonces, vendeurs et catégories
+    sur les 7 derniers jours. Vue publique, optimisée SEO."""
+    now = timezone.now()
+    since = now - datetime.timedelta(days=7)
+
+    base_qs = (
+        Annonce.objects
+        .filter(statut='actif', created_at__gte=since)
+        .select_related('user', 'user__profil')
+    )
+    base_qs = _annotate_enregistrements(base_qs, request.user)
+
+    # Top 12 annonces les plus vues / cliquées cette semaine
+    top_vues   = list(base_qs.order_by('-views', '-created_at')[:12])
+    top_clics  = list(base_qs.order_by('-clics', '-created_at')[:12])
+
+    # Top 8 vendeurs : ceux qui ont posté le plus d'annonces actives sur 7 jours
+    top_vendeurs_qs = (
+        User.objects
+        .filter(annonces__statut='actif', annonces__created_at__gte=since)
+        .annotate(nb_annonces_semaine=Count('annonces', filter=Q(
+            annonces__statut='actif', annonces__created_at__gte=since
+        )))
+        .filter(nb_annonces_semaine__gt=0)
+        .select_related('profil')
+        .order_by('-nb_annonces_semaine')[:8]
+    )
+    top_vendeurs = list(top_vendeurs_qs)
+
+    # Top 5 catégories en hausse
+    cat_labels = dict(CATEGORIES)
+    cats_raw = (
+        Annonce.objects
+        .filter(statut='actif', created_at__gte=since)
+        .values('categorie')
+        .annotate(nb=Count('id'))
+        .order_by('-nb')[:5]
+    )
+    top_categories = [
+        {
+            'code':  row['categorie'],
+            'label': cat_labels.get(row['categorie'], row['categorie']),
+            'nb':    row['nb'],
+            'url':   f"/annonces/?categorie={row['categorie']}",
+        }
+        for row in cats_raw
+    ]
+
+    # Compteurs animés (totaux semaine)
+    total_annonces_semaine = Annonce.objects.filter(statut='actif', created_at__gte=since).count()
+    total_vues_semaine     = Annonce.objects.filter(statut='actif', created_at__gte=since).aggregate(
+        s=db_models.Sum('views')
+    )['s'] or 0
+    total_vendeurs_semaine = (
+        Annonce.objects.filter(statut='actif', created_at__gte=since)
+        .values('user').distinct().count()
+    )
+
+    context = {
+        'top_vues':              top_vues,
+        'top_clics':             top_clics,
+        'top_vendeurs':          top_vendeurs,
+        'top_categories':        top_categories,
+        'total_annonces_semaine': total_annonces_semaine,
+        'total_vues_semaine':     total_vues_semaine,
+        'total_vendeurs_semaine': total_vendeurs_semaine,
+        'periode_debut':         since,
+        'periode_fin':           now,
+    }
+    return render(request, 'ads/tendances.html', context)

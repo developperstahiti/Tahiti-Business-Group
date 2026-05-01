@@ -50,6 +50,12 @@ class RegisterForm(forms.ModelForm):
         label="Numéro Tahiti (ISPF)",
     )
 
+    # Code de parrainage (caché, transmis via ?ref=CODE)
+    ref = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+
     class Meta:
         model = User
         fields = ['email', 'nom', 'tel', 'role', 'nom_entreprise', 'numero_tahiti']
@@ -95,6 +101,12 @@ class RegisterForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
+        # Lier au parrain si le code est valide
+        ref = (self.cleaned_data.get('ref') or '').strip().upper()
+        if ref:
+            parrain = User.objects.filter(referral_code=ref).first()
+            if parrain:
+                user.referred_by = parrain
         if commit:
             user.save()
         return user
@@ -103,8 +115,17 @@ class RegisterForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['nom', 'tel', 'avatar']
+        fields = ['nom', 'tel', 'avatar', 'bio']
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'form-input'}),
             'tel': forms.TextInput(attrs={'class': 'form-input', 'placeholder': '89 XX XX XX'}),
+            'bio': forms.Textarea(attrs={
+                'class': 'form-input',
+                'rows': 4,
+                'maxlength': 500,
+                'placeholder': 'Presentez-vous en quelques mots (visible sur votre profil public)',
+            }),
+        }
+        labels = {
+            'bio': 'Bio (visible sur votre profil)',
         }

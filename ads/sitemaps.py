@@ -1,5 +1,6 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from django.utils.text import slugify
 from .models import Annonce, CATEGORIES
 
 
@@ -60,3 +61,42 @@ class AnnonceSitemap(Sitemap):
 
     def location(self, obj):
         return obj.get_absolute_url()
+
+
+class LocaliteCategorieSitemap(Sitemap):
+    """Pages SEO locales /annonces/<categorie>/<commune>/ — uniquement les
+    combinaisons (categorie, commune) qui ont au moins 1 annonce active."""
+
+    changefreq = 'daily'
+    priority = 0.8
+
+    def items(self):
+        valid_cats = {slug for slug, _label in CATEGORIES}
+        # Récupère toutes les paires (categorie, commune) distinctes pour les
+        # annonces actives, en ignorant les communes vides.
+        pairs = (
+            Annonce.objects
+            .filter(statut='actif')
+            .exclude(commune='')
+            .values_list('categorie', 'commune')
+            .distinct()
+        )
+
+        seen = set()
+        results = []
+        for cat, commune in pairs:
+            if cat not in valid_cats or not commune:
+                continue
+            commune_slug = slugify(commune)
+            if not commune_slug:
+                continue
+            key = (cat, commune_slug)
+            if key in seen:
+                continue
+            seen.add(key)
+            results.append(key)
+        return results
+
+    def location(self, item):
+        cat, commune_slug = item
+        return reverse('liste_par_ville', kwargs={'categorie': cat, 'commune': commune_slug})

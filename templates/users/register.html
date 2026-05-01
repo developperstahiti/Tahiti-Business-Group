@@ -17,6 +17,14 @@
     <div class="bg-card border border-border rounded-2xl p-7">
       <form method="post" class="space-y-4">
         {% csrf_token %}
+        {# Hidden referral code (passed via ?ref=CODE) #}
+        {{ form.ref }}
+        {% if form.ref.value %}
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
+          <span aria-hidden="true">🎁</span>
+          <span>Vous etes parraine avec le code <strong>{{ form.ref.value }}</strong></span>
+        </div>
+        {% endif %}
 
         {% if form.non_field_errors %}
         <div class="bg-red-900/30 border border-red-700 text-red-300 px-4 py-3 rounded-xl text-sm">

@@ -27,6 +27,16 @@
 .profil-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; color: #64748b; }
 .profil-metrics .separator { color: #cbd5e1; }
 
+/* Etoiles SVG remplies a hauteur de la note */
+.stars-svg { position: relative; display: inline-block; line-height: 1; height: 18px; }
+.stars-svg .stars-bg, .stars-svg .stars-fg { display: inline-flex; gap: 2px; }
+.stars-svg .stars-fg { position: absolute; top: 0; left: 0; overflow: hidden; pointer-events: none; }
+.stars-svg svg { width: 18px; height: 18px; flex-shrink: 0; }
+.stars-svg .star-bg { color: #e5e7eb; }
+.stars-svg .star-fg { color: #f59e0b; }
+.stars-svg.big { height: 28px; }
+.stars-svg.big svg { width: 28px; height: 28px; }
+
 /* Responsive mobile */
 @media (max-width: 640px) {
   .profil-banner, .profil-banner-default { height: 120px; }
@@ -85,8 +95,10 @@
       </div>
 
       <!-- Bio -->
-      {% if profil.bio %}
-      <p class="text-sm text-gray-600 mt-2 max-w-2xl">{{ profil.bio }}</p>
+      {% if vendeur.bio %}
+      <p class="text-sm text-gray-600 mt-2 max-w-2xl">{{ vendeur.bio|linebreaksbr }}</p>
+      {% elif profil.bio %}
+      <p class="text-sm text-gray-600 mt-2 max-w-2xl">{{ profil.bio|linebreaksbr }}</p>
       {% endif %}
 
       <!-- Localisation -->
@@ -149,14 +161,25 @@
       {% endif %}
 
       <!-- Metriques en ligne -->
+      {% load ads_extras %}
       <div class="profil-metrics mt-4">
-        <span class="text-amber-500 profil-note-stars" data-note="{{ stats.note_moyenne|default:'0' }}">
-          <span class="text-gray-300">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-        </span>
         {% if stats.note_moyenne is not None %}
+        <span class="stars-svg" title="{{ stats.note_moyenne|floatformat:1 }}/5">
+          <span class="stars-bg" aria-hidden="true">
+            {% for _ in "12345" %}<svg class="star-bg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>{% endfor %}
+          </span>
+          <span class="stars-fg" style="width: {{ stats.note_moyenne|note_pct }}">
+            {% for _ in "12345" %}<svg class="star-fg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>{% endfor %}
+          </span>
+        </span>
         <span class="font-bold text-gray-900" id="profil-moyenne">{{ stats.note_moyenne|floatformat:1 }}</span>
-        <span id="profil-total-avis">({{ stats.total_avis }} avis)</span>
+        <span class="text-gray-500">&#9733; — <span id="profil-total-avis">{{ stats.total_avis }} avis</span></span>
         {% else %}
+        <span class="stars-svg" aria-hidden="true">
+          <span class="stars-bg">
+            {% for _ in "12345" %}<svg class="star-bg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>{% endfor %}
+          </span>
+        </span>
         <span class="text-gray-400">Aucun avis</span>
         {% endif %}
         <span class="separator">&#183;</span>
@@ -178,8 +201,13 @@
       <div class="flex flex-col items-center justify-center sm:w-40 flex-shrink-0">
         {% if stats.note_moyenne is not None %}
         <div class="text-4xl font-black text-gray-900">{{ stats.note_moyenne|floatformat:1 }}</div>
-        <span class="text-amber-500 text-xl profil-note-stars-big" data-note="{{ stats.note_moyenne }}">
-          <span class="text-gray-300">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <span class="stars-svg big mt-1" title="{{ stats.note_moyenne|floatformat:1 }}/5">
+          <span class="stars-bg" aria-hidden="true">
+            {% for _ in "12345" %}<svg class="star-bg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>{% endfor %}
+          </span>
+          <span class="stars-fg" style="width: {{ stats.note_moyenne|note_pct }}">
+            {% for _ in "12345" %}<svg class="star-fg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>{% endfor %}
+          </span>
         </span>
         <div class="text-sm text-gray-500 mt-1">{{ stats.total_avis }} avis</div>
         {% else %}
@@ -299,13 +327,20 @@
     el.innerHTML = html;
   }
 
-  // Profil note stars (inline metrics)
+  // SVG stars (.stars-svg) — geres en CSS via stars-fg width, pas besoin de JS pour rendu initial
+  function setSvgStarsPct(container, note) {
+    var fg = container.querySelector('.stars-fg');
+    if (!fg) return;
+    var pct = Math.max(0, Math.min(100, (note / 5) * 100));
+    fg.style.width = pct.toFixed(1) + '%';
+  }
+
+  // Profil note stars (legacy classes — backward compat si utilisees ailleurs)
   document.querySelectorAll('.profil-note-stars').forEach(function(el) {
     var note = parseFloat(el.getAttribute('data-note')) || 0;
     if (note > 0) renderStars(el, note);
   });
 
-  // Profil note stars (big, in distribution section)
   document.querySelectorAll('.profil-note-stars-big').forEach(function(el) {
     var note = parseFloat(el.getAttribute('data-note')) || 0;
     if (note > 0) renderStars(el, note);
@@ -406,9 +441,13 @@
           }
           var starEl = document.querySelector('.profil-note-stars');
           if (starEl) renderStars(starEl, parseFloat(moy));
+          // Mettre a jour les nouvelles etoiles SVG (.stars-svg)
+          document.querySelectorAll('.stars-svg').forEach(function(c) {
+            setSvgStarsPct(c, parseFloat(moy));
+          });
           var elTotal = document.getElementById('profil-total-avis');
           if (elTotal) {
-            elTotal.textContent = '(' + data.total_avis + ' avis)';
+            elTotal.textContent = data.total_avis + ' avis';
           }
         }
 

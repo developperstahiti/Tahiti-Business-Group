@@ -76,6 +76,11 @@
             <label class="block text-sm text-muted mb-1">{{ form.tel.label }}</label>
             {{ form.tel }}
           </div>
+          <div>
+            <label class="block text-sm text-muted mb-1" for="{{ form.bio.id_for_label }}">{{ form.bio.label }}</label>
+            {{ form.bio }}
+            <div class="text-xs text-muted text-right mt-1"><span id="bio-char-count">{{ form.bio.value|default_if_none:''|length }}</span> / 500</div>
+          </div>
           <!-- Photo de profil stylisee -->
           <div>
             <label class="block text-sm text-muted mb-2">Photo de profil</label>
@@ -419,6 +424,14 @@ function previewAvatar(input) {
         '<a href="/mes-favoris/" class="text-sm text-primary font-semibold hover:underline">Voir mes annonces enregistr\u00e9es \u2192</a>' +
       '</div>';
   });
+})();
+</script>
+<script nonce="{{ csp_nonce }}">
+(function() {
+  var bio = document.getElementById('{{ form.bio.id_for_label }}');
+  var counter = document.getElementById('bio-char-count');
+  if (!bio || !counter) return;
+  bio.addEventListener('input', function() { counter.textContent = bio.value.length; });
 })();
 </script>
 {% endblock %}

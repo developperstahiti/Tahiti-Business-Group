@@ -6,12 +6,13 @@ from django.views.static import serve
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
 from django.contrib.sitemaps.views import sitemap
-from ads.sitemaps import StaticSitemap, CategorieSitemap, AnnonceSitemap
+from ads.sitemaps import StaticSitemap, CategorieSitemap, AnnonceSitemap, LocaliteCategorieSitemap
 from two_factor.urls import urlpatterns as tf_urls
 
 sitemaps = {
     'static': StaticSitemap,
     'categories': CategorieSitemap,
+    'localites_categories': LocaliteCategorieSitemap,
     'annonces': AnnonceSitemap,
 }
 

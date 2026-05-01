@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tendances de la semaine — Annonces populaires Polynésie | TBG{% endblock %}
+{% block meta_desc %}Découvrez les annonces les plus populaires de la semaine en Polynésie française : immobilier, véhicules, occasion. Mises à jour chaque semaine sur TBG.{% endblock %}
+
+{% block extra_css %}
+<style nonce="{{ csp_nonce }}">
+/* ─── Hero ─────────────────────────────────────────────────────────── */
+.tendances-hero {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 60%, #ec4899 100%);
+  border-radius: 18px;
+  color: #fff;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.tendances-hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(900px 200px at 80% -20%, rgba(255,255,255,.25), transparent 60%);
+  pointer-events: none;
+}
+.tendances-hero h1 { font-size: 1.875rem; line-height: 1.15; font-weight: 800; }
+@media (min-width: 768px) { .tendances-hero h1 { font-size: 2.25rem; } }
+.tendances-hero p { color: rgba(255,255,255,.92); }
+
+/* ─── Compteurs animés ─────────────────────────────────────────────── */
+.tendances-counters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.tendances-counter {
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(2px);
+}
+.tendances-counter .num {
+  font-size: 1.5rem; font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tendances-counter .lbl {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,.85);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+/* ─── Sections ─────────────────────────────────────────────────────── */
+.tendances-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex; align-items: center; gap: 8px;
+}
+.tendances-section-title .badge {
+  font-size: 11px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.tendances-voirtout {
+  font-size: 13px;
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tendances-voirtout:hover { text-decoration: underline; }
+
+/* ─── Grilles annonces ─────────────────────────────────────────────── */
+.tendances-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+}
+@media (min-width: 768px) { .tendances-grid { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 18px; } }
+@media (min-width: 1024px) { .tendances-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+
+/* ─── Vendeurs ─────────────────────────────────────────────────────── */
+.tendances-sellers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+}
+@media (min-width: 640px) { .tendances-sellers { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+@media (min-width: 1024px) { .tendances-sellers { grid-template-columns: repeat(8, minmax(0,1fr)); } }
+
+.tendances-seller {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  padding: 14px 10px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #0f172a;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.tendances-seller:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -10px rgba(0,0,0,.18);
+  border-color: #c7d2fe;
+}
+.tendances-seller__avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.tendances-seller__initials {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #fff; font-size: 18px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.tendances-seller__name {
+  font-size: 13px; font-weight: 600;
+  margin-top: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%;
+}
+.tendances-seller__count {
+  font-size: 11px; color: #64748b;
+  margin-top: 2px;
+}
+
+/* ─── Catégories en hausse ─────────────────────────────────────────── */
+.tendances-cats { display: grid; gap: 10px; }
+@media (min-width: 640px) { .tendances-cats { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (min-width: 1024px) { .tendances-cats { grid-template-columns: repeat(5, minmax(0,1fr)); } }
+.tendances-cat {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #0f172a;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.tendances-cat:hover { border-color: #818cf8; transform: translateY(-2px); box-shadow: 0 6px 14px -8px rgba(0,0,0,.16); }
+.tendances-cat__label { font-weight: 600; font-size: 14px; }
+.tendances-cat__count {
+  background: #eef2ff; color: #4338ca;
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Fallback vide ────────────────────────────────────────────────── */
+.tendances-empty {
+  text-align: center;
+  padding: 28px 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  background: #f8fafc;
+  font-size: 14px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+  <!-- ── Hero ─────────────────────────────────────────────────────── -->
+  <section class="tendances-hero mb-10">
+    <div class="relative z-10">
+      <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide bg-white/20 border border-white/30 rounded-full px-3 py-1 mb-3">
+        <span aria-hidden="true">🔥</span> Tendances
+      </div>
+      <h1>Tendances de la semaine — TBG</h1>
+      <p class="mt-2 max-w-2xl">
+        Les annonces qui buzzent en Polynésie ces 7 derniers jours, les vendeurs les plus actifs,
+        et les catégories qui montent. Mis à jour automatiquement chaque jour.
+      </p>
+
+      <div class="tendances-counters">
+        <div class="tendances-counter">
+          <div class="num" data-counter-target="{{ total_annonces_semaine }}">0</div>
+          <div class="lbl">annonces cette semaine</div>
+        </div>
+        <div class="tendances-counter">
+          <div class="num" data-counter-target="{{ total_vues_semaine }}">0</div>
+          <div class="lbl">vues cumulées</div>
+        </div>
+        <div class="tendances-counter">
+          <div class="num" data-counter-target="{{ total_vendeurs_semaine }}">0</div>
+          <div class="lbl">vendeurs actifs</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Top annonces les plus vues ───────────────────────────────── -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="tendances-section-title">
+        <span aria-hidden="true">👁</span> Top annonces les plus vues
+        <span class="badge">7 jours</span>
+      </h2>
+      <a href="{% url 'liste_annonces' %}?tri=vues" class="tendances-voirtout">Voir tout →</a>
+    </div>
+
+    {% if top_vues %}
+      <div class="tendances-grid">
+        {% for annonce in top_vues %}
+          {% include 'partials/_annonce_card.html' %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="tendances-empty">Aucune annonce cette semaine pour le moment.</div>
+    {% endif %}
+  </section>
+
+  <!-- ── Top annonces les plus cliquées ───────────────────────────── -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="tendances-section-title">
+        <span aria-hidden="true">🖱</span> Top annonces les plus cliquées
+        <span class="badge">7 jours</span>
+      </h2>
+      <a href="{% url 'liste_annonces' %}?tri=clics" class="tendances-voirtout">Voir tout →</a>
+    </div>
+
+    {% if top_clics %}
+      <div class="tendances-grid">
+        {% for annonce in top_clics %}
+          {% include 'partials/_annonce_card.html' %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="tendances-empty">Aucune annonce cette semaine pour le moment.</div>
+    {% endif %}
+  </section>
+
+  <!-- ── Top vendeurs ─────────────────────────────────────────────── -->
+  <section class="mb-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="tendances-section-title">
+        <span aria-hidden="true">🏆</span> Top vendeurs de la semaine
+      </h2>
+    </div>
+
+    {% if top_vendeurs %}
+      <div class="tendances-sellers">
+        {% for v in top_vendeurs %}
+          <a href="{% url 'profil_vendeur' v.pk %}" class="tendances-seller">
+            {% if v.profil.photo_profil_url %}
+              <img src="{{ v.profil.photo_profil_url }}" alt="{{ v.nom|default:v.email }}" class="tendances-seller__avatar" loading="lazy" decoding="async" width="56" height="56">
+            {% elif v.profil.photo_profil %}
+              <img src="{{ v.profil.photo_profil.url }}" alt="{{ v.nom|default:v.email }}" class="tendances-seller__avatar" loading="lazy" decoding="async" width="56" height="56">
+            {% elif v.avatar_url %}
+              <img src="{{ v.avatar_url }}" alt="{{ v.nom|default:v.email }}" class="tendances-seller__avatar" loading="lazy" decoding="async" width="56" height="56">
+            {% else %}
+              <span class="tendances-seller__initials" aria-hidden="true">{{ v.nom|first|upper|default:v.email|first|upper }}</span>
+            {% endif %}
+            <span class="tendances-seller__name">{{ v.nom|default:v.email }}</span>
+            <span class="tendances-seller__count">{{ v.nb_annonces_semaine }} annonce{{ v.nb_annonces_semaine|pluralize }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="tendances-empty">Aucun vendeur actif cette semaine pour le moment.</div>
+    {% endif %}
+  </section>
+
+  <!-- ── Top catégories en hausse ─────────────────────────────────── -->
+  <section class="mb-4">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="tendances-section-title">
+        <span aria-hidden="true">📈</span> Catégories en hausse
+      </h2>
+      <a href="{% url 'liste_annonces' %}" class="tendances-voirtout">Voir toutes →</a>
+    </div>
+
+    {% if top_categories %}
+      <div class="tendances-cats">
+        {% for c in top_categories %}
+          <a href="{{ c.url }}" class="tendances-cat" aria-label="Voir les annonces {{ c.label }}">
+            <span class="tendances-cat__label">{{ c.label }}</span>
+            <span class="tendances-cat__count">+{{ c.nb }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="tendances-empty">Aucune catégorie en hausse cette semaine pour le moment.</div>
+    {% endif %}
+  </section>
+
+</div>
+
+<script nonce="{{ csp_nonce }}">
+(function () {
+  // Compteurs animés (count-up) au scroll dans le hero
+  function animate(el) {
+    var target = parseInt(el.getAttribute('data-counter-target') || '0', 10);
+    if (!target || target <= 0) { el.textContent = '0'; return; }
+    var duration = 900;
+    var start = performance.now();
+    function tick(now) {
+      var p = Math.min(1, (now - start) / duration);
+      // easeOutCubic
+      var eased = 1 - Math.pow(1 - p, 3);
+      var v = Math.floor(target * eased);
+      el.textContent = v.toLocaleString('fr-FR');
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toLocaleString('fr-FR');
+    }
+    requestAnimationFrame(tick);
+  }
+  var nodes = document.querySelectorAll('[data-counter-target]');
+  if (!nodes.length) return;
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          animate(e.target);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    nodes.forEach(function (n) { io.observe(n); });
+  } else {
+    nodes.forEach(animate);
+  }
+})();
+</script>
+{% endblock %}

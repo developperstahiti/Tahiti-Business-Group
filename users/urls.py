@@ -26,6 +26,7 @@ urlpatterns = [
     path('c01e87364339aac/moderer/<int:pk>/', views.moderer_annonce, name='moderer_annonce'),
     path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     path('profil/modifier/', views.modifier_profil, name='modifier_profil'),
+    path('parrainage/', views.parrainage, name='parrainage'),
     path('supprimer-compte/', views.supprimer_compte, name='supprimer_compte'),
     path('test-email/', views.test_email, name='test_email'),
 

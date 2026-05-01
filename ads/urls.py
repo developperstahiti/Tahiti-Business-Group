@@ -20,6 +20,9 @@ urlpatterns = [
     path('mes-messages/<int:annonce_pk>/supprimer/<int:other_user_pk>/', views.supprimer_conversation, name='supprimer_conversation'),
     path('mes-favoris/', views.mes_favoris, name='mes_favoris'),
     path('annonces/toggle-enregistrement/', views.toggle_enregistrement, name='toggle_enregistrement'),
+    # SEO local : /annonces/<categorie>/<commune>/  (placé après les routes spécifiques /annonces/...)
+    path('annonces/<slug:categorie>/<slug:commune>/', views.liste_par_ville, name='liste_par_ville'),
+    path('tendances/', views.tendances, name='tendances'),
     path('info/', views.page_info, name='page_info'),
     path('business/', views.page_business, name='page_business'),
     path('admin-stats/', views.admin_stats, name='admin_stats'),

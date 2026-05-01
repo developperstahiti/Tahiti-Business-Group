@@ -38,7 +38,8 @@
       <!-- Header compact -->
       <div class="flex items-baseline justify-between mb-2 flex-wrap gap-x-4">
         <h1 class="text-lg font-bold text-gray-900">
-          {% if cat_active %}
+          {% if seo_h1 %}{{ seo_h1 }}
+          {% elif cat_active %}
             {% for code, label in categories %}{% if code == cat_active %}{{ label }}{% endif %}{% endfor %}
           {% elif q %}Résultats pour "{{ q }}"{% else %}Toutes les annonces{% endif %}
         </h1>
@@ -71,6 +72,8 @@
         {% endif %}
       </nav>
       {% endif %}
+
+      {% block seo_intro %}{% endblock %}
 
       <!-- PUB CATÉGORIE — HAUT -->
       {% if cat_active %}

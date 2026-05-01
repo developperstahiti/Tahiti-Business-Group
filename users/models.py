@@ -1,8 +1,16 @@
+import random
+import string
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+
+def _generate_referral_code(length=8):
+    """Generate a random uppercase alphanumeric referral code."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
 
 class UserManager(BaseUserManager):
@@ -46,6 +54,25 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_imported = models.BooleanField(default=False, db_index=True,
                                       help_text="Compte créé automatiquement depuis l'import petites-annonces.pf")
 
+    # Parrainage
+    referral_code = models.CharField(max_length=20, blank=True, default='', unique=True, db_index=True,
+                                     help_text="Code unique de parrainage (auto-généré)")
+    referred_by = models.ForeignKey('self', null=True, blank=True,
+                                    on_delete=models.SET_NULL, related_name='referrals',
+                                    help_text="Qui a parrainé ce user")
+    referral_rewards_earned = models.PositiveIntegerField(default=0,
+                                    help_text="Nb de récompenses (boosts gratuits) gagnées")
+
+    # Affichage profil enrichi
+    bio = models.TextField(max_length=500, blank=True, default='',
+                           help_text="Présentation libre du vendeur")
+
+    # Étoiles d'affichage (utilisées en fallback si pas de vraies notes)
+    fake_rating = models.FloatField(default=0,
+                           help_text="Note d'affichage 3.9-5.0 utilisée si pas de vraies notes")
+    fake_review_count = models.PositiveIntegerField(default=0,
+                           help_text="Nombre d'avis fictifs (cohérent avec fake_rating)")
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -65,6 +92,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_admin_role(self):
         return self.role == 'admin'
+
+    def save(self, *args, **kwargs):
+        # Auto-generate a unique referral code on first save if missing
+        if not self.referral_code:
+            for _ in range(20):
+                code = _generate_referral_code()
+                if not type(self).objects.filter(referral_code=code).exists():
+                    self.referral_code = code
+                    break
+        super().save(*args, **kwargs)
 
 
 class Profil(models.Model):
