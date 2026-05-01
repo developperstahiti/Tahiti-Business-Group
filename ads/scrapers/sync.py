@@ -309,8 +309,6 @@ def _process_item(item, categorie, sous_cat, transaction, *,
                 photo_urls.append(url_local)
                 stats['photos_downloaded'] += 1
 
-    fake_views, fake_clics, fake_saves = _generate_fake_engagement()
-
     Annonce.objects.create(
         user=seller_user,
         titre=title,
@@ -323,9 +321,6 @@ def _process_item(item, categorie, sous_cat, transaction, *,
         localisation=location,
         photos=photo_urls,
         statut='actif',
-        views=fake_views,
-        clics=fake_clics,
-        fake_saves_count=fake_saves,
         is_imported=True,
         external_pa_id=ad_id,
         external_pa_url=item['url'],

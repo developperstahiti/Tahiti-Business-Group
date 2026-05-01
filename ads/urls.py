@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin-stats/', views.admin_stats, name='admin_stats'),
     path('admin-stats/export-csv/', views.export_csv, name='export_csv'),
     path('admin-sync-pa/', views.sync_pa_dashboard, name='sync_pa_dashboard'),
+    path('admin-sync-pa/apply-engagement/', views.apply_engagement_stats, name='apply_engagement_stats'),
     path('mes-alertes/', views.mes_alertes, name='mes_alertes'),
     path('mes-alertes/creer/', views.creer_alerte, name='creer_alerte'),
     path('mes-alertes/<int:pk>/supprimer/', views.supprimer_alerte, name='supprimer_alerte'),

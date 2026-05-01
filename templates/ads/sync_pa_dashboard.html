@@ -44,6 +44,28 @@
     </div>
   </div>
 
+  <!-- Backfill stats d'engagement -->
+  {% if nb_without_stats %}
+  <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
+    <div class="flex items-start gap-4 flex-wrap">
+      <div class="flex-1 min-w-0">
+        <h3 class="font-bold text-gray-900 mb-1">⚡ Stats d'engagement à appliquer</h3>
+        <p class="text-sm text-gray-700">
+          <strong>{{ nb_without_stats }}</strong> annonce{{ nb_without_stats|pluralize }} importée{{ nb_without_stats|pluralize }}
+          n'{{ nb_without_stats|pluralize:"a,ont" }} pas encore de stats d'engagement (vues, clics, enregistrements).
+        </p>
+        <p class="text-xs text-gray-500 mt-1">Génère des stats aléatoires réalistes : 22 000-200 000 vues, 50-85% de clics, 0,5-2% de saves.</p>
+      </div>
+      <form method="post" action="{% url 'apply_engagement_stats' %}">
+        {% csrf_token %}
+        <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition whitespace-nowrap">
+          Appliquer maintenant
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Formulaire de lancement -->
   <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm">
     <h2 class="text-lg font-bold text-gray-900 mb-4">Lancer une sync maintenant</h2>

@@ -1902,12 +1902,15 @@ def sync_pa_dashboard(request):
     nb_users_imported = UserModel.objects.filter(is_imported=True).count()
     has_running = PASyncRun.objects.filter(status='running').exists()
 
+    nb_without_stats = Annonce.objects.filter(is_imported=True, views=0).count()
+
     return render(request, 'ads/sync_pa_dashboard.html', {
         'runs': runs,
         'nb_imported': nb_imported,
         'nb_imported_actives': nb_imported_actives,
         'nb_imported_archived': nb_imported_archived,
         'nb_users_imported': nb_users_imported,
+        'nb_without_stats': nb_without_stats,
         'has_running': has_running,
         'RUBRIQUES_PA': [
             ('all',        'Toutes les rubriques'),
@@ -1918,3 +1921,31 @@ def sync_pa_dashboard(request):
             ('services',   'Services (cours, prestataires, domicile)'),
         ],
     })
+
+
+@staff_required
+def apply_engagement_stats(request):
+    """Applique des stats d'engagement aléatoires (views/clics/saves) aux annonces
+    importées qui ont views=0. Utilisé une fois pour rattraper les annonces
+    déjà importées avant l'ajout des stats.
+    """
+    from .scrapers.sync import _generate_fake_engagement
+
+    if request.method != 'POST':
+        return redirect('sync_pa_dashboard')
+
+    qs = Annonce.objects.filter(is_imported=True, views=0)
+    total = 0
+    for ann in qs:
+        views, clics, saves = _generate_fake_engagement()
+        ann.views = views
+        ann.clics = clics
+        ann.fake_saves_count = saves
+        ann.save(update_fields=['views', 'clics', 'fake_saves_count'])
+        total += 1
+
+    if total:
+        messages.success(request, f'Stats d\'engagement appliquées à {total} annonces.')
+    else:
+        messages.info(request, 'Aucune annonce sans stats à traiter.')
+    return redirect('sync_pa_dashboard')
