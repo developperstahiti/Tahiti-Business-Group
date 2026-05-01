@@ -84,22 +84,10 @@
 {% csrf_token %}
 <div id="layout-outer">
 
-<!-- ═══ BILLBOARD — affiché sur toutes les pages sauf formulaires ═══ -->
-{% with url=request.resolver_match.url_name %}
-{% if url != 'deposer_annonce' and url != 'edit_annonce' and url != 'demande_pub' %}
-<div id="layout-billboard">
-<div class="pub-bg-fixed" style="display:flex;align-items:center;justify-content:center;background:#0b0b0c">
-  {# Billboard plein écran : Google AdSense vertical responsive (le format background fixed       #}
-  {# n'a pas d'équivalent AdSense, on affiche un grand bloc display centré sur fond noir).        #}
-  <div style="width:100%;max-width:340px">
-    {% include 'partials/_adsense_block.html' with slot_id=ADSENSE_SLOT_SIDEBAR ad_format='vertical' min_height='600px' extra_style='background:transparent;border:none' %}
-  </div>
-</div>
-</div><!-- /#layout-billboard -->
-{% else %}
+<!-- Billboard supprimé — le format plein écran custom n'a pas d'équivalent
+     AdSense. Les emplacements pubs sont désormais sidebar gauche/droite,
+     strips entre annonces, fiches détail. -->
 <div id="layout-billboard-absent"></div>
-{% endif %}
-{% endwith %}
 
 <!-- ═══ ROW : cadre central + sidebar droite ═══ -->
 <div id="layout-row">
