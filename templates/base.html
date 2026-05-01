@@ -71,10 +71,12 @@
 {% endblock structured_data %}
 
 {# ── Google AdSense ────────────────────────────────────────────────────── #}
-{# Le script adsbygoogle.js est chargé dynamiquement via _cookie_banner.html  #}
-{# selon le consentement de l'utilisateur (RGPD). On garde uniquement le meta #}
-{# de validation de propriété, qui ne dépose pas de cookie.                   #}
+{# Chargement direct du script AdSense — la gestion du consentement RGPD est #}
+{# déléguée à la CMP Google Funding Choices (configurée dans la console      #}
+{# AdSense), qui s'affiche automatiquement aux visiteurs UE/EEE/UK/Suisse.   #}
 {% if ADSENSE_PUBLISHER_ID %}
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ ADSENSE_PUBLISHER_ID }}"
+        crossorigin="anonymous"></script>
 <meta name="google-adsense-account" content="{{ ADSENSE_PUBLISHER_ID }}">
 {% endif %}
 </head>
@@ -525,7 +527,7 @@
       <a href="{% url 'mentions_legales' %}" class="hover:text-gray-600 transition">Mentions légales</a>
       <a href="{% url 'cgu' %}" class="hover:text-gray-600 transition">CGU</a>
       <a href="{% url 'politique_confidentialite' %}" class="hover:text-gray-600 transition">Politique de confidentialité</a>
-      <button type="button" data-cookie-manage class="hover:text-gray-600 transition bg-transparent border-0 p-0 cursor-pointer text-xs text-gray-400 font-normal">Gérer mes cookies</button>
+      <button type="button" id="footer-cookies-btn" class="hover:text-gray-600 transition bg-transparent border-0 p-0 cursor-pointer text-xs text-gray-400 font-normal">Gérer mes cookies</button>
     </div>
     <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-2">
       <p class="text-gray-400 text-xs">© 2026 Tahiti Business Group • 89 61 06 13 • cocogamestahiti@gmail.com</p>
@@ -1576,8 +1578,30 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
 })();
 </script>
 
-{# Bannière de consentement cookies (RGPD) — gère aussi le chargement conditionnel d'AdSense #}
-{% include 'partials/_cookie_banner.html' %}
+{# Bouton "Gérer mes cookies" du footer → réouvre la CMP Google #}
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var btn = document.getElementById('footer-cookies-btn');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    /* La CMP Google Funding Choices expose googlefc.callbackQueue + showRevocationMessage() */
+    if(window.googlefc && window.googlefc.callbackQueue){
+      window.googlefc.callbackQueue.push({
+        'CONSENT_API_READY': function(){
+          if(window.googlefc.showRevocationMessage){
+            window.googlefc.showRevocationMessage();
+          }
+        }
+      });
+    } else {
+      alert('La gestion des cookies n’est pas encore disponible sur cette page. Recharge la page et réessaie.');
+    }
+  });
+})();
+</script>
+
+{# Consentement RGPD : la CMP Google Funding Choices est chargée par adsbygoogle.js #}
+{# Le fichier templates/partials/_cookie_banner.html reste disponible en backup     #}
 
 </body>
 </html>
