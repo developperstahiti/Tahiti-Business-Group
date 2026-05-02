@@ -90,7 +90,7 @@
           {% endif %}
         </div>
         <div class="text-3xl font-black text-blue-600 mb-5">
-          {{ annonce.get_prix_display_label }}
+          <span data-price-xpf="{{ annonce.prix }}">{{ annonce.get_prix_display_label }}</span>
           {% if annonce.type_transaction == 'vente' %}
           <span class="ml-3 text-sm font-bold px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full">Vente</span>
           {% elif annonce.type_transaction == 'location' %}
@@ -396,7 +396,7 @@
     </div>
     <div class="lightbox-right">
       <h2 class="text-xl font-black text-gray-900 mb-2">{{ annonce.titre }}</h2>
-      <div class="text-2xl font-black text-blue-600 mb-4">{{ annonce.get_prix_display_label }}</div>
+      <div class="text-2xl font-black text-blue-600 mb-4" data-price-xpf="{{ annonce.prix }}">{{ annonce.get_prix_display_label }}</div>
       <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 mb-4">
         <span>📍 {{ annonce.localisation }}</span>
         <span>📅 {{ annonce.created_at|date:"d/m/Y" }}</span>

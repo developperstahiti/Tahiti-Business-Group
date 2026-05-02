@@ -69,7 +69,7 @@
     <!-- Body -->
     <div class="annonce-card__body">
       <div class="annonce-card__title">{{ annonce.titre }}{% if annonce.verified %}<span class="inline-flex items-center text-emerald-600 text-xs font-bold ml-1" title="Annonce vérifiée">&#10003; Vérifiée</span>{% endif %}</div>
-      <div class="annonce-card__price">{{ annonce.get_prix_display_label }}</div>
+      <div class="annonce-card__price" data-price-xpf="{{ annonce.prix }}">{{ annonce.get_prix_display_label }}</div>
       <div class="annonce-card__meta">
         <span>👁 {{ annonce.views }}</span>
         <span>🖱 {{ annonce.clics }}</span>

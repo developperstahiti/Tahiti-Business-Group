@@ -222,6 +222,19 @@
           {% endif %}
         </a>
 
+        <!-- Sélecteur de devise -->
+        <div class="relative" id="currency-wrap">
+          <button type="button" id="currency-btn" class="flex items-center gap-1 px-3 h-11 rounded-xl hover:bg-gray-100 transition text-sm font-bold text-gray-700 flex-shrink-0" aria-haspopup="menu" aria-expanded="false">
+            <span id="currency-label">XPF</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="currency-menu" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 min-w-[140px] py-1" role="menu">
+            <button type="button" data-currency="XPF" class="currency-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition">🇵🇫 XPF (Franc CFP)</button>
+            <button type="button" data-currency="EUR" class="currency-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition">🇪🇺 EUR (Euro)</button>
+            <button type="button" data-currency="USD" class="currency-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition">🇺🇸 USD (Dollar)</button>
+          </div>
+        </div>
+
         {% if user.is_authenticated %}
         <!-- Compte (masque mobile, deja dans bottom nav) -->
         <div class="cat-nav-item user-menu hidden sm:block">
@@ -1601,6 +1614,94 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
 
 {# Consentement RGPD : la CMP Google Funding Choices est chargée par adsbygoogle.js #}
 {# Le fichier templates/partials/_cookie_banner.html reste disponible en backup     #}
+
+{# ── Sélecteur de devise (XPF / EUR / USD) ──────────────────────────────── #}
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var STORAGE_KEY = 'tbg_currency';
+  // Taux de change : 1 XPF = ?
+  // 1 EUR = 119.3317 XPF (parité fixe — le XPF est ancré à l'euro depuis 1998)
+  // 1 USD ≈ 110 XPF (taux variable, mis à jour à la main au besoin)
+  var RATES = {
+    XPF: { factor: 1,         symbol: 'XPF', position: 'after', decimals: 0 },
+    EUR: { factor: 1/119.3317, symbol: '€',  position: 'after', decimals: 0 },
+    USD: { factor: 1/110,      symbol: '$',  position: 'before', decimals: 0 },
+  };
+
+  function getCurrency(){
+    try { return localStorage.getItem(STORAGE_KEY) || 'XPF'; } catch(e){ return 'XPF'; }
+  }
+  function setCurrency(cur){
+    try { localStorage.setItem(STORAGE_KEY, cur); } catch(e){}
+  }
+
+  function formatPrice(xpf, currency){
+    var rate = RATES[currency] || RATES.XPF;
+    var converted = xpf * rate.factor;
+    // Formatage avec espaces pour milliers (style fr-FR)
+    var rounded = Math.round(converted);
+    var s = rounded.toLocaleString('fr-FR');
+    return rate.position === 'before'
+      ? rate.symbol + ' ' + s
+      : s + ' ' + rate.symbol;
+  }
+
+  function applyConversions(){
+    var currency = getCurrency();
+    var nodes = document.querySelectorAll('[data-price-xpf]');
+    nodes.forEach(function(el){
+      var xpf = parseInt(el.getAttribute('data-price-xpf'), 10);
+      if(!xpf || xpf <= 0) return; // Pas de conversion pour les prix 0 ou labels textuels
+      // Stocker le contenu original au premier passage pour pouvoir y revenir
+      if(!el.hasAttribute('data-price-original')){
+        el.setAttribute('data-price-original', el.innerHTML);
+      }
+      if(currency === 'XPF'){
+        // Restaure le format Django d'origine (peut contenir HTML, suffix, etc.)
+        el.innerHTML = el.getAttribute('data-price-original');
+      } else {
+        el.textContent = formatPrice(xpf, currency);
+      }
+    });
+    // Met à jour le libellé du bouton
+    var label = document.getElementById('currency-label');
+    if(label) label.textContent = currency;
+  }
+
+  // ── Init au chargement ──
+  applyConversions();
+
+  // ── Toggle dropdown ──
+  var btn = document.getElementById('currency-btn');
+  var menu = document.getElementById('currency-menu');
+  var wrap = document.getElementById('currency-wrap');
+  if(btn && menu){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var hidden = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden');
+      btn.setAttribute('aria-expanded', hidden ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e){
+      if(wrap && !wrap.contains(e.target)){
+        menu.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.querySelectorAll('.currency-option').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        setCurrency(opt.getAttribute('data-currency'));
+        menu.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+        applyConversions();
+      });
+    });
+  }
+
+  // Re-applique après chaque navigation AJAX éventuelle (load more, etc.)
+  document.addEventListener('tbg:content-loaded', applyConversions);
+})();
+</script>
 
 </body>
 </html>
