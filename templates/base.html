@@ -222,18 +222,34 @@
           {% endif %}
         </a>
 
-        <!-- Sélecteur de devise -->
-        <div class="relative" id="currency-wrap">
-          <button type="button" id="currency-btn" class="flex items-center gap-1 px-3 h-11 rounded-xl hover:bg-gray-100 transition text-sm font-bold text-gray-700 flex-shrink-0" aria-haspopup="menu" aria-expanded="false">
-            <span id="currency-label">XPF</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div id="currency-menu" class="hidden absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 min-w-[140px] py-1" role="menu">
-            <button type="button" data-currency="XPF" class="currency-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition">🇵🇫 XPF (Franc CFP)</button>
-            <button type="button" data-currency="EUR" class="currency-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition">🇪🇺 EUR (Euro)</button>
-            <button type="button" data-currency="USD" class="currency-option block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition">🇺🇸 USD (Dollar)</button>
-          </div>
+        <!-- Sélecteur de devise (switch segmenté) -->
+        <div class="currency-switch" role="group" aria-label="Devise">
+          <button type="button" data-currency="XPF" class="currency-option" title="XPF — Franc Pacifique"><span class="currency-flag">🇵🇫</span><span class="currency-code">XPF</span></button>
+          <button type="button" data-currency="EUR" class="currency-option" title="EUR — Euro"><span class="currency-flag">🇪🇺</span><span class="currency-code">€</span></button>
+          <button type="button" data-currency="USD" class="currency-option" title="USD — Dollar"><span class="currency-flag">🇺🇸</span><span class="currency-code">$</span></button>
         </div>
+        <style>
+          .currency-switch{display:inline-flex;align-items:stretch;background:#f3f4f6;border-radius:9999px;padding:3px;gap:2px;flex-shrink:0;height:40px}
+          .currency-switch .currency-option{
+            background:transparent;border:none;cursor:pointer;
+            display:inline-flex;align-items:center;gap:5px;
+            padding:0 10px;border-radius:9999px;
+            font-size:12px;font-weight:700;color:#6b7280;
+            transition:background .15s,color .15s,box-shadow .15s
+          }
+          .currency-switch .currency-option:hover{color:#111827}
+          .currency-switch .currency-option.is-active{
+            background:#fff;color:#111827;
+            box-shadow:0 1px 3px rgba(0,0,0,.1)
+          }
+          .currency-switch .currency-flag{font-size:14px;line-height:1}
+          .currency-switch .currency-code{font-weight:800}
+          @media (max-width:640px){
+            .currency-switch{height:36px}
+            .currency-switch .currency-option{padding:0 8px;font-size:11px}
+            .currency-switch .currency-flag{display:none}
+          }
+        </style>
 
         {% if user.is_authenticated %}
         <!-- Compte (masque mobile, deja dans bottom nav) -->
@@ -1663,40 +1679,24 @@ document.getElementById('proModalCloseBtn').addEventListener('click', closeProMo
         el.textContent = formatPrice(xpf, currency);
       }
     });
-    // Met à jour le libellé du bouton
-    var label = document.getElementById('currency-label');
-    if(label) label.textContent = currency;
+    // Met à jour l'état "is-active" du switch segmenté
+    document.querySelectorAll('.currency-switch .currency-option').forEach(function(btn){
+      var on = btn.getAttribute('data-currency') === currency;
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   }
 
   // ── Init au chargement ──
   applyConversions();
 
-  // ── Toggle dropdown ──
-  var btn = document.getElementById('currency-btn');
-  var menu = document.getElementById('currency-menu');
-  var wrap = document.getElementById('currency-wrap');
-  if(btn && menu){
-    btn.addEventListener('click', function(e){
-      e.stopPropagation();
-      var hidden = menu.classList.contains('hidden');
-      menu.classList.toggle('hidden');
-      btn.setAttribute('aria-expanded', hidden ? 'true' : 'false');
+  // ── Click sur les boutons du switch ──
+  document.querySelectorAll('.currency-switch .currency-option').forEach(function(opt){
+    opt.addEventListener('click', function(){
+      setCurrency(opt.getAttribute('data-currency'));
+      applyConversions();
     });
-    document.addEventListener('click', function(e){
-      if(wrap && !wrap.contains(e.target)){
-        menu.classList.add('hidden');
-        btn.setAttribute('aria-expanded', 'false');
-      }
-    });
-    document.querySelectorAll('.currency-option').forEach(function(opt){
-      opt.addEventListener('click', function(){
-        setCurrency(opt.getAttribute('data-currency'));
-        menu.classList.add('hidden');
-        btn.setAttribute('aria-expanded', 'false');
-        applyConversions();
-      });
-    });
-  }
+  });
 
   // Re-applique après chaque navigation AJAX éventuelle (load more, etc.)
   document.addEventListener('tbg:content-loaded', applyConversions);
