@@ -31,25 +31,6 @@
       <!-- PUB STRIP (slot strip_1) -->
       {% with current_strip=pub_strip_accueil_haut strip_label="Strip Accueil — Haut" strip_emp="strip_accueil_haut" %}{% include 'partials/_pub_strip.html' %}{% endwith %}
 
-      <!-- Bannière tourisme — Saisonnières / Vacation rentals -->
-      <a href="{% url 'liste_annonces' %}?categorie=immobilier&sous_cat=immo-saisonnieres"
-         class="block mb-4 rounded-2xl overflow-hidden shadow-md group hover:shadow-xl transition-shadow"
-         style="background:linear-gradient(135deg,#0d9488 0%,#0891b2 50%,#1d4ed8 100%);min-height:140px">
-        <div class="px-6 py-5 sm:px-8 sm:py-6 flex items-center gap-4 text-white">
-          <div class="text-5xl sm:text-6xl flex-shrink-0">🌴</div>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-bold uppercase tracking-wider opacity-90 mb-1">Tourisme · Tourism</div>
-            <h2 class="text-xl sm:text-2xl font-black leading-tight mb-1">Locations saisonnières en Polynésie</h2>
-            <p class="text-sm opacity-95 hidden sm:block">Vacation rentals · Bungalows, villas, pensions de famille à Tahiti, Moorea, Bora Bora</p>
-            <p class="text-xs opacity-90 sm:hidden">Bungalows, villas, pensions à Tahiti & îles</p>
-          </div>
-          <div class="flex-shrink-0 hidden sm:flex items-center gap-1 bg-white/20 hover:bg-white/30 backdrop-blur px-4 py-2 rounded-full text-sm font-bold transition group-hover:translate-x-1">
-            Découvrir <span aria-hidden="true">→</span>
-          </div>
-          <div class="flex-shrink-0 sm:hidden bg-white/20 backdrop-blur w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold group-hover:translate-x-1 transition">→</div>
-        </div>
-      </a>
-
       <!-- Par catégorie (ordre : immo, véhicules, puis le reste) -->
       {% for cat_data in annonces_par_cat %}
       {% if cat_data.annonces %}
